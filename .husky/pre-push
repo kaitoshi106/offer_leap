@@ -1,0 +1,9 @@
+# Personal branches (study/*, local/*) stay on this machine.
+while read -r local_ref _local_sha remote_ref _remote_sha; do
+  case "$local_ref $remote_ref" in
+    *refs/heads/study/* | *refs/heads/local/*)
+      echo "✖ Refusing to push personal branch: ${local_ref#refs/heads/}" >&2
+      exit 1
+      ;;
+  esac
+done
