@@ -13,6 +13,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "storybook": "pnpm --filter @offerleap/web storybook",
+    "storybook:build": "pnpm --filter @offerleap/web build-storybook",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "infra:up": "docker compose up -d",

@@ -32,14 +32,15 @@ pnpm dev             # web http://localhost:3000 · api http://localhost:4000/ap
 
 ## Scripts
 
-| Command          | Description                 |
-| ---------------- | --------------------------- |
-| `pnpm dev`       | Run all apps in watch mode  |
-| `pnpm build`     | Build all packages and apps |
-| `pnpm lint`      | ESLint across the monorepo  |
-| `pnpm typecheck` | TypeScript checks           |
-| `pnpm test`      | Unit tests (Vitest)         |
-| `pnpm format`    | Prettier                    |
+| Command          | Description                                 |
+| ---------------- | ------------------------------------------- |
+| `pnpm dev`       | Run all apps in watch mode                  |
+| `pnpm build`     | Build all packages and apps                 |
+| `pnpm lint`      | ESLint across the monorepo                  |
+| `pnpm typecheck` | TypeScript checks                           |
+| `pnpm test`      | Unit tests (Vitest)                         |
+| `pnpm storybook` | Component explorer on http://localhost:6006 |
+| `pnpm format`    | Prettier                                    |
 
 ## Project structure
 

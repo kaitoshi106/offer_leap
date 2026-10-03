@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "description": "AI job application assistant: reads your CV, scores it against job descriptions, runs mock interviews and writes cover letters."
+  },
+  "common": {
+    "loading": "Loading…",
+    "required": "required",
+    "skipToContent": "Skip to main content",
+    "clear": "Clear"
+  },
+  "theme": {
+    "label": "Theme: {theme}",
+    "switchTo": "Change theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "locale": {
+    "label": "Language",
+    "switchTo": "Chuyển sang Tiếng Việt",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "home": {
+    "badge": "AI job application assistant",
+    "title": "From CV to offer — faster and with confidence",
+    "description": "Upload your CV and let AI fill in your profile, score it against each job description, run mock interviews and draft your cover letters.",
+    "ctaPrimary": "Get started for free",
+    "ctaSecondary": "I already have an account",
+    "features": {
+      "parse": {
+        "title": "Reads any CV",
+        "description": "PDF, DOCX or a photo — AI reads it and pre-fills your profile in seconds."
+      },
+      "match": {
+        "title": "CV vs job description",
+        "description": "See missing skills at a glance and how to improve each section of your CV."
+      },
+      "interview": {
+        "title": "Mock interviews",
+        "description": "Practise with an AI recruiter and get feedback on every answer."
+      }
+    }
+  },
+  "errors": {
+    "COMMON_INTERNAL_ERROR": "Something went wrong. Please try again later.",
+    "COMMON_VALIDATION_FAILED": "Some information is invalid. Please check and try again.",
+    "COMMON_NOT_FOUND": "We couldn't find what you were looking for.",
+    "COMMON_RATE_LIMITED": "You're going too fast. Please try again in a few minutes.",
+    "AUTH_UNAUTHENTICATED": "Please sign in to continue.",
+    "AUTH_FORBIDDEN": "You don't have permission to do this.",
+    "AUTH_INVALID_CREDENTIALS": "Incorrect email or password.",
+    "AUTH_EMAIL_TAKEN": "This email is already in use.",
+    "AUTH_EMAIL_NOT_VERIFIED": "Please verify your email before signing in.",
+    "AUTH_TOKEN_INVALID": "This link is invalid.",
+    "AUTH_TOKEN_EXPIRED": "This link has expired. Please request a new one.",
+    "AUTH_ACCOUNT_LOCKED": "This account is locked. Please contact an administrator.",
+    "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app."
+  }
+}

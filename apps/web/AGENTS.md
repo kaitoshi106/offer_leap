@@ -24,3 +24,11 @@ A layer may import only from layers below it. Pages are the only place that fetc
 - i18n: all copy via `useTranslations` / `getTranslations`; add keys to both `messages/vi.json` and `messages/en.json`.
 - API errors: map `ApiErrorResponse.code` to `t('errors.<CODE>')`; never display `message`.
 - Each component folder: `Component.tsx`, `Component.stories.tsx`, `Component.test.tsx`, `index.ts`.
+- Next.js 16 renamed `middleware.ts` to `proxy.ts` (`src/proxy.ts` runs the next-intl locale redirect).
+- Links and navigation come from `@/i18n/navigation` (locale-aware), never from `next/link` / `next/navigation`.
+- Theme: `ThemeProvider` + `useTheme()`; the inline `themeInitScript` applies `data-theme` before paint.
+- Tests: Vitest + Testing Library (`pnpm --filter @offerleap/web test`); wrap with `renderWithProviders` from
+  `@/test/render` when a component needs translations or theme. Stories: `pnpm storybook` (root).
+- Stories never expose `ReactNode` props as controls: hide them and drive them with `iconOptionControl` / text
+  args from `@/stories/controls`; demo copy comes from `storyCopy(globals)` so the Language toolbar works.
+  `src/stories/stories.test.tsx` renders every story in both locales.

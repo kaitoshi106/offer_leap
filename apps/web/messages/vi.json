@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "description": "Trợ lý ứng tuyển dùng AI: đọc CV, chấm độ phù hợp với JD, luyện phỏng vấn và viết cover letter."
+  },
+  "common": {
+    "loading": "Đang tải…",
+    "required": "bắt buộc",
+    "skipToContent": "Bỏ qua, tới nội dung chính",
+    "clear": "Xoá nội dung"
+  },
+  "theme": {
+    "label": "Giao diện: {theme}",
+    "switchTo": "Chuyển giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Theo hệ thống"
+  },
+  "locale": {
+    "label": "Ngôn ngữ",
+    "switchTo": "Switch to English",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "home": {
+    "badge": "Trợ lý ứng tuyển AI",
+    "title": "Từ CV đến offer, nhanh hơn và tự tin hơn",
+    "description": "Tải CV lên, AI tự điền hồ sơ, chấm độ phù hợp với từng JD, luyện phỏng vấn thử và viết cover letter cho bạn.",
+    "ctaPrimary": "Bắt đầu miễn phí",
+    "ctaSecondary": "Tôi đã có tài khoản",
+    "features": {
+      "parse": {
+        "title": "Đọc CV mọi định dạng",
+        "description": "PDF, DOCX hay ảnh chụp — AI đọc và điền sẵn hồ sơ trong vài giây."
+      },
+      "match": {
+        "title": "Chấm CV theo JD",
+        "description": "Biết ngay kỹ năng còn thiếu và cách sửa từng đoạn trong CV."
+      },
+      "interview": {
+        "title": "Phỏng vấn thử",
+        "description": "Luyện với AI đóng vai nhà tuyển dụng và nhận nhận xét cho từng câu trả lời."
+      }
+    }
+  },
+  "errors": {
+    "COMMON_INTERNAL_ERROR": "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    "COMMON_VALIDATION_FAILED": "Thông tin chưa hợp lệ. Vui lòng kiểm tra lại.",
+    "COMMON_NOT_FOUND": "Không tìm thấy nội dung bạn yêu cầu.",
+    "COMMON_RATE_LIMITED": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+    "AUTH_UNAUTHENTICATED": "Vui lòng đăng nhập để tiếp tục.",
+    "AUTH_FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
+    "AUTH_INVALID_CREDENTIALS": "Email hoặc mật khẩu không đúng.",
+    "AUTH_EMAIL_TAKEN": "Email này đã được sử dụng.",
+    "AUTH_EMAIL_NOT_VERIFIED": "Vui lòng xác thực email trước khi đăng nhập.",
+    "AUTH_TOKEN_INVALID": "Liên kết không hợp lệ.",
+    "AUTH_TOKEN_EXPIRED": "Liên kết đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+    "AUTH_ACCOUNT_LOCKED": "Tài khoản đang bị khoá. Vui lòng liên hệ quản trị viên.",
+    "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng."
+  }
+}

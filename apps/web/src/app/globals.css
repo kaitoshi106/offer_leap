@@ -1,3 +1,27 @@
 @import 'tailwindcss';
+@import '../styles/tokens.css';
 
-/* Design tokens (colors, spacing, radius, dark mode) are defined with @theme in the design-system step. */
+@layer base {
+  html {
+    @apply bg-bg font-sans text-fg antialiased;
+  }
+
+  /* Tailwind v4 resets buttons to the default cursor; restore the pointer for anything clickable. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

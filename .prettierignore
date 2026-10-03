@@ -4,3 +4,4 @@ dist
 coverage
 .turbo
 pnpm-lock.yaml
+storybook-static

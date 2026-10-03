@@ -1,7 +1,7 @@
 # Roadmap
 
 - [x] Monorepo, tooling, CI, shared contracts, AI assistant guides
-- [ ] Design system: tokens, dark mode, i18n, atoms, Storybook
+- [x] Design system: tokens, dark mode, i18n, atoms, Storybook
 - [ ] Auth & RBAC: sign-up, email verification, login, refresh, root admin seed
 - [ ] Core components (molecules, organisms) & auth pages
 - [ ] Mandatory onboarding
