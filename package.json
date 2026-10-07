@@ -2,7 +2,7 @@
   "name": "offerleap",
   "version": "0.1.0",
   "private": true,
-  "description": "Make the Leap. Land the Offer. — AI-powered job application assistant.",
+  "description": "Make the Leap. Land the Offer. \u2014 AI-powered job application assistant.",
   "packageManager": "pnpm@12.8.2",
   "engines": {
     "node": ">=24.0.0"
@@ -13,6 +13,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
     "storybook": "pnpm --filter @offerleap/web storybook",
     "storybook:build": "pnpm --filter @offerleap/web build-storybook",
     "format": "prettier --write .",

@@ -27,20 +27,24 @@ Prerequisites: Node.js 24 (`nvm use`), pnpm 12 (`npm i -g pnpm@12`), Docker.
 cp .env.example .env
 pnpm install
 pnpm infra:up        # Postgres :5432, Redis :6379, Mailpit UI :8025
+pnpm --filter @offerleap/api db:migrate   # apply migrations
+pnpm --filter @offerleap/api db:seed      # create the root admin from ROOT_ADMIN_* in .env
 pnpm dev             # web http://localhost:3000 · api http://localhost:4000/api/v1/health
+# API docs (Swagger UI, dev only): http://localhost:4000/api/docs · emails: http://localhost:8025
 ```
 
 ## Scripts
 
-| Command          | Description                                 |
-| ---------------- | ------------------------------------------- |
-| `pnpm dev`       | Run all apps in watch mode                  |
-| `pnpm build`     | Build all packages and apps                 |
-| `pnpm lint`      | ESLint across the monorepo                  |
-| `pnpm typecheck` | TypeScript checks                           |
-| `pnpm test`      | Unit tests (Vitest)                         |
-| `pnpm storybook` | Component explorer on http://localhost:6006 |
-| `pnpm format`    | Prettier                                    |
+| Command          | Description                                  |
+| ---------------- | -------------------------------------------- |
+| `pnpm dev`       | Run all apps in watch mode                   |
+| `pnpm build`     | Build all packages and apps                  |
+| `pnpm lint`      | ESLint across the monorepo                   |
+| `pnpm typecheck` | TypeScript checks                            |
+| `pnpm test`      | Unit tests (Vitest)                          |
+| `pnpm test:e2e`  | API end-to-end tests (needs `pnpm infra:up`) |
+| `pnpm storybook` | Component explorer on http://localhost:6006  |
+| `pnpm format`    | Prettier                                     |
 
 ## Project structure
 

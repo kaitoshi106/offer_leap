@@ -1,0 +1,95 @@
+// Database schema. Run `pnpm --filter @offerleap/api prisma migrate dev --name <change>` after editing.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  // NestJS is compiled to CommonJS.
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AdminLevel {
+  ROOT
+  GENERAL
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum Locale {
+  vi
+  en
+}
+
+enum UserTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+model User {
+  id                    String         @id @default(cuid())
+  email                 String         @unique
+  passwordHash          String
+  fullName              String
+  role                  Role           @default(USER)
+  /// Only set when role = ADMIN.
+  adminLevel            AdminLevel?
+  status                UserStatus     @default(ACTIVE)
+  locale                Locale         @default(vi)
+  emailVerifiedAt       DateTime?
+  onboardingCompletedAt DateTime?
+  passwordChangedAt     DateTime?
+  lastLoginAt           DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  refreshTokens         RefreshToken[]
+  tokens                UserToken[]
+
+  @@map("users")
+}
+
+/// One row per issued refresh token. Tokens of one login share a `familyId`; rotating marks the old row
+/// revoked and links it to its replacement, so a reused (stolen) token can revoke the whole family.
+model RefreshToken {
+  id           String    @id @default(cuid())
+  userId       String
+  familyId     String
+  /// SHA-256 of the opaque token; the token itself is only ever in the client's cookie.
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  userAgent    String?
+  ipAddress    String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+/// Single-use tokens sent by email (verification, password reset). Stored hashed.
+model UserToken {
+  id        String        @id @default(cuid())
+  userId    String
+  type      UserTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("user_tokens")
+}

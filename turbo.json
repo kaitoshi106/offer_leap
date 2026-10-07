@@ -3,6 +3,23 @@
   "ui": "tui",
   "agentGuidance": false,
   "globalDependencies": [".env"],
+  // Turbo hides undeclared env vars from tasks (strict mode); these are read by the apps at runtime.
+  "globalPassThroughEnv": [
+    "NODE_ENV",
+    "API_PORT",
+    "WEB_ORIGIN",
+    "DATABASE_URL",
+    "DATABASE_URL_TEST",
+    "REDIS_URL",
+    "JWT_*",
+    "REFRESH_TOKEN_TTL_DAYS",
+    "SMTP_*",
+    "MAIL_FROM",
+    "ROOT_ADMIN_*",
+    "ANTHROPIC_API_KEY",
+    "AI_MODEL"
+  ],
+  "globalEnv": ["NEXT_PUBLIC_*"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -23,6 +40,11 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
+    },
+    // Needs Postgres + Redis (docker compose); never cached because it depends on database state.
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "cache": false
     }
   }
 }

@@ -53,6 +53,33 @@ packages/shared ◄──── imports ───────────┤
 **Guards** (API): `JwtAuthGuard` → `RolesGuard` (`@Roles('ADMIN')`, `@RootOnly()`) → `ProfileCompletedGuard`
 (users only). The web middleware mirrors these for redirects only.
 
+## Authentication & sessions
+
+```
+POST /auth/register ─► user (unverified) ─► BullMQ "mail" ─► SMTP (Mailpit locally)
+POST /auth/verify-email {token} ─► emailVerifiedAt + session
+POST /auth/login ─► session          POST /auth/refresh ─► rotated session
+POST /auth/logout · GET /auth/me · forgot / reset / change password
+```
+
+- **Access token**: JWT (HS256, 15 min) with `{ sub, role, adminLevel }`, in httpOnly cookie `ol_at` (path `/`).
+  `Authorization: Bearer` is accepted too (scripts, tests).
+- **Refresh token**: 256-bit opaque value in httpOnly cookie `ol_rt`, scoped to `/api/v1/auth`, stored as SHA-256 in
+  `refresh_tokens`. Every refresh **rotates** it; tokens of one login share a `familyId`. Presenting an already
+  rotated token more than 15 s later (theft, not a multi-tab race) revokes the whole family.
+- **Cookies**: `SameSite=Lax` (CSRF), `Secure` in production. Web and API must be same-site (e.g. `app.` / `api.`
+  subdomains) in production.
+- **Email tokens** (`user_tokens`): single-use, hashed, 24 h (verification) / 30 min (reset); a new one invalidates
+  older ones of the same type.
+- **No enumeration**: login returns the same error for unknown email and wrong password (with equal timing);
+  forgot-password / resend-verification always answer 202.
+- **Passwords**: argon2id (`@node-rs/argon2`); a reset or change revokes every refresh token of the user.
+- **Rate limits**: 120 req/min per IP globally, 5/min on login, register, forgot/reset, resend, change password.
+- **Docs**: Swagger UI at `/api/docs` (spec at `/api/docs/openapi.json`) outside production, generated from the
+  shared Zod schemas. Calls from the UI share the API origin, so login cookies apply to later calls.
+- **Errors**: `AppException(ErrorCode)` → `AllExceptionsFilter` → `ApiErrorResponse` with `requestId` (also in the
+  `X-Request-Id` header). Validation errors carry `fieldErrors: [{ field, rule, params }]`.
+
 ## Resume parsing pipeline
 
 ```

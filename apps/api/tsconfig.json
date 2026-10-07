@@ -7,8 +7,8 @@
     "emitDecoratorMetadata": true,
     "declaration": false,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src", "test", "prisma", "prisma.config.ts", "vitest.config.mts"]
 }

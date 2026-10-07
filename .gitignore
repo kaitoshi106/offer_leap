@@ -32,3 +32,6 @@ test-results/
 # local AI assistant overrides
 .claude/settings.local.json
 CLAUDE.local.md
+
+# generated
+apps/api/src/generated/

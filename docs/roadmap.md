@@ -2,7 +2,7 @@
 
 - [x] Monorepo, tooling, CI, shared contracts, AI assistant guides
 - [x] Design system: tokens, dark mode, i18n, atoms, Storybook
-- [ ] Auth & RBAC: sign-up, email verification, login, refresh, root admin seed
+- [x] Auth & RBAC: sign-up, email verification, login, refresh, root admin seed
 - [ ] Core components (molecules, organisms) & auth pages
 - [ ] Mandatory onboarding
 - [ ] AI resume parsing (PDF / DOCX / image) & profile autofill

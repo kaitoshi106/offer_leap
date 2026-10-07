@@ -55,6 +55,16 @@
     "AUTH_TOKEN_INVALID": "Liên kết không hợp lệ.",
     "AUTH_TOKEN_EXPIRED": "Liên kết đã hết hạn. Vui lòng yêu cầu liên kết mới.",
     "AUTH_ACCOUNT_LOCKED": "Tài khoản đang bị khoá. Vui lòng liên hệ quản trị viên.",
-    "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng."
+    "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng.",
+    "AUTH_EMAIL_ALREADY_VERIFIED": "Email này đã được xác thực. Bạn có thể đăng nhập."
+  },
+  "validation": {
+    "required": "Vui lòng nhập thông tin này.",
+    "invalidEmail": "Email không hợp lệ.",
+    "tooShort": "Cần ít nhất {min} ký tự.",
+    "tooLong": "Tối đa {max} ký tự.",
+    "weakPassword": "Mật khẩu cần có cả chữ và số.",
+    "passwordsMismatch": "Mật khẩu nhập lại không khớp.",
+    "invalid": "Giá trị không hợp lệ."
   }
 }

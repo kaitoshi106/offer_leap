@@ -1,10 +1,12 @@
+import type { ValidationRule } from '../validation/rules';
 import { type ErrorCode, isErrorCode } from './error-codes';
 
 /** A single field-level problem, used with `COMMON_VALIDATION_FAILED`. */
 export interface FieldError {
   /** Dot path of the offending field, e.g. `profile.yearsOfExperience`. */
   field: string;
-  code: ErrorCode;
+  /** Which rule failed; the web app translates `validation.<rule>`. */
+  rule: ValidationRule;
   /** Values to interpolate into the translated message, e.g. `{ min: 8 }`. */
   params?: Record<string, string | number>;
 }

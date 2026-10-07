@@ -55,6 +55,16 @@
     "AUTH_TOKEN_INVALID": "This link is invalid.",
     "AUTH_TOKEN_EXPIRED": "This link has expired. Please request a new one.",
     "AUTH_ACCOUNT_LOCKED": "This account is locked. Please contact an administrator.",
-    "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app."
+    "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app.",
+    "AUTH_EMAIL_ALREADY_VERIFIED": "This email is already verified. You can sign in."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "invalidEmail": "Enter a valid email address.",
+    "tooShort": "Use at least {min} characters.",
+    "tooLong": "Use at most {max} characters.",
+    "weakPassword": "Use both letters and numbers.",
+    "passwordsMismatch": "Passwords don't match.",
+    "invalid": "This value is invalid."
   }
 }
