@@ -108,6 +108,7 @@ describe('register & verify email', () => {
     expect(verified.body.user).toMatchObject({ email: 'a@b.co', emailVerified: true, role: 'USER' });
     expect(cookie(verified, 'ol_at')).toMatch(/HttpOnly/);
     expect(cookie(verified, 'ol_rt')).toMatch(/Path=\/api\/v1\/auth;.*HttpOnly/);
+    expect(cookie(verified, 'ol_session')).toMatch(/^ol_session=1; Path=\/;/);
     await agent.get('/api/v1/auth/me').expect(200);
   });
 
@@ -170,6 +171,7 @@ describe('login & session', () => {
     const logout = await agent.post('/api/v1/auth/logout').expect(204);
 
     expect(cookie(logout, 'ol_at')).toMatch(/Expires=Thu, 01 Jan 1970/);
+    expect(cookie(logout, 'ol_session')).toMatch(/Expires=Thu, 01 Jan 1970/);
     await agent.post('/api/v1/auth/refresh').expect(401);
   });
 });

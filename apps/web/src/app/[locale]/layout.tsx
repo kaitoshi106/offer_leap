@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { APP_NAME, APP_TAGLINE } from '@offerleap/shared';
 
 import { routing } from '@/i18n/routing';
-import { ThemeProvider } from '@/providers/ThemeProvider';
+import { AppProviders } from '@/providers/AppProviders';
 import { ThemeScript } from '@/providers/ThemeScript';
 
 import { roboto } from '../fonts';
@@ -54,7 +54,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       </head>
       <body className="min-h-dvh">
         <NextIntlClientProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <AppProviders>{children}</AppProviders>
         </NextIntlClientProvider>
       </body>
     </html>

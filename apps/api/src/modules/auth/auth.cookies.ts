@@ -2,6 +2,12 @@ import type { CookieOptions, Response } from 'express';
 
 export const ACCESS_TOKEN_COOKIE = 'ol_at';
 export const REFRESH_TOKEN_COOKIE = 'ol_rt';
+/**
+ * Holds no secret, only "a session probably exists". The refresh cookie is scoped to the auth endpoints, so the web
+ * app's proxy can't see it; this flag lets it redirect signed-out visitors before rendering protected pages.
+ * The API never trusts it.
+ */
+export const SESSION_FLAG_COOKIE = 'ol_session';
 /** The refresh cookie is only sent to auth endpoints, never with ordinary API calls. */
 export const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
@@ -38,6 +44,11 @@ export function setSessionCookies(response: Response, tokens: SessionTokens, sec
     path: REFRESH_COOKIE_PATH,
     expires: tokens.refreshTokenExpiresAt,
   });
+  response.cookie(SESSION_FLAG_COOKIE, '1', {
+    ...baseOptions(secure),
+    path: '/',
+    expires: tokens.refreshTokenExpiresAt,
+  });
 }
 
 /**
@@ -48,4 +59,5 @@ export function setSessionCookies(response: Response, tokens: SessionTokens, sec
 export function clearSessionCookies(response: Response, secure: boolean): void {
   response.clearCookie(ACCESS_TOKEN_COOKIE, { ...baseOptions(secure), path: '/' });
   response.clearCookie(REFRESH_TOKEN_COOKIE, { ...baseOptions(secure), path: REFRESH_COOKIE_PATH });
+  response.clearCookie(SESSION_FLAG_COOKIE, { ...baseOptions(secure), path: '/' });
 }

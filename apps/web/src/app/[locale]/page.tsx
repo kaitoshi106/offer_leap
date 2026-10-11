@@ -6,6 +6,7 @@ import { APP_NAME, type Locale } from '@offerleap/shared';
 
 import { Badge, buttonClasses, Heading, Icon, type IconName, Text } from '@/components/atoms';
 import { LocaleSwitcher, ThemeToggle } from '@/components/molecules';
+import { Link } from '@/i18n/navigation';
 
 const FEATURES: { key: 'parse' | 'match' | 'interview'; icon: IconName }[] = [
   { key: 'parse', icon: 'file-text' },
@@ -14,7 +15,7 @@ const FEATURES: { key: 'parse' | 'match' | 'interview'; icon: IconName }[] = [
 ];
 
 /**
- * @description Public landing page. Auth links are placeholders until the auth pages exist.
+ * @description Public landing page.
  * @param props.params - Route params containing the locale.
  */
 export default function HomePage({ params }: { params: Promise<{ locale: Locale }> }) {
@@ -52,13 +53,13 @@ export default function HomePage({ params }: { params: Promise<{ locale: Locale 
             {t('home.description')}
           </Text>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <a href="#" className={buttonClasses({ size: 'lg' })}>
+            <Link href="/register" className={buttonClasses({ size: 'lg' })}>
               {t('home.ctaPrimary')}
               <Icon name="arrow-right" size="sm" />
-            </a>
-            <a href="#" className={buttonClasses({ variant: 'outline', size: 'lg' })}>
+            </Link>
+            <Link href="/login" className={buttonClasses({ variant: 'outline', size: 'lg' })}>
               {t('home.ctaSecondary')}
-            </a>
+            </Link>
           </div>
         </section>
 

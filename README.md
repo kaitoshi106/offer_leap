@@ -35,16 +35,17 @@ pnpm dev             # web http://localhost:3000 · api http://localhost:4000/ap
 
 ## Scripts
 
-| Command          | Description                                  |
-| ---------------- | -------------------------------------------- |
-| `pnpm dev`       | Run all apps in watch mode                   |
-| `pnpm build`     | Build all packages and apps                  |
-| `pnpm lint`      | ESLint across the monorepo                   |
-| `pnpm typecheck` | TypeScript checks                            |
-| `pnpm test`      | Unit tests (Vitest)                          |
-| `pnpm test:e2e`  | API end-to-end tests (needs `pnpm infra:up`) |
-| `pnpm storybook` | Component explorer on http://localhost:6006  |
-| `pnpm format`    | Prettier                                     |
+| Command                                     | Description                                           |
+| ------------------------------------------- | ----------------------------------------------------- |
+| `pnpm dev`                                  | Run all apps in watch mode                            |
+| `pnpm build`                                | Build all packages and apps                           |
+| `pnpm lint`                                 | ESLint across the monorepo                            |
+| `pnpm typecheck`                            | TypeScript checks                                     |
+| `pnpm test`                                 | Unit tests (Vitest)                                   |
+| `pnpm test:e2e`                             | API end-to-end tests (needs `pnpm infra:up`)          |
+| `pnpm --filter @offerleap/web test:browser` | Browser tests with Playwright (needs `pnpm infra:up`) |
+| `pnpm storybook`                            | Component explorer on http://localhost:6006           |
+| `pnpm format`                               | Prettier                                              |
 
 ## Project structure
 

@@ -21,6 +21,8 @@
     ".next/types/**/*.ts",
     "next.config.ts",
     "vitest.config.mts",
+    "playwright.config.ts",
+    "e2e/**/*.ts",
     ".storybook/*.ts",
     ".storybook/*.tsx"
   ],

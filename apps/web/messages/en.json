@@ -6,7 +6,12 @@
     "loading": "Loading…",
     "required": "required",
     "skipToContent": "Skip to main content",
-    "clear": "Clear"
+    "clear": "Clear",
+    "close": "Close",
+    "dismiss": "Dismiss notification",
+    "backToHome": "Back to home",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "theme": {
     "label": "Theme: {theme}",
@@ -56,7 +61,8 @@
     "AUTH_TOKEN_EXPIRED": "This link has expired. Please request a new one.",
     "AUTH_ACCOUNT_LOCKED": "This account is locked. Please contact an administrator.",
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app.",
-    "AUTH_EMAIL_ALREADY_VERIFIED": "This email is already verified. You can sign in."
+    "AUTH_EMAIL_ALREADY_VERIFIED": "This email is already verified. You can sign in.",
+    "NETWORK_ERROR": "Can't reach the server. Check your connection and try again."
   },
   "validation": {
     "required": "This field is required.",
@@ -66,5 +72,74 @@
     "weakPassword": "Use both letters and numbers.",
     "passwordsMismatch": "Passwords don't match.",
     "invalid": "This value is invalid."
+  },
+  "auth": {
+    "highlights": {
+      "parse": "AI reads your CV and fills your profile in seconds",
+      "match": "Score your CV against each job description",
+      "interview": "Practise interviews with AI"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "passwordHint": "At least 8 characters, with letters and numbers."
+    },
+    "register": {
+      "title": "Create your account",
+      "description": "Start your job search with an AI assistant.",
+      "submit": "Create account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "checkEmailTitle": "Check your inbox",
+      "checkEmailBody": "We sent a verification link to {email}. It is valid for 24 hours."
+    },
+    "resend": {
+      "action": "Resend email",
+      "cooldown": "Resend in {seconds}s",
+      "sent": "Verification email sent again."
+    },
+    "login": {
+      "title": "Sign in",
+      "description": "Welcome back to OfferLeap.",
+      "submit": "Sign in",
+      "forgot": "Forgot password?",
+      "noAccount": "No account yet?",
+      "signUp": "Sign up",
+      "notVerified": "Your email isn't verified yet. Send the verification email to {email} again?",
+      "success": "Signed in"
+    },
+    "verify": {
+      "title": "Verify email",
+      "verifying": "Verifying your email…",
+      "missingToken": "This verification link is invalid.",
+      "requestNew": "Enter your email to get a new link."
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "description": "Enter your email and we'll send you a reset link.",
+      "submit": "Send link",
+      "sentTitle": "Request received",
+      "sentBody": "If {email} has an account, you'll get an email in a few minutes. The link is valid for 30 minutes.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "Reset password",
+      "description": "Choose a new password for your account.",
+      "submit": "Change password",
+      "success": "Password changed. Please sign in again.",
+      "missingToken": "This reset link is invalid.",
+      "requestNew": "Request a new link"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": "Hi, {name}!",
+    "comingSoon": "Next step: complete your profile (coming soon).",
+    "signOut": "Sign out",
+    "account": "Account",
+    "role": "Role"
   }
 }

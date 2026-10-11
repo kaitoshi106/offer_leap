@@ -67,6 +67,8 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 - **Refresh token**: 256-bit opaque value in httpOnly cookie `ol_rt`, scoped to `/api/v1/auth`, stored as SHA-256 in
   `refresh_tokens`. Every refresh **rotates** it; tokens of one login share a `familyId`. Presenting an already
   rotated token more than 15 s later (theft, not a multi-tab race) revokes the whole family.
+- **Session flag**: `ol_session=1` (path `/`, no secret) lives as long as the refresh token so the web proxy can
+  redirect signed-out visitors; the API never trusts it.
 - **Cookies**: `SameSite=Lax` (CSRF), `Secure` in production. Web and API must be same-site (e.g. `app.` / `api.`
   subdomains) in production.
 - **Email tokens** (`user_tokens`): single-use, hashed, 24 h (verification) / 30 min (reset); a new one invalidates

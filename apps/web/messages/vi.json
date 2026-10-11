@@ -6,7 +6,12 @@
     "loading": "Đang tải…",
     "required": "bắt buộc",
     "skipToContent": "Bỏ qua, tới nội dung chính",
-    "clear": "Xoá nội dung"
+    "clear": "Xoá nội dung",
+    "close": "Đóng",
+    "dismiss": "Ẩn thông báo",
+    "backToHome": "Về trang chủ",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu"
   },
   "theme": {
     "label": "Giao diện: {theme}",
@@ -56,7 +61,8 @@
     "AUTH_TOKEN_EXPIRED": "Liên kết đã hết hạn. Vui lòng yêu cầu liên kết mới.",
     "AUTH_ACCOUNT_LOCKED": "Tài khoản đang bị khoá. Vui lòng liên hệ quản trị viên.",
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng.",
-    "AUTH_EMAIL_ALREADY_VERIFIED": "Email này đã được xác thực. Bạn có thể đăng nhập."
+    "AUTH_EMAIL_ALREADY_VERIFIED": "Email này đã được xác thực. Bạn có thể đăng nhập.",
+    "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -66,5 +72,74 @@
     "weakPassword": "Mật khẩu cần có cả chữ và số.",
     "passwordsMismatch": "Mật khẩu nhập lại không khớp.",
     "invalid": "Giá trị không hợp lệ."
+  },
+  "auth": {
+    "highlights": {
+      "parse": "AI đọc CV và điền hồ sơ trong vài giây",
+      "match": "Chấm độ phù hợp CV với từng JD",
+      "interview": "Luyện phỏng vấn với AI"
+    },
+    "fields": {
+      "fullName": "Họ và tên",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Nhập lại mật khẩu",
+      "passwordHint": "Ít nhất 8 ký tự, gồm cả chữ và số."
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "description": "Bắt đầu hành trình tìm việc cùng trợ lý AI.",
+      "submit": "Tạo tài khoản",
+      "hasAccount": "Đã có tài khoản?",
+      "signIn": "Đăng nhập",
+      "checkEmailTitle": "Kiểm tra hộp thư của bạn",
+      "checkEmailBody": "Chúng tôi đã gửi liên kết xác thực tới {email}. Liên kết có hiệu lực trong 24 giờ."
+    },
+    "resend": {
+      "action": "Gửi lại email",
+      "cooldown": "Gửi lại sau {seconds}s",
+      "sent": "Đã gửi lại email xác thực."
+    },
+    "login": {
+      "title": "Đăng nhập",
+      "description": "Chào mừng bạn quay lại OfferLeap.",
+      "submit": "Đăng nhập",
+      "forgot": "Quên mật khẩu?",
+      "noAccount": "Chưa có tài khoản?",
+      "signUp": "Đăng ký",
+      "notVerified": "Email chưa được xác thực. Gửi lại email xác thực tới {email}?",
+      "success": "Đăng nhập thành công"
+    },
+    "verify": {
+      "title": "Xác thực email",
+      "verifying": "Đang xác thực email của bạn…",
+      "missingToken": "Liên kết xác thực không hợp lệ.",
+      "requestNew": "Nhập email để nhận liên kết mới."
+    },
+    "forgot": {
+      "title": "Quên mật khẩu",
+      "description": "Nhập email, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.",
+      "submit": "Gửi liên kết",
+      "sentTitle": "Đã gửi yêu cầu",
+      "sentBody": "Nếu {email} có tài khoản, bạn sẽ nhận được email trong vài phút. Liên kết có hiệu lực 30 phút.",
+      "backToLogin": "Quay lại đăng nhập"
+    },
+    "reset": {
+      "title": "Đặt lại mật khẩu",
+      "description": "Chọn mật khẩu mới cho tài khoản của bạn.",
+      "submit": "Đổi mật khẩu",
+      "success": "Đã đổi mật khẩu. Hãy đăng nhập lại.",
+      "missingToken": "Liên kết đặt lại mật khẩu không hợp lệ.",
+      "requestNew": "Yêu cầu liên kết mới"
+    }
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển",
+    "greeting": "Xin chào, {name}!",
+    "comingSoon": "Bước tiếp theo: hoàn thiện hồ sơ của bạn (sắp ra mắt).",
+    "signOut": "Đăng xuất",
+    "account": "Tài khoản",
+    "role": "Vai trò"
   }
 }

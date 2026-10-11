@@ -24,6 +24,16 @@ A layer may import only from layers below it. Pages are the only place that fetc
 - i18n: all copy via `useTranslations` / `getTranslations`; add keys to both `messages/vi.json` and `messages/en.json`.
 - API errors: map `ApiErrorResponse.code` to `t('errors.<CODE>')`; never display `message`.
 - Each component folder: `Component.tsx`, `Component.stories.tsx`, `Component.test.tsx`, `index.ts`.
+- Data: call the API only through `apiRequest` (`src/lib/api/client.ts`) or a feature's `*-api.ts`; it sends cookies,
+  throws `ApiError`, and refreshes the session once on 401. Server state lives in React Query hooks (`use-*.ts`).
+- Forms: `useForm({ resolver: sharedSchemaResolver(schemaFromShared) })`, render inputs inside `FormField`, show
+  errors with `useFieldErrorText()`, and push API 422s back with `applyServerFieldErrors`. Never re-declare rules.
+- Errors: `useErrorText()(error)` → `errors.<CODE>`. Session changes (sign in/out, verify) navigate with
+  `useAuthRedirect()` (full page load) so no Router Cache entry from the old session is reused.
+- Route access: `src/lib/route-access.ts` (protected / guest-only prefixes) is applied by `src/proxy.ts` using the
+  `ol_session` flag cookie; pages still handle a session that turns out to be invalid.
+- Browser tests: `pnpm --filter @offerleap/web test:browser` (Playwright, `e2e/`, needs `pnpm infra:up`); every test
+  fails on console errors.
 - Next.js 16 renamed `middleware.ts` to `proxy.ts` (`src/proxy.ts` runs the next-intl locale redirect).
 - Links and navigation come from `@/i18n/navigation` (locale-aware), never from `next/link` / `next/navigation`.
 - Theme: `ThemeProvider` + `useTheme()`; the inline `themeInitScript` applies `data-theme` before paint.
