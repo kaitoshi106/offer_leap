@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -14,19 +14,22 @@ vi.mock('@/i18n/navigation', () => ({
 }));
 
 describe('LocaleSwitcher', () => {
-  it('links to the current page in the other language', () => {
+  it('marks the current language and links to the other one for the same page', () => {
     renderWithProviders(<LocaleSwitcher />, { locale: 'vi' });
-    const link = screen.getByRole('link', { name: 'Switch to English' });
+    const nav = screen.getByRole('navigation', { name: 'Ngôn ngữ' });
 
-    expect(link).toHaveAttribute('href', '/en/onboarding');
-    expect(link).toHaveAttribute('hreflang', 'en');
+    const current = within(nav).getByText('Tiếng Việt').parentElement;
+    expect(current).toHaveAttribute('aria-current', 'true');
+    expect(within(nav).queryByRole('link', { name: 'Tiếng Việt' })).not.toBeInTheDocument();
+
+    const english = within(nav).getByRole('link', { name: 'English' });
+    expect(english).toHaveAttribute('href', '/en/onboarding');
+    expect(english).toHaveAttribute('hreflang', 'en');
   });
 
-  it('switches back to Vietnamese from English', () => {
+  it('shows the short codes visually', () => {
     renderWithProviders(<LocaleSwitcher />, { locale: 'en' });
-    expect(screen.getByRole('link', { name: 'Chuyển sang Tiếng Việt' })).toHaveAttribute(
-      'href',
-      '/vi/onboarding',
-    );
+    expect(screen.getByRole('navigation', { name: 'Language' })).toHaveTextContent(/VI.*EN/);
+    expect(screen.getByRole('link', { name: 'Tiếng Việt' })).toHaveAttribute('href', '/vi/onboarding');
   });
 });

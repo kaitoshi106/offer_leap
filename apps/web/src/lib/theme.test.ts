@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseThemePreference, resolveTheme } from './theme';
+import { parseStoredTheme, resolveTheme } from './theme';
 
 describe('theme helpers', () => {
-  it('falls back to system for unknown stored values', () => {
-    expect(parseThemePreference('dark')).toBe('dark');
-    expect(parseThemePreference('purple')).toBe('system');
-    expect(parseThemePreference(null)).toBe('system');
+  it('only accepts light or dark as a stored choice', () => {
+    expect(parseStoredTheme('dark')).toBe('dark');
+    expect(parseStoredTheme('system')).toBeNull();
+    expect(parseStoredTheme(null)).toBeNull();
   });
 
-  it('resolves system from the OS preference', () => {
-    expect(resolveTheme('system', true)).toBe('dark');
-    expect(resolveTheme('system', false)).toBe('light');
+  it('follows the OS until the user picks a theme', () => {
+    expect(resolveTheme(null, true)).toBe('dark');
+    expect(resolveTheme(null, false)).toBe('light');
     expect(resolveTheme('light', true)).toBe('light');
   });
 });

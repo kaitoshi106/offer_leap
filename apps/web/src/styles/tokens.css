@@ -24,6 +24,14 @@
   --primary-fg: oklch(0.99 0 0);
   --primary-soft: oklch(0.95 0.035 277);
   --primary-soft-fg: oklch(0.42 0.18 277);
+  /* Primary as text/links on the page background (separate from fills: dark mode needs a lighter tone). */
+  --primary-text: oklch(0.52 0.21 277);
+
+  /* Brand panel (auth pages, hero areas): always light text on a deep gradient. */
+  --brand-from: oklch(0.5 0.21 277);
+  --brand-to: oklch(0.42 0.2 295);
+  --brand-fg: oklch(0.99 0 0);
+  --brand-fg-muted: oklch(0.92 0.03 277);
 
   --success: oklch(0.55 0.14 155);
   --success-soft: oklch(0.95 0.04 155);
@@ -48,21 +56,27 @@
 }
 
 [data-theme='dark'] {
-  --bg: oklch(0.16 0.012 270);
-  --surface: oklch(0.2 0.015 270);
-  --surface-muted: oklch(0.24 0.016 270);
-  --surface-sunken: oklch(0.13 0.01 270);
-  --fg: oklch(0.95 0.005 270);
-  --fg-muted: oklch(0.76 0.012 270);
-  --fg-subtle: oklch(0.62 0.014 270);
-  --border: oklch(0.3 0.016 270);
-  --border-strong: oklch(0.4 0.02 270);
+  --bg: oklch(0.19 0.018 275);
+  --surface: oklch(0.225 0.02 275);
+  --surface-muted: oklch(0.27 0.02 275);
+  --surface-sunken: oklch(0.16 0.015 275);
+  --fg: oklch(0.95 0.005 275);
+  --fg-muted: oklch(0.76 0.015 275);
+  --fg-subtle: oklch(0.62 0.015 275);
+  --border: oklch(0.32 0.02 275);
+  --border-strong: oklch(0.42 0.025 275);
 
-  --primary: oklch(0.68 0.17 277);
-  --primary-hover: oklch(0.74 0.15 277);
-  --primary-fg: oklch(0.16 0.03 277);
+  --primary: oklch(0.56 0.19 277);
+  --primary-hover: oklch(0.62 0.18 277);
+  --primary-fg: oklch(0.99 0 0);
   --primary-soft: oklch(0.3 0.08 277);
   --primary-soft-fg: oklch(0.86 0.08 277);
+  --primary-text: oklch(0.72 0.15 277);
+
+  --brand-from: oklch(0.33 0.12 277);
+  --brand-to: oklch(0.25 0.08 295);
+  --brand-fg: oklch(0.96 0.01 277);
+  --brand-fg-muted: oklch(0.82 0.04 277);
 
   --success: oklch(0.7 0.15 155);
   --success-soft: oklch(0.3 0.06 155);
@@ -81,7 +95,7 @@
   --ai-soft: oklch(0.3 0.08 310);
   --ai-soft-fg: oklch(0.87 0.08 310);
 
-  --ring: oklch(0.72 0.16 277);
+  --ring: oklch(0.72 0.15 277);
   --overlay: oklch(0.05 0.01 270 / 0.7);
   color-scheme: dark;
 }
@@ -104,6 +118,11 @@
   --color-primary-fg: var(--primary-fg);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-fg: var(--primary-soft-fg);
+  --color-primary-text: var(--primary-text);
+  --color-brand-from: var(--brand-from);
+  --color-brand-to: var(--brand-to);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-fg-muted: var(--brand-fg-muted);
 
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);

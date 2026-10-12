@@ -96,5 +96,6 @@ No separate OCR service: the model reads PDFs (text and scanned) and images dire
 
 ## Theming & i18n
 
-- Light / dark / system themes via CSS variables on `<html data-theme>`, set by an inline script before paint.
+- Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user
+  flips the switch the OS colour scheme is used (no flash); the choice is then stored in localStorage.
 - Locales `vi` (default) and `en`, routed as `/{locale}/…`. AI responses use the user's locale.

@@ -14,15 +14,10 @@
     "hidePassword": "Hide password"
   },
   "theme": {
-    "label": "Theme: {theme}",
-    "switchTo": "Change theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
+    "darkMode": "Dark mode"
   },
   "locale": {
     "label": "Language",
-    "switchTo": "Chuyển sang Tiếng Việt",
     "vi": "Tiếng Việt",
     "en": "English"
   },

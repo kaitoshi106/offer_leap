@@ -31,7 +31,7 @@ export function DashboardView() {
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 px-4 py-6 sm:px-6">
       <header className="flex items-center justify-between">
         <span className="flex items-center gap-2 font-bold">
-          <Icon name="sparkles" className="text-primary" />
+          <Icon name="sparkles" className="text-primary-text" />
           {t('title')}
         </span>
         <div className="flex items-center gap-1">

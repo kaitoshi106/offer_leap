@@ -2,41 +2,43 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button, Icon, type IconName } from '@/components/atoms';
-import { type ThemePreference } from '@/lib/theme';
+import { cn } from '@/lib/cn';
 import { useTheme } from '@/providers/ThemeProvider';
 
-const NEXT_PREFERENCE: Record<ThemePreference, ThemePreference> = {
-  light: 'dark',
-  dark: 'system',
-  system: 'light',
-};
-
-const PREFERENCE_ICON: Record<ThemePreference, IconName> = {
-  light: 'sun',
-  dark: 'moon',
-  system: 'monitor',
-};
+import { Icon } from '../../atoms';
 
 /**
- * @description Icon button cycling light → dark → system. The accessible name states the current choice.
+ * @description Light/dark switch (`role="switch"`, checked = dark). The thumb shows the active mode's icon.
  * @param props.className - Extra classes for positioning.
  */
 export function ThemeToggle({ className }: { className?: string }) {
   const t = useTranslations('theme');
-  const { preference, setPreference } = useTheme();
-  const label = t('label', { theme: t(preference) });
+  const { theme, toggleTheme } = useTheme();
+  const dark = theme === 'dark';
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={label}
-      title={label}
-      onClick={() => setPreference(NEXT_PREFERENCE[preference])}
-      className={className}
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      aria-label={t('darkMode')}
+      title={t('darkMode')}
+      onClick={toggleTheme}
+      className={cn(
+        'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border border-border-strong bg-surface-muted transition-colors',
+        dark && 'border-primary bg-primary',
+        className,
+      )}
     >
-      <Icon name={PREFERENCE_ICON[preference]} />
-    </Button>
+      <span
+        aria-hidden
+        className={cn(
+          'inline-flex size-5 items-center justify-center rounded-full bg-surface text-fg shadow-card transition-transform motion-reduce:transition-none',
+          dark ? 'translate-x-6' : 'translate-x-0.5',
+        )}
+      >
+        <Icon name={dark ? 'moon' : 'sun'} size="xs" />
+      </span>
+    </button>
   );
 }

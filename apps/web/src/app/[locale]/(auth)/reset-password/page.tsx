@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: Promise<{ locale: Local
       title={t('reset.title')}
       description={t('reset.description')}
       footer={
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link href="/login" className="font-medium text-primary-text hover:underline">
           {t('forgot.backToLogin')}
         </Link>
       }

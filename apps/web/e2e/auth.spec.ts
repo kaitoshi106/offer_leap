@@ -72,7 +72,8 @@ test.describe('authentication', () => {
 test.describe('app shell', () => {
   test('switches language on auth pages without console errors', async ({ page }) => {
     await page.goto('/vi/login');
-    await page.getByRole('link', { name: 'Switch to English' }).click();
+    await expect(page.getByRole('navigation', { name: 'Ngôn ngữ' }).getByText('Tiếng Việt')).toBeAttached();
+    await page.getByRole('link', { name: 'English' }).click();
     await expect(page).toHaveURL(/\/en\/login$/);
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -80,11 +81,13 @@ test.describe('app shell', () => {
 
   test('keeps the chosen theme after a reload', async ({ page }) => {
     await page.goto('/vi');
-    await page.getByRole('button', { name: /^Giao diện:/ }).click(); // system → light
-    await page.getByRole('button', { name: /^Giao diện:/ }).click(); // light → dark
+    const toggle = page.getByRole('switch', { name: 'Giao diện tối' });
+    await toggle.click();
+    await expect(toggle).toBeChecked();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.getByRole('switch', { name: 'Giao diện tối' })).toBeChecked();
   });
 });

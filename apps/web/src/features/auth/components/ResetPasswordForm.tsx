@@ -56,7 +56,7 @@ export function ResetPasswordForm() {
     return (
       <div className="flex flex-col gap-4">
         <Alert tone="danger">{t('auth.reset.missingToken')}</Alert>
-        <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+        <Link href="/forgot-password" className="text-sm font-medium text-primary-text hover:underline">
           {t('auth.reset.requestNew')}
         </Link>
       </div>

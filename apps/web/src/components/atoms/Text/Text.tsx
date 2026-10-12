@@ -13,7 +13,7 @@ const TONE_CLASSES = {
   default: 'text-fg',
   muted: 'text-fg-muted',
   subtle: 'text-fg-subtle',
-  primary: 'text-primary',
+  primary: 'text-primary-text',
   success: 'text-success',
   danger: 'text-danger',
 } as const;

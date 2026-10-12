@@ -18,7 +18,7 @@ export const ExtraContextForLink: Story = {
   render: (_args, { globals }) => {
     const copy = storyCopy(globals).visuallyHidden;
     return (
-      <a href="#" className="inline-flex items-center gap-1 text-primary underline">
+      <a href="#" className="inline-flex items-center gap-1 text-primary-text underline">
         {copy.profile}
         <Icon name="arrow-right" size="sm" />
         <VisuallyHidden>{copy.newTab}</VisuallyHidden>

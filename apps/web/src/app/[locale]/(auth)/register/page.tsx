@@ -19,7 +19,7 @@ export default async function Page({ params }: { params: Promise<{ locale: Local
       footer={
         <>
           {t('register.hasAccount')}{' '}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link href="/login" className="font-medium text-primary-text hover:underline">
             {t('register.signIn')}
           </Link>
         </>

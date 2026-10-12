@@ -27,29 +27,34 @@ export interface AuthLayoutProps {
 export function AuthLayout({ title, description, highlights, homeLabel, children, footer }: AuthLayoutProps) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 text-primary-fg lg:flex">
-        <Link href="/" aria-label={homeLabel} className="flex items-center gap-2 text-lg font-bold">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-brand-from to-brand-to p-12 text-brand-fg lg:flex">
+        <Link
+          href="/"
+          aria-label={homeLabel}
+          className="relative z-10 flex items-center gap-2 text-lg font-bold"
+        >
           <Icon name="sparkles" />
           {APP_NAME}
         </Link>
-        <div className="flex flex-col gap-6">
+        <div className="relative z-10 flex flex-col gap-6">
           <p className="max-w-md text-3xl leading-tight font-bold text-balance">{APP_TAGLINE}</p>
           <ul className="flex flex-col gap-3">
             {highlights.map(({ icon, text }) => (
-              <li key={text} className="flex items-center gap-3 opacity-90">
+              <li key={text} className="flex items-center gap-3 text-brand-fg-muted">
                 <Icon name={icon} size="sm" />
                 {text}
               </li>
             ))}
           </ul>
         </div>
-        <span aria-hidden className="absolute -right-24 -bottom-24 size-80 rounded-full bg-primary-fg/10" />
+        <span aria-hidden className="absolute -right-24 -bottom-24 size-80 rounded-full bg-brand-fg/10" />
+        <span aria-hidden className="absolute -top-32 -left-16 size-72 rounded-full bg-brand-fg/5" />
       </aside>
 
       <div className="flex flex-col">
         <header className="flex items-center justify-between px-4 py-4 sm:px-8">
           <Link href="/" aria-label={homeLabel} className="flex items-center gap-2 font-bold lg:invisible">
-            <Icon name="sparkles" className="text-primary" />
+            <Icon name="sparkles" className="text-primary-text" />
             {APP_NAME}
           </Link>
           <div className="flex items-center gap-1">

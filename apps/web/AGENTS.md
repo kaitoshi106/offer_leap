@@ -36,7 +36,9 @@ A layer may import only from layers below it. Pages are the only place that fetc
   fails on console errors.
 - Next.js 16 renamed `middleware.ts` to `proxy.ts` (`src/proxy.ts` runs the next-intl locale redirect).
 - Links and navigation come from `@/i18n/navigation` (locale-aware), never from `next/link` / `next/navigation`.
-- Theme: `ThemeProvider` + `useTheme()`; the inline `themeInitScript` applies `data-theme` before paint.
+- Theme: light/dark only (`ThemeProvider` + `useTheme()`; follows the OS until chosen). Text and links use
+  `text-primary-text`, fills use `bg-primary`; brand surfaces use the `brand-*` tokens.
+  The inline `themeInitScript` applies `data-theme` before paint.
 - Tests: Vitest + Testing Library (`pnpm --filter @offerleap/web test`); wrap with `renderWithProviders` from
   `@/test/render` when a component needs translations or theme. Stories: `pnpm storybook` (root).
 - Stories never expose `ReactNode` props as controls: hide them and drive them with `iconOptionControl` / text

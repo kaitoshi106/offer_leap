@@ -20,4 +20,4 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-export const Large: Story = { args: { size: 'lg', className: 'text-primary' } };
+export const Large: Story = { args: { size: 'lg', className: 'text-primary-text' } };
