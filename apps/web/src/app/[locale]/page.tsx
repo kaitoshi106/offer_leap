@@ -24,7 +24,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: Locale 
   const t = useTranslations();
 
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <a
         href="#main"
         className="sr-only z-50 rounded-md bg-surface px-4 py-2 shadow-popover focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
@@ -32,7 +32,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: Locale 
         {t('common.skipToContent')}
       </a>
 
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         <span className="flex items-center gap-2 text-lg font-bold">
           <Icon name="sparkles" className="text-primary-text" />
           {APP_NAME}
@@ -43,7 +43,10 @@ export default function HomePage({ params }: { params: Promise<{ locale: Locale 
         </div>
       </header>
 
-      <main id="main" className="mx-auto max-w-6xl px-4 pt-16 pb-24 sm:px-6 sm:pt-24">
+      <main
+        id="main"
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-4 py-10 sm:px-6"
+      >
         <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
           <Badge tone="ai" icon={<Icon name="sparkles" size="xs" />}>
             {t('home.badge')}
@@ -63,7 +66,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: Locale 
           </div>
         </section>
 
-        <ul className="mt-20 grid gap-4 sm:grid-cols-3">
+        <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-3">
           {FEATURES.map(({ key, icon }) => (
             <li key={key} className="rounded-lg border border-border bg-surface p-6 shadow-card">
               <span className="mb-4 inline-flex size-10 items-center justify-center rounded-md bg-primary-soft text-primary-soft-fg">
@@ -79,6 +82,6 @@ export default function HomePage({ params }: { params: Promise<{ locale: Locale 
           ))}
         </ul>
       </main>
-    </>
+    </div>
   );
 }
