@@ -1,0 +1,51 @@
+/*
+ * Decorative motion. Use the utilities with the `motion-safe:` variant so users who ask the OS for reduced motion
+ * get a still page.
+ */
+@theme {
+  --animate-gradient-pan: gradient-pan 18s ease-in-out infinite alternate;
+  --animate-blob: blob 22s ease-in-out infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-fill: fill 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes gradient-pan {
+    from {
+      background-position: 0% 0%;
+    }
+    to {
+      background-position: 100% 100%;
+    }
+  }
+
+  @keyframes blob {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(40px, -50px) scale(1.12);
+    }
+    66% {
+      transform: translate(-30px, 35px) scale(0.92);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes fill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}

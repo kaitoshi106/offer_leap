@@ -13,7 +13,13 @@ const meta = {
   parameters: { layout: 'fullscreen', nextjs: { appDirectory: true } },
   // The header's ThemeToggle needs the provider (not global in Storybook, see preview.tsx).
   decorators: [(Story) => <ThemeProvider>{Story()}</ThemeProvider>],
-  args: { title: '', highlights: [], homeLabel: '', children: null },
+  args: {
+    title: '',
+    highlights: [],
+    homeLabel: '',
+    showcase: { matchLabel: '', aiLabel: '', skills: [] },
+    children: null,
+  },
 } satisfies Meta<typeof AuthLayout>;
 
 export default meta;
@@ -28,6 +34,11 @@ export const SignIn: Story = {
         title={copy.authLayout.title}
         description={copy.authLayout.description}
         homeLabel={copy.authLayout.home}
+        showcase={{
+          matchLabel: copy.authLayout.match,
+          aiLabel: copy.authLayout.ai,
+          skills: ['React', 'NestJS', 'PostgreSQL'],
+        }}
         highlights={copy.authLayout.highlights.map((text, index) => ({ icon: icons[index]!, text }))}
       >
         <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>

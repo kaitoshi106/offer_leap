@@ -127,6 +127,10 @@
       "success": "Đã đổi mật khẩu. Hãy đăng nhập lại.",
       "missingToken": "Liên kết đặt lại mật khẩu không hợp lệ.",
       "requestNew": "Yêu cầu liên kết mới"
+    },
+    "showcase": {
+      "match": "Độ phù hợp với JD",
+      "ai": "AI đã điền hồ sơ"
     }
   },
   "dashboard": {

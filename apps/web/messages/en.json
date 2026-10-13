@@ -127,6 +127,10 @@
       "success": "Password changed. Please sign in again.",
       "missingToken": "This reset link is invalid.",
       "requestNew": "Request a new link"
+    },
+    "showcase": {
+      "match": "Match with the JD",
+      "ai": "AI filled in your profile"
     }
   },
   "dashboard": {

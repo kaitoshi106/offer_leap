@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 
 import { Heading, Icon, type IconName, Text } from '../../atoms';
 import { LocaleSwitcher, ThemeToggle } from '../../molecules';
+import { AuthShowcase, type AuthShowcaseCopy } from './AuthShowcase';
 
 export interface AuthLayoutProps {
   title: ReactNode;
@@ -14,6 +15,8 @@ export interface AuthLayoutProps {
   highlights: { icon: IconName; text: string }[];
   /** Accessible name of the logo link to the home page. */
   homeLabel: string;
+  /** Text of the decorative product preview in the brand panel. */
+  showcase: AuthShowcaseCopy;
   children: ReactNode;
   /** Below the card, e.g. "No account yet? Sign up". */
   footer?: ReactNode;
@@ -24,10 +27,19 @@ export interface AuthLayoutProps {
  * language/theme controls. Has no data fetching — pages pass translated text in.
  * @param props - {@link AuthLayoutProps}
  */
-export function AuthLayout({ title, description, highlights, homeLabel, children, footer }: AuthLayoutProps) {
+export function AuthLayout({
+  title,
+  description,
+  highlights,
+  homeLabel,
+  showcase,
+  children,
+  footer,
+}: AuthLayoutProps) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-brand-from to-brand-to p-12 text-brand-fg lg:flex">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-brand-from via-brand-to to-brand-from bg-size-[200%_200%] p-12 text-brand-fg motion-safe:animate-gradient-pan lg:flex">
+        <AuthShowcase copy={showcase} />
         <Link
           href="/"
           aria-label={homeLabel}
@@ -47,8 +59,6 @@ export function AuthLayout({ title, description, highlights, homeLabel, children
             ))}
           </ul>
         </div>
-        <span aria-hidden className="absolute -right-24 -bottom-24 size-80 rounded-full bg-brand-fg/10" />
-        <span aria-hidden className="absolute -top-32 -left-16 size-72 rounded-full bg-brand-fg/5" />
       </aside>
 
       <div className="flex flex-col">

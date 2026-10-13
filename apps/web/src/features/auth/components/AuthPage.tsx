@@ -21,6 +21,11 @@ export async function AuthPage({
     <AuthLayout
       {...props}
       homeLabel={t('common.backToHome')}
+      showcase={{
+        matchLabel: t('auth.showcase.match'),
+        aiLabel: t('auth.showcase.ai'),
+        skills: ['React', 'NestJS', 'PostgreSQL'],
+      }}
       highlights={[
         { icon: 'file-text', text: t('auth.highlights.parse') },
         { icon: 'target', text: t('auth.highlights.match') },
