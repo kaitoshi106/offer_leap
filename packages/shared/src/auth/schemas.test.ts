@@ -68,6 +68,6 @@ describe('loginSchema', () => {
 describe('changePasswordSchema', () => {
   it('rejects reusing the current password', () => {
     const result = changePasswordSchema.safeParse({ currentPassword: 'leap2026', newPassword: 'leap2026' });
-    expect(rulesOf(result)).toEqual({ newPassword: ['invalid'] });
+    expect(rulesOf(result)).toEqual({ newPassword: ['sameAsCurrent'] });
   });
 });

@@ -9,6 +9,8 @@ export const ValidationRule = {
   TOO_LONG: 'tooLong',
   WEAK_PASSWORD: 'weakPassword',
   PASSWORDS_MISMATCH: 'passwordsMismatch',
+  /** A new password equal to the current one. */
+  SAME_AS_CURRENT: 'sameAsCurrent',
   INVALID: 'invalid',
 } as const;
 

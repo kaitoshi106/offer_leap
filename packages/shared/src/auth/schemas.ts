@@ -59,7 +59,7 @@ export const changePasswordSchema = z
     newPassword: passwordSchema,
   })
   .refine((data) => data.newPassword !== data.currentPassword, {
-    error: ValidationRule.INVALID,
+    error: ValidationRule.SAME_AS_CURRENT,
     path: ['newPassword'],
   });
 

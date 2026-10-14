@@ -56,6 +56,29 @@ describe('ResetPasswordForm', () => {
     });
   });
 
+  it('shows a reused password under the field without the link-error alert', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(422, {
+        statusCode: 422,
+        code: 'COMMON_VALIDATION_FAILED',
+        message: 'x',
+        fieldErrors: [{ field: 'password', rule: 'sameAsCurrent' }],
+      }),
+    );
+    renderWithProviders(<ResetPasswordForm />);
+
+    await user.type(screen.getByLabelText(/^Mật khẩu mới/), 'leap2026');
+    await user.type(screen.getByLabelText(/^Nhập lại mật khẩu/), 'leap2026');
+    await user.click(screen.getByRole('button', { name: 'Đổi mật khẩu' }));
+
+    expect(await screen.findByLabelText(/^Mật khẩu mới/)).toHaveAccessibleDescription(
+      'Mật khẩu mới phải khác mật khẩu hiện tại.',
+    );
+    expect(screen.queryByText('Thông tin chưa hợp lệ. Vui lòng kiểm tra lại.')).not.toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it('explains when the link has no token', () => {
     searchParams = new URLSearchParams();
     renderWithProviders(<ResetPasswordForm />);

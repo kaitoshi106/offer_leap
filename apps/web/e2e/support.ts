@@ -3,11 +3,12 @@ import { expect, type Page, test as base } from '@playwright/test';
 const MAILPIT = 'http://localhost:8025/api/v1';
 
 /**
- * @description Polls Mailpit for the newest email sent to `to` and returns the first link with a token.
+ * @description Polls Mailpit for the newest email sent to `to` and returns its link with a token.
  * @param to - Recipient address.
+ * @param pathPart - Text the link must contain (e.g. `/reset-password`), to wait for a specific email.
  * @returns Absolute URL from the email.
  */
-export async function linkFromEmail(to: string): Promise<string> {
+export async function linkFromEmail(to: string, pathPart = 'token='): Promise<string> {
   let link: string | undefined;
   await expect
     .poll(
@@ -19,7 +20,7 @@ export async function linkFromEmail(to: string): Promise<string> {
         if (!id) return undefined;
         const message = await fetch(`${MAILPIT}/message/${id}`).then((r) => r.json());
         link = (message.Text as string).match(/https?:\/\/\S+token=[\w-]+/)?.[0];
-        return link;
+        return link?.includes(pathPart) ? link : undefined;
       },
       { message: `email to ${to}`, timeout: 15_000 },
     )

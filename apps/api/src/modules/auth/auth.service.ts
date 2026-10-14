@@ -9,6 +9,7 @@ import {
   type LoginInput,
   type RegisterInput,
   type ResetPasswordInput,
+  ValidationRule,
 } from '@offerleap/shared';
 
 import { AppException } from '../../common/errors/app.exception';
@@ -168,16 +169,26 @@ export class AuthService {
   }
 
   /**
-   * @description Sets a new password from a reset link and signs out every session.
+   * @description Sets a new password from a reset link and signs out every session. The new password must differ
+   * from the current one (same rule as change-password); that check runs before the token is used up, so the
+   * link keeps working after a rejected attempt.
    * @param input - Token and new password.
-   * @throws AppException AUTH_TOKEN_INVALID/EXPIRED or AUTH_PASSWORD_CHANGE_NOT_ALLOWED (root).
+   * @throws AppException AUTH_TOKEN_INVALID/EXPIRED, AUTH_PASSWORD_CHANGE_NOT_ALLOWED (root) or
+   *   COMMON_VALIDATION_FAILED (`sameAsCurrent` on `password`).
    */
   async resetPassword(input: ResetPasswordInput): Promise<void> {
-    const userId = await this.userTokens.consume(input.token, 'PASSWORD_RESET');
-    const user = await this.users.findById(userId);
+    const token = await this.userTokens.verify(input.token, 'PASSWORD_RESET');
+    const user = await this.users.findById(token.userId);
     if (!user) throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
     if (!canManageOwnPassword(user)) throw new AppException(ErrorCode.AUTH_PASSWORD_CHANGE_NOT_ALLOWED);
+    if (await verifyPassword(user.passwordHash, input.password)) {
+      throw new AppException(ErrorCode.COMMON_VALIDATION_FAILED, {
+        message: 'New password equals the current one',
+        fieldErrors: [{ field: 'password', rule: ValidationRule.SAME_AS_CURRENT }],
+      });
+    }
 
+    await this.userTokens.claim(token.id);
     await this.updatePassword(user.id, input.password);
     await this.tokens.revokeAllForUser(user.id);
   }

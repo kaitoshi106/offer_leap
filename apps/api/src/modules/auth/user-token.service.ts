@@ -11,6 +11,11 @@ export const USER_TOKEN_TTL_MS: Record<UserTokenType, number> = {
   PASSWORD_RESET: 30 * 60 * 1000,
 };
 
+export interface ValidUserToken {
+  id: string;
+  userId: string;
+}
+
 /** Single-use tokens sent by email. Only the hash is stored; issuing a new one invalidates older ones. */
 @Injectable()
 export class UserTokenService {
@@ -40,24 +45,43 @@ export class UserTokenService {
   }
 
   /**
-   * @description Validates and burns a token.
+   * @description Checks a token without using it up, so a request that fails for another reason (e.g. the new
+   * password is rejected) leaves the link usable. Call {@link claim} once the action can go ahead.
    * @param rawToken - Token from the link.
    * @param type - Expected type (a reset token can't verify an email and vice versa).
-   * @returns The owner's id.
+   * @returns The token row id and its owner.
    * @throws AppException AUTH_TOKEN_INVALID (unknown/used/wrong type) or AUTH_TOKEN_EXPIRED.
    */
-  async consume(rawToken: string, type: UserTokenType): Promise<string> {
-    const now = new Date();
+  async verify(rawToken: string, type: UserTokenType): Promise<ValidUserToken> {
     const stored = await this.prisma.userToken.findUnique({ where: { tokenHash: hashToken(rawToken) } });
     if (!stored || stored.type !== type || stored.usedAt)
       throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
-    if (stored.expiresAt <= now) throw new AppException(ErrorCode.AUTH_TOKEN_EXPIRED);
+    if (stored.expiresAt <= new Date()) throw new AppException(ErrorCode.AUTH_TOKEN_EXPIRED);
+    return { id: stored.id, userId: stored.userId };
+  }
 
+  /**
+   * @description Marks a verified token as used. Atomic: if two requests race, only one succeeds.
+   * @param tokenId - Id returned by {@link verify}.
+   * @throws AppException AUTH_TOKEN_INVALID when it was used in the meantime.
+   */
+  async claim(tokenId: string): Promise<void> {
     const claimed = await this.prisma.userToken.updateMany({
-      where: { id: stored.id, usedAt: null },
-      data: { usedAt: now },
+      where: { id: tokenId, usedAt: null },
+      data: { usedAt: new Date() },
     });
     if (claimed.count === 0) throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
-    return stored.userId;
+  }
+
+  /**
+   * @description Verifies and burns a token in one step.
+   * @param rawToken - Token from the link.
+   * @param type - Expected type.
+   * @returns The owner's id.
+   */
+  async consume(rawToken: string, type: UserTokenType): Promise<string> {
+    const token = await this.verify(rawToken, type);
+    await this.claim(token.id);
+    return token.userId;
   }
 }

@@ -64,6 +64,8 @@ export function ResetPasswordForm() {
   }
 
   const { errors } = form.formState;
+  // Field problems (e.g. same as the current password) show under the input; only link-level errors need the alert.
+  const linkError = reset.error && !(isApiError(reset.error) && reset.error.fieldErrors.length > 0);
   const passwordProps = { showLabel: t('common.showPassword'), hideLabel: t('common.hidePassword') };
 
   return (
@@ -72,7 +74,7 @@ export function ResetPasswordForm() {
       onSubmit={form.handleSubmit((values) => reset.mutate(values.password))}
       className="flex flex-col gap-4"
     >
-      {reset.error && (
+      {linkError && (
         <Alert tone="danger">
           {errorText(reset.error)}{' '}
           <Link href="/forgot-password" className="font-medium underline">

@@ -228,6 +228,25 @@ describe('password reset & change', () => {
       .expect(200);
   });
 
+  it('rejects reusing the current password without burning the reset link', async () => {
+    await signUp();
+    await http().post('/api/v1/auth/forgot-password').send({ email: 'minh@example.com' }).expect(202);
+    const token = ctx.mail.lastToken('minh@example.com', 'reset-password');
+
+    const same = await http()
+      .post('/api/v1/auth/reset-password')
+      .send({ token, password: PASSWORD })
+      .expect(422);
+    expect(same.body).toMatchObject({
+      code: ErrorCode.COMMON_VALIDATION_FAILED,
+      fieldErrors: [{ field: 'password', rule: 'sameAsCurrent' }],
+    });
+
+    // The same link still works with a different password.
+    await http().post('/api/v1/auth/reset-password').send({ token, password: 'newleap2026' }).expect(204);
+    await http().post('/api/v1/auth/reset-password').send({ token, password: 'other2026' }).expect(400);
+  });
+
   it('answers forgot-password identically for unknown emails and sends nothing', async () => {
     await http().post('/api/v1/auth/forgot-password').send({ email: 'nobody@example.com' }).expect(202);
     expect(ctx.mail.sent).toHaveLength(0);

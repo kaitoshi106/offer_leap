@@ -66,7 +66,8 @@
     "tooLong": "Use at most {max} characters.",
     "weakPassword": "Use both letters and numbers.",
     "passwordsMismatch": "Passwords don't match.",
-    "invalid": "This value is invalid."
+    "invalid": "This value is invalid.",
+    "sameAsCurrent": "Your new password must be different from your current one."
   },
   "auth": {
     "highlights": {

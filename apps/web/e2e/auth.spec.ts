@@ -52,6 +52,39 @@ test.describe('authentication', () => {
     await expect(page).toHaveURL(/\/vi\/dashboard$/);
   });
 
+  test('reset password from the email link, refusing the current password', async ({ page }) => {
+    const email = await registerThroughUi(page, 'Minh Reset');
+    await page.goto(await linkFromEmail(email, '/verify-email'));
+    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+    await page.getByRole('button', { name: 'Đăng xuất' }).click();
+    await expect(page).toHaveURL(/\/vi\/login$/);
+
+    await page.goto('/vi/forgot-password');
+    await page.getByLabel('Email').fill(email);
+    await page.getByRole('button', { name: 'Gửi liên kết' }).click();
+    await expect(page.getByText('Đã gửi yêu cầu')).toBeVisible();
+
+    await page.goto(await linkFromEmail(email, '/reset-password'));
+    const newPassword = page.getByLabel(/^Mật khẩu mới\*?$/);
+    const confirm = page.getByLabel(/^Nhập lại mật khẩu\*?$/);
+
+    await newPassword.fill('leap2026');
+    await confirm.fill('leap2026');
+    await page.getByRole('button', { name: 'Đổi mật khẩu' }).click();
+    await expect(page.getByText('Mật khẩu mới phải khác mật khẩu hiện tại.')).toBeVisible();
+
+    // Same link, new password: works and sends the user to sign in.
+    await newPassword.fill('newleap2026');
+    await confirm.fill('newleap2026');
+    await page.getByRole('button', { name: 'Đổi mật khẩu' }).click();
+    await expect(page).toHaveURL(/\/vi\/login$/);
+
+    await page.getByLabel('Email').fill(email);
+    await page.getByLabel(/^Mật khẩu\*?$/).fill('newleap2026');
+    await page.getByRole('button', { name: 'Đăng nhập' }).click();
+    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+  });
+
   test('forgot password always confirms without revealing accounts', async ({ page }) => {
     await page.goto('/vi/forgot-password');
     await page.getByLabel('Email').fill('nobody@example.com');
