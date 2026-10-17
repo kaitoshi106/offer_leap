@@ -23,6 +23,9 @@ export const ErrorCode = {
   AUTH_ACCOUNT_LOCKED: 'AUTH_ACCOUNT_LOCKED',
   AUTH_PASSWORD_CHANGE_NOT_ALLOWED: 'AUTH_PASSWORD_CHANGE_NOT_ALLOWED',
   AUTH_EMAIL_ALREADY_VERIFIED: 'AUTH_EMAIL_ALREADY_VERIFIED',
+
+  // Onboarding
+  ONBOARDING_REQUIRED: 'ONBOARDING_REQUIRED',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -44,6 +47,8 @@ export const ERROR_HTTP_STATUS = {
   AUTH_ACCOUNT_LOCKED: 423,
   AUTH_PASSWORD_CHANGE_NOT_ALLOWED: 403,
   AUTH_EMAIL_ALREADY_VERIFIED: 409,
+
+  ONBOARDING_REQUIRED: 403,
 } as const satisfies Record<ErrorCode, number>;
 
 const ERROR_CODE_SET: ReadonlySet<string> = new Set(Object.values(ErrorCode));

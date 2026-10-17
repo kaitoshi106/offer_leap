@@ -39,7 +39,8 @@ export function LoginForm() {
     mutationFn: (values: LoginInput) => authApi.login(values),
     onSuccess: (session) => {
       queryClient.setQueryData(currentUserKey, session.user);
-      redirect(safeRedirectPath(searchParams.get('next')));
+      const unfinished = session.user.role === 'USER' && !session.user.onboardingCompleted;
+      redirect(safeRedirectPath(searchParams.get('next'), unfinished ? '/onboarding' : '/dashboard'));
     },
   });
 

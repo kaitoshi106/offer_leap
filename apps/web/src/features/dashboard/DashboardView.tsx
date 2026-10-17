@@ -8,6 +8,7 @@ import { Alert, LocaleSwitcher, ThemeToggle } from '@/components/molecules';
 import { useCurrentUser, useLogout } from '@/features/auth/api/use-auth';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { useAuthRedirect } from '@/lib/auth-redirect';
+import { useRouter } from '@/i18n/navigation';
 
 /**
  * @description Temporary signed-in home: shows the session works end to end (cookies, refresh, `/auth/me`) and
@@ -16,16 +17,20 @@ import { useAuthRedirect } from '@/lib/auth-redirect';
 export function DashboardView() {
   const t = useTranslations('dashboard');
   const redirect = useAuthRedirect();
+  const router = useRouter();
   const errorText = useErrorText();
   const { data: user, error, isPending } = useCurrentUser();
   const logout = useLogout();
 
   // The proxy only checks that a session cookie exists; if the session turns out to be dead, go sign in.
-  // Skipped while signing out: that flow navigates to /login itself (without `next`).
-  const signingOut = !logout.isIdle;
   useEffect(() => {
-    if (user === null && !signingOut) redirect('/login?next=/dashboard');
-  }, [user, signingOut, redirect]);
+    if (user === null) redirect('/login?next=/dashboard');
+  }, [user, redirect]);
+
+  // Users must finish onboarding before using the app.
+  useEffect(() => {
+    if (user?.role === 'USER' && !user.onboardingCompleted) router.replace('/onboarding');
+  }, [user, router]);
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 px-4 py-6 sm:px-6">
@@ -72,7 +77,7 @@ export function DashboardView() {
                 variant="outline"
                 leftIcon={<Icon name="arrow-right" size="sm" />}
                 loading={logout.isPending}
-                onClick={() => logout.mutate(undefined, { onSettled: () => redirect('/login') })}
+                onClick={() => logout.mutate()}
               >
                 {t('signOut')}
               </Button>

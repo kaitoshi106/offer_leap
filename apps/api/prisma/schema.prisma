@@ -54,6 +54,7 @@ model User {
   updatedAt             DateTime       @updatedAt
   refreshTokens         RefreshToken[]
   tokens                UserToken[]
+  profile               Profile?
 
   @@map("users")
 }
@@ -92,4 +93,75 @@ model UserToken {
 
   @@index([userId, type])
   @@map("user_tokens")
+}
+
+enum ProvinceType {
+  CITY
+  PROVINCE
+}
+
+enum CareerLevel {
+  INTERN
+  FRESHER
+  JUNIOR
+  MIDDLE
+  SENIOR
+  LEAD
+  MANAGER
+}
+
+enum WorkType {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+/// Industry taxonomy. Stored by stable `code`; labels in both languages.
+model Industry {
+  code      String    @id
+  nameVi    String
+  nameEn    String
+  sortOrder Int       @default(0)
+  profiles  Profile[]
+
+  @@map("industries")
+}
+
+/// Vietnamese provinces and centrally-run cities (34 units since the 2025 reorganisation).
+model Province {
+  code      String       @id
+  nameVi    String
+  nameEn    String
+  type      ProvinceType
+  sortOrder Int          @default(0)
+  profiles  Profile[]
+
+  @@map("provinces")
+}
+
+/// Candidate profile filled during onboarding. Every field is nullable so onboarding can be saved as a draft;
+/// `User.onboardingCompletedAt` marks when the full set passed validation.
+model Profile {
+  userId            String       @id
+  phone             String?
+  provinceCode      String?
+  industryCode      String?
+  jobTitle          String?
+  level             CareerLevel?
+  yearsOfExperience Int?
+  skills            String[]     @default([])
+  expectedSalaryMin Int?
+  expectedSalaryMax Int?
+  workTypes         WorkType[]   @default([])
+  /// Last wizard step the user reached (1-based), so they resume where they left off.
+  onboardingStep    Int          @default(1)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  province          Province?    @relation(fields: [provinceCode], references: [code])
+  industry          Industry?    @relation(fields: [industryCode], references: [code])
+
+  @@index([provinceCode])
+  @@index([industryCode])
+  @@map("profiles")
 }

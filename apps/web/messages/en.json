@@ -57,7 +57,8 @@
     "AUTH_ACCOUNT_LOCKED": "This account is locked. Please contact an administrator.",
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app.",
     "AUTH_EMAIL_ALREADY_VERIFIED": "This email is already verified. You can sign in.",
-    "NETWORK_ERROR": "Can't reach the server. Check your connection and try again."
+    "NETWORK_ERROR": "Can't reach the server. Check your connection and try again.",
+    "ONBOARDING_REQUIRED": "Please complete your profile to continue."
   },
   "validation": {
     "required": "This field is required.",
@@ -67,7 +68,13 @@
     "weakPassword": "Use both letters and numbers.",
     "passwordsMismatch": "Passwords don't match.",
     "invalid": "This value is invalid.",
-    "sameAsCurrent": "Your new password must be different from your current one."
+    "sameAsCurrent": "Your new password must be different from your current one.",
+    "invalidPhone": "Enter a valid phone number (e.g. 0912345678).",
+    "tooSmall": "The minimum is {min}.",
+    "tooLarge": "The maximum is {max}.",
+    "tooFew": "Choose at least {min}.",
+    "tooMany": "Choose at most {max}.",
+    "minExceedsMax": "The maximum must be greater than or equal to the minimum."
   },
   "auth": {
     "highlights": {
@@ -137,9 +144,82 @@
   "dashboard": {
     "title": "Dashboard",
     "greeting": "Hi, {name}!",
-    "comingSoon": "Next step: complete your profile (coming soon).",
+    "comingSoon": "Your profile is ready. Next: upload your CV for AI analysis (coming soon).",
     "signOut": "Sign out",
     "account": "Account",
     "role": "Role"
+  },
+  "onboarding": {
+    "metaTitle": "Complete your profile",
+    "title": "Complete your profile",
+    "description": "A few details so the AI can tailor its suggestions. You can change them any time.",
+    "progress": "Profile progress",
+    "completedStep": "(done)",
+    "steps": {
+      "personal": "Personal",
+      "career": "Career",
+      "preferences": "Preferences",
+      "review": "Review"
+    },
+    "stepTitles": {
+      "personal": "Personal details",
+      "career": "Experience and skills",
+      "preferences": "The job you want",
+      "review": "Review your details"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "Optional.",
+      "province": "Province or city you live in",
+      "provincePlaceholder": "Search provinces…",
+      "industry": "Industry",
+      "industryPlaceholder": "Search industries…",
+      "jobTitle": "Current or desired job title",
+      "jobTitlePlaceholder": "e.g. Frontend Developer",
+      "level": "Seniority",
+      "levelPlaceholder": "Choose a level",
+      "years": "Years of experience",
+      "skills": "Skills",
+      "skillsHint": "Press Enter or comma to add, up to 20 skills.",
+      "skillsPlaceholder": "e.g. React",
+      "removeSkill": "Remove {skill}",
+      "salary": "Expected salary (million VND / month)",
+      "salaryHint": "Optional.",
+      "salaryMin": "From",
+      "salaryMax": "To",
+      "workTypes": "Work arrangement"
+    },
+    "levels": {
+      "INTERN": "Intern",
+      "FRESHER": "Fresher",
+      "JUNIOR": "Junior",
+      "MIDDLE": "Mid-level",
+      "SENIOR": "Senior",
+      "LEAD": "Team lead",
+      "MANAGER": "Manager"
+    },
+    "workTypes": {
+      "ONSITE": "On-site",
+      "REMOTE": "Remote",
+      "HYBRID": "Hybrid"
+    },
+    "noResults": "No results",
+    "actions": {
+      "back": "Back",
+      "next": "Continue",
+      "finish": "Finish",
+      "edit": "Edit",
+      "signOut": "Sign out"
+    },
+    "review": {
+      "notProvided": "Not provided",
+      "years": "{years, plural, =0 {Less than a year} one {# year} other {# years}}",
+      "salaryRange": "{min} – {max} million",
+      "salaryFrom": "From {min} million",
+      "salaryTo": "Up to {max} million"
+    },
+    "incomplete": "Some details in this step are missing or invalid. Please check them.",
+    "done": "Your profile is complete"
   }
 }

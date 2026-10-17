@@ -6,11 +6,15 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { ProfileCompletedGuard } from './common/guards/profile-completed.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { OnboardingModule } from './modules/onboarding/onboarding.module';
+import { ProfileModule } from './modules/profile/profile.module';
+import { TaxonomiesModule } from './modules/taxonomies/taxonomies.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 /**
@@ -54,12 +58,16 @@ function redisConnection(url: string) {
     PrismaModule,
     HealthModule,
     AuthModule,
+    TaxonomiesModule,
+    OnboardingModule,
+    ProfileModule,
   ],
   providers: [
-    // Order matters: rate limit → authenticate → authorise. Errors of all three go through the filter.
+    // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: ProfileCompletedGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
   ],
 })

@@ -18,7 +18,10 @@ src/modules/<feature>/
 - Controllers stay thin; no Prisma calls in controllers.
 - Validate every input with a Zod schema (shared with the web app when the web app sends it).
 - Throw `AppException(ErrorCode.X)`; the global filter turns it into `ApiErrorResponse`. Never throw raw strings.
-- Guards order: `JwtAuthGuard` → `RolesGuard` → `ProfileCompletedGuard`. Mark public routes with `@Public()`.
+- Guards order: `ThrottlerGuard` → `JwtAuthGuard` → `RolesGuard` → `ProfileCompletedGuard`. Mark public routes with
+  `@Public()`; routes a user without a finished profile may call get `@AllowIncompleteProfile()`.
+- Prisma 7 does not run `generate` after `migrate dev`: run `pnpm --filter @offerleap/api prisma:generate` (or any
+  script that does) after changing the schema.
 - Root-admin restrictions use `canManageOwnPassword()` / `canInviteAdmins()` from shared.
 - Long work (CV parsing, embeddings, emails) runs in BullMQ processors, never inside the request.
 - AI calls go through `AiService` only: model from `AI_MODEL`, structured output validated with Zod, token usage

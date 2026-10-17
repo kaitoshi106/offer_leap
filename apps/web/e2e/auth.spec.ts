@@ -1,14 +1,10 @@
-import { expect, linkFromEmail, registerThroughUi, test } from './support';
+import { completeOnboarding, expect, linkFromEmail, registerAndVerify, test } from './support';
 
 test.describe('authentication', () => {
-  test('register → verify email → dashboard → sign out', async ({ page }) => {
-    const email = await registerThroughUi(page);
+  test('register → verify email → onboarding → dashboard → sign out', async ({ page }) => {
+    const email = await registerAndVerify(page);
+    await completeOnboarding(page);
 
-    const link = await linkFromEmail(email);
-    expect(link).toContain('/vi/verify-email?token=');
-    await page.goto(link);
-
-    await expect(page).toHaveURL(/\/vi\/dashboard$/);
     await expect(page.getByRole('heading', { name: 'Xin chào, Trần Minh!' })).toBeVisible();
     await expect(page.getByText(email)).toBeVisible();
 
@@ -27,9 +23,7 @@ test.describe('authentication', () => {
   });
 
   test('sign in with validation, wrong password and redirect back', async ({ page }) => {
-    const email = await registerThroughUi(page, 'Minh Login');
-    await page.goto(await linkFromEmail(email));
-    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+    const email = await registerAndVerify(page, 'Minh Login');
     await page.getByRole('button', { name: 'Đăng xuất' }).click();
     await expect(page).toHaveURL(/\/vi\/login$/);
 
@@ -49,13 +43,12 @@ test.describe('authentication', () => {
 
     await page.getByLabel(/^Mật khẩu\*?$/).fill('leap2026');
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
-    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+    // Back to the requested page, which sends an unfinished profile to onboarding.
+    await expect(page).toHaveURL(/\/vi\/onboarding$/);
   });
 
   test('reset password from the email link, refusing the current password', async ({ page }) => {
-    const email = await registerThroughUi(page, 'Minh Reset');
-    await page.goto(await linkFromEmail(email, '/verify-email'));
-    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+    const email = await registerAndVerify(page, 'Minh Reset');
     await page.getByRole('button', { name: 'Đăng xuất' }).click();
     await expect(page).toHaveURL(/\/vi\/login$/);
 
@@ -82,7 +75,7 @@ test.describe('authentication', () => {
     await page.getByLabel('Email').fill(email);
     await page.getByLabel(/^Mật khẩu\*?$/).fill('newleap2026');
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
-    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+    await expect(page).toHaveURL(/\/vi\/onboarding$/);
   });
 
   test('forgot password always confirms without revealing accounts', async ({ page }) => {

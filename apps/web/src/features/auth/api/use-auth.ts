@@ -1,9 +1,10 @@
 'use client';
 
 import type { AuthUser } from '@offerleap/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { isApiError } from '@/lib/api/errors';
+import { useAuthRedirect } from '@/lib/auth-redirect';
 
 import { authApi } from './auth-api';
 
@@ -30,18 +31,12 @@ export function useCurrentUser() {
 }
 
 /**
- * @description Signs out and forgets every cached query (the data belonged to the previous user).
- * @returns React Query mutation.
+ * @description Signs out and reloads on the sign-in page, whatever the API answered. The full page load drops
+ * every cached query and in-memory state of the previous user, so no page reacts to a half-cleared cache (e.g.
+ * redirecting to `/login?next=…` while the sign-out is still in flight).
+ * @returns React Query mutation; call `mutate()`.
  */
 export function useLogout() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: authApi.logout,
-    onSettled: () => {
-      // removeQueries, not clear(): clear() also drops the mutation cache, which can swallow the caller's
-      // `mutate(…, { onSettled })` callback (e.g. the redirect to /login).
-      queryClient.removeQueries();
-      queryClient.setQueryData(currentUserKey, null);
-    },
-  });
+  const redirect = useAuthRedirect();
+  return useMutation({ mutationFn: authApi.logout, onSettled: () => redirect('/login') });
 }

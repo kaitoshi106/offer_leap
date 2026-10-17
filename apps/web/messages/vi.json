@@ -57,7 +57,8 @@
     "AUTH_ACCOUNT_LOCKED": "Tài khoản đang bị khoá. Vui lòng liên hệ quản trị viên.",
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng.",
     "AUTH_EMAIL_ALREADY_VERIFIED": "Email này đã được xác thực. Bạn có thể đăng nhập.",
-    "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại."
+    "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại.",
+    "ONBOARDING_REQUIRED": "Vui lòng hoàn thiện hồ sơ để tiếp tục."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -67,7 +68,13 @@
     "weakPassword": "Mật khẩu cần có cả chữ và số.",
     "passwordsMismatch": "Mật khẩu nhập lại không khớp.",
     "invalid": "Giá trị không hợp lệ.",
-    "sameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại."
+    "sameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+    "invalidPhone": "Số điện thoại không hợp lệ (VD: 0912345678).",
+    "tooSmall": "Tối thiểu là {min}.",
+    "tooLarge": "Tối đa là {max}.",
+    "tooFew": "Chọn ít nhất {min} mục.",
+    "tooMany": "Tối đa {max} mục.",
+    "minExceedsMax": "Mức tối đa phải lớn hơn hoặc bằng mức tối thiểu."
   },
   "auth": {
     "highlights": {
@@ -137,9 +144,82 @@
   "dashboard": {
     "title": "Bảng điều khiển",
     "greeting": "Xin chào, {name}!",
-    "comingSoon": "Bước tiếp theo: hoàn thiện hồ sơ của bạn (sắp ra mắt).",
+    "comingSoon": "Hồ sơ đã sẵn sàng. Bước tiếp theo: tải CV để AI phân tích (sắp ra mắt).",
     "signOut": "Đăng xuất",
     "account": "Tài khoản",
     "role": "Vai trò"
+  },
+  "onboarding": {
+    "metaTitle": "Hoàn thiện hồ sơ",
+    "title": "Hoàn thiện hồ sơ của bạn",
+    "description": "Vài thông tin để AI gợi ý chính xác hơn. Bạn có thể chỉnh sửa lại bất cứ lúc nào.",
+    "progress": "Tiến độ hoàn thiện hồ sơ",
+    "completedStep": "(đã xong)",
+    "steps": {
+      "personal": "Cá nhân",
+      "career": "Nghề nghiệp",
+      "preferences": "Mong muốn",
+      "review": "Xem lại"
+    },
+    "stepTitles": {
+      "personal": "Thông tin cá nhân",
+      "career": "Kinh nghiệm và kỹ năng",
+      "preferences": "Công việc mong muốn",
+      "review": "Kiểm tra lại thông tin"
+    },
+    "fields": {
+      "fullName": "Họ và tên",
+      "phone": "Số điện thoại",
+      "phoneHint": "Không bắt buộc.",
+      "province": "Tỉnh/thành phố bạn đang sống",
+      "provincePlaceholder": "Tìm tỉnh/thành…",
+      "industry": "Ngành nghề",
+      "industryPlaceholder": "Tìm ngành nghề…",
+      "jobTitle": "Vị trí hiện tại hoặc mong muốn",
+      "jobTitlePlaceholder": "VD: Frontend Developer",
+      "level": "Cấp bậc",
+      "levelPlaceholder": "Chọn cấp bậc",
+      "years": "Số năm kinh nghiệm",
+      "skills": "Kỹ năng",
+      "skillsHint": "Nhấn Enter hoặc dấu phẩy để thêm, tối đa 20 kỹ năng.",
+      "skillsPlaceholder": "VD: React",
+      "removeSkill": "Xoá {skill}",
+      "salary": "Mức lương mong muốn (triệu VNĐ/tháng)",
+      "salaryHint": "Không bắt buộc.",
+      "salaryMin": "Từ",
+      "salaryMax": "Đến",
+      "workTypes": "Hình thức làm việc"
+    },
+    "levels": {
+      "INTERN": "Thực tập sinh",
+      "FRESHER": "Fresher",
+      "JUNIOR": "Junior",
+      "MIDDLE": "Middle",
+      "SENIOR": "Senior",
+      "LEAD": "Trưởng nhóm (Lead)",
+      "MANAGER": "Quản lý"
+    },
+    "workTypes": {
+      "ONSITE": "Tại văn phòng",
+      "REMOTE": "Từ xa",
+      "HYBRID": "Kết hợp"
+    },
+    "noResults": "Không tìm thấy kết quả",
+    "actions": {
+      "back": "Quay lại",
+      "next": "Tiếp tục",
+      "finish": "Hoàn tất",
+      "edit": "Sửa",
+      "signOut": "Đăng xuất"
+    },
+    "review": {
+      "notProvided": "Chưa cung cấp",
+      "years": "{years, plural, =0 {Dưới 1 năm} other {# năm}}",
+      "salaryRange": "{min} – {max} triệu",
+      "salaryFrom": "Từ {min} triệu",
+      "salaryTo": "Đến {max} triệu"
+    },
+    "incomplete": "Còn thông tin chưa hợp lệ ở bước này, vui lòng kiểm tra lại.",
+    "done": "Hồ sơ đã hoàn tất"
   }
 }

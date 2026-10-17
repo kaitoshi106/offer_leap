@@ -32,7 +32,8 @@ export function VerifyEmail() {
     mutationFn: authApi.verifyEmail,
     onSuccess: (session) => {
       queryClient.setQueryData(currentUserKey, session.user);
-      redirect('/dashboard');
+      // A freshly verified account still has to complete its profile.
+      redirect('/onboarding');
     },
   });
 

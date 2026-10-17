@@ -5,6 +5,8 @@ import { z } from 'zod';
 
 import { hashPassword } from '../src/common/security/hashing';
 import { PrismaClient } from '../src/generated/prisma/client';
+import { INDUSTRIES } from './seed-data/industries';
+import { PROVINCES } from './seed-data/provinces';
 
 const seedEnv = z
   .object({
@@ -47,7 +49,31 @@ async function seedRootAdmin(): Promise<void> {
   console.log(`✔ root admin ready: ${root.email}`);
 }
 
-seedRootAdmin()
+/**
+ * @description Upserts the taxonomies by code (idempotent: re-running updates labels and order, never duplicates).
+ */
+async function seedTaxonomies(): Promise<void> {
+  await prisma.$transaction([
+    ...INDUSTRIES.map((industry, index) =>
+      prisma.industry.upsert({
+        where: { code: industry.code },
+        update: { ...industry, sortOrder: index },
+        create: { ...industry, sortOrder: index },
+      }),
+    ),
+    ...PROVINCES.map((province, index) =>
+      prisma.province.upsert({
+        where: { code: province.code },
+        update: { ...province, sortOrder: index },
+        create: { ...province, sortOrder: index },
+      }),
+    ),
+  ]);
+  console.log(`✔ taxonomies ready: ${INDUSTRIES.length} industries, ${PROVINCES.length} provinces`);
+}
+
+seedTaxonomies()
+  .then(seedRootAdmin)
   .catch((error: unknown) => {
     console.error(error);
     process.exitCode = 1;

@@ -65,6 +65,27 @@ const STORY_COPY = {
       match: 'Độ phù hợp với JD',
       ai: 'AI đã điền hồ sơ',
     },
+    select: {
+      label: 'Cấp bậc',
+      placeholder: 'Chọn cấp bậc',
+      options: ['Thực tập sinh', 'Junior', 'Senior', 'Trưởng nhóm'],
+    },
+    stepper: {
+      label: 'Tiến độ',
+      completed: '(đã xong)',
+      steps: ['Cá nhân', 'Nghề nghiệp', 'Mong muốn', 'Xem lại'],
+    },
+    combobox: {
+      label: 'Tỉnh/thành phố',
+      placeholder: 'Tìm tỉnh/thành…',
+      noResults: 'Không tìm thấy kết quả',
+    },
+    tagInput: { label: 'Kỹ năng', placeholder: 'VD: React', remove: 'Xoá' },
+    focusLayout: {
+      title: 'Hoàn thiện hồ sơ',
+      body: 'Nội dung một tác vụ tập trung, ví dụ wizard onboarding.',
+      signOut: 'Đăng xuất',
+    },
     visuallyHidden: { profile: 'Hồ sơ', newTab: '(mở trong tab mới)' },
   },
   en: {
@@ -125,6 +146,23 @@ const STORY_COPY = {
       ],
       match: 'Match with the JD',
       ai: 'AI filled in your profile',
+    },
+    select: {
+      label: 'Seniority',
+      placeholder: 'Choose a level',
+      options: ['Intern', 'Junior', 'Senior', 'Team lead'],
+    },
+    stepper: {
+      label: 'Progress',
+      completed: '(done)',
+      steps: ['Personal', 'Career', 'Preferences', 'Review'],
+    },
+    combobox: { label: 'Province or city', placeholder: 'Search provinces…', noResults: 'No results' },
+    tagInput: { label: 'Skills', placeholder: 'e.g. React', remove: 'Remove' },
+    focusLayout: {
+      title: 'Complete your profile',
+      body: 'A single focused task, such as the onboarding wizard.',
+      signOut: 'Sign out',
     },
     visuallyHidden: { profile: 'Profile', newTab: '(opens in a new tab)' },
   },

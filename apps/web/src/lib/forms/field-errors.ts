@@ -56,9 +56,10 @@ export function applyServerFieldErrors<TValues extends FieldValues>(
 
 /**
  * @description Translates RHF errors produced by {@link sharedSchemaResolver} or {@link applyServerFieldErrors}.
+ * Accepts array-field errors too (e.g. `skills`), which carry the list-level rule in `message`.
  * @returns `(error) => message | undefined`.
  */
-export function useFieldErrorText(): (error: FieldError | undefined) => string | undefined {
+export function useFieldErrorText(): (error: { message?: string } | undefined) => string | undefined {
   const t = useTranslations('validation');
   return useCallback(
     (error) => {

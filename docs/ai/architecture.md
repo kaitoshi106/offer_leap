@@ -82,6 +82,19 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 - **Errors**: `AppException(ErrorCode)` → `AllExceptionsFilter` → `ApiErrorResponse` with `requestId` (also in the
   `X-Request-Id` header). Validation errors carry `fieldErrors: [{ field, rule, params }]`.
 
+## Onboarding
+
+- `Profile` (1–1 with `User`) holds career data; every column is nullable so the wizard can save a **draft per
+  step** (`PUT /onboarding/draft` with `{ step, values }`, validated by that step's shared schema).
+  `Profile.onboardingStep` is the resume point and only moves forward.
+- `POST /onboarding/complete` validates the whole draft with `completeOnboardingSchema`; on success
+  `User.onboardingCompletedAt` is set. Errors list every missing field so the client can open the right step.
+- `ProfileCompletedGuard` (global, after `RolesGuard`) blocks USER accounts without a completed profile with
+  `ONBOARDING_REQUIRED`, except on routes marked `@AllowIncompleteProfile()` (auth, onboarding). Admins are exempt.
+- Taxonomies (`industries`, `provinces` — the 34 units in effect since 1 July 2025) are seeded by code and served
+  publicly with `Cache-Control: public, max-age=3600`.
+- Web: verify-email and login send unfinished profiles to `/onboarding`; the dashboard does the same.
+
 ## Resume parsing pipeline
 
 ```

@@ -34,7 +34,7 @@ import {
 import type { Response } from 'express';
 import { z } from 'zod';
 
-import { CurrentUser, Public } from '../../common/decorators/auth.decorators';
+import { AllowIncompleteProfile, CurrentUser, Public } from '../../common/decorators/auth.decorators';
 import { type AccessTokenPayload, type AppRequest, clientInfo } from '../../common/http/request';
 import { ApiErrors, ApiZodBody, ApiZodResponse } from '../../common/openapi/openapi.decorators';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -59,6 +59,7 @@ function requestLocale(request: AppRequest): Locale {
 }
 
 @ApiTags('auth')
+@AllowIncompleteProfile()
 @ApiErrors(ErrorCode.COMMON_RATE_LIMITED, ErrorCode.COMMON_INTERNAL_ERROR)
 @Controller('auth')
 export class AuthController {

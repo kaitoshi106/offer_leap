@@ -30,6 +30,9 @@ A layer may import only from layers below it. Pages are the only place that fetc
   errors with `useFieldErrorText()`, and push API 422s back with `applyServerFieldErrors`. Never re-declare rules.
 - Errors: `useErrorText()(error)` → `errors.<CODE>`. Session changes (sign in/out, verify) navigate with
   `useAuthRedirect()` (full page load) so no Router Cache entry from the old session is reused.
+- Long option lists use `Combobox` (accent-insensitive search via `foldForSearch`); short ones use native `Select`.
+  Free-text lists use `TagInput`. Bind them to RHF with `Controller`.
+- Sign out only through `useLogout()`: it reloads on /login so no page reacts to a half-cleared cache.
 - Route access: `src/lib/route-access.ts` (protected / guest-only prefixes) is applied by `src/proxy.ts` using the
   `ol_session` flag cookie; pages still handle a session that turns out to be invalid.
 - Browser tests: `pnpm --filter @offerleap/web test:browser` (Playwright, `e2e/`, needs `pnpm infra:up`); every test

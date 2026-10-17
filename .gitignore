@@ -35,3 +35,4 @@ CLAUDE.local.md
 
 # generated
 apps/api/src/generated/
+apps/api/.e2e-dist/

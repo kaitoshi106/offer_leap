@@ -4,7 +4,7 @@
 - [x] Design system: tokens, dark mode, i18n, atoms, Storybook
 - [x] Auth & RBAC: sign-up, email verification, login, refresh, root admin seed
 - [x] Core components (molecules, organisms) & auth pages
-- [ ] Mandatory onboarding
+- [x] Mandatory onboarding
 - [ ] AI resume parsing (PDF / DOCX / image) & profile autofill
 - [ ] CV vs JD analysis
 - [ ] Mock interview, cover letter, application kanban

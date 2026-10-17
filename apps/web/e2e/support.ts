@@ -73,3 +73,38 @@ export async function registerThroughUi(
 }
 
 export { expect };
+
+/**
+ * @description Registers through the UI, follows the verification email and lands on the onboarding wizard.
+ * @returns The account email.
+ */
+export async function registerAndVerify(page: Page, fullName = 'Trần Minh'): Promise<string> {
+  const email = await registerThroughUi(page, fullName);
+  await page.goto(await linkFromEmail(email, '/verify-email'));
+  await expect(page).toHaveURL(/\/vi\/onboarding$/);
+  return email;
+}
+
+/**
+ * @description Fills every onboarding step with valid data and finishes on the dashboard.
+ */
+export async function completeOnboarding(page: Page): Promise<void> {
+  await page.getByRole('combobox', { name: /Tỉnh\/thành phố/ }).fill('ha noi');
+  await page.getByRole('option', { name: 'Hà Nội' }).click();
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+  await page.getByRole('combobox', { name: /Ngành nghề/ }).fill('phan mem');
+  await page.getByRole('option', { name: 'Công nghệ thông tin / Phần mềm' }).click();
+  await page.getByLabel(/^Vị trí hiện tại/).fill('Frontend Developer');
+  await page.getByLabel(/^Cấp bậc/).selectOption('SENIOR');
+  await page.getByLabel(/^Số năm kinh nghiệm/).fill('6');
+  await page.getByLabel(/^Kỹ năng/).fill('React');
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+  await page.getByLabel('Từ xa').check();
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+  await page.getByRole('button', { name: 'Hoàn tất' }).click();
+  await expect(page).toHaveURL(/\/vi\/dashboard$/);
+}

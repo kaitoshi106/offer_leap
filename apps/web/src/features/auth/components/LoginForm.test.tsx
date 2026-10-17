@@ -25,6 +25,8 @@ const session = {
     role: 'USER',
     adminLevel: null,
     locale: 'vi',
+    emailVerified: true,
+    onboardingCompleted: true,
   },
   accessTokenExpiresAt: '2026-10-11T10:00:00.000Z',
 };
@@ -84,6 +86,16 @@ describe('LoginForm', () => {
 
     await submit('minh@example.com', 'leap2026');
     await waitFor(() => expect(redirect).toHaveBeenCalledWith('/dashboard'));
+  });
+
+  it('sends users who have not finished onboarding to the wizard', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { ...session, user: { ...session.user, onboardingCompleted: false } }),
+    );
+    renderWithProviders(<LoginForm />);
+
+    await submit('minh@example.com', 'leap2026');
+    await waitFor(() => expect(redirect).toHaveBeenCalledWith('/onboarding'));
   });
 
   it('shows the translated API error', async () => {

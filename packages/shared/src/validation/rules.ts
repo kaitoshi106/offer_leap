@@ -9,6 +9,15 @@ export const ValidationRule = {
   TOO_LONG: 'tooLong',
   WEAK_PASSWORD: 'weakPassword',
   PASSWORDS_MISMATCH: 'passwordsMismatch',
+  INVALID_PHONE: 'invalidPhone',
+  /** Number below its minimum / above its maximum (params `min` / `max`). */
+  TOO_SMALL: 'tooSmall',
+  TOO_LARGE: 'tooLarge',
+  /** List with fewer / more items than allowed (params `min` / `max`). */
+  TOO_FEW: 'tooFew',
+  TOO_MANY: 'tooMany',
+  /** A range whose lower bound is greater than its upper bound. */
+  MIN_EXCEEDS_MAX: 'minExceedsMax',
   /** A new password equal to the current one. */
   SAME_AS_CURRENT: 'sameAsCurrent',
   INVALID: 'invalid',
