@@ -58,7 +58,11 @@
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app.",
     "AUTH_EMAIL_ALREADY_VERIFIED": "This email is already verified. You can sign in.",
     "NETWORK_ERROR": "Can't reach the server. Check your connection and try again.",
-    "ONBOARDING_REQUIRED": "Please complete your profile to continue."
+    "ONBOARDING_REQUIRED": "Please complete your profile to continue.",
+    "COMMON_FILE_TOO_LARGE": "The file is too large (max 10 MB).",
+    "COMMON_UNSUPPORTED_FILE_TYPE": "Only PDF, DOCX, PNG, JPG or WEBP files are supported.",
+    "RESUME_PARSE_FAILED": "AI couldn’t read this CV. Try another file or fill in your details yourself.",
+    "AI_UNAVAILABLE": "The AI service is busy. Please try again in a few minutes or fill in your details yourself."
   },
   "validation": {
     "required": "This field is required.",
@@ -156,12 +160,14 @@
     "progress": "Profile progress",
     "completedStep": "(done)",
     "steps": {
+      "resume": "CV",
       "personal": "Personal",
       "career": "Career",
       "preferences": "Preferences",
       "review": "Review"
     },
     "stepTitles": {
+      "resume": "Fill in faster with your CV",
       "personal": "Personal details",
       "career": "Experience and skills",
       "preferences": "The job you want",
@@ -220,6 +226,23 @@
       "salaryTo": "Up to {max} million"
     },
     "incomplete": "Some details in this step are missing or invalid. Please check them.",
-    "done": "Your profile is complete"
+    "done": "Your profile is complete",
+    "resume": {
+      "intro": "Upload your CV and AI will read it to fill in the next steps (replacing what you entered where the CV has it). You can still check and edit everything. This step is optional.",
+      "dropTitle": "Drag your CV here or click to choose a file",
+      "dropHint": "PDF, DOCX, PNG, JPG or WEBP · up to 10 MB",
+      "skip": "Skip, I’ll type it in",
+      "processingTitle": "AI is reading your CV…",
+      "processingBody": "This usually takes a few seconds, sometimes up to half a minute. Wait or skip to fill things in yourself.",
+      "doneTitle": "Finished reading {fileName}",
+      "doneBody": "{count, plural, =0 {AI found nothing it could use — please fill in the next steps yourself.} one {Filled # field from your CV in the next steps (replacing what was there). Please check it before saving.} other {Filled # fields from your CV in the next steps (replacing what was there). Please check them before saving.}}",
+      "failedTitle": "Couldn’t read {fileName}",
+      "uploadAnother": "Upload another CV",
+      "privacy": "Your CV is only used to fill in your profile."
+    },
+    "suggestion": {
+      "badge": "AI suggested",
+      "check": "AI isn’t sure about this one — please double-check."
+    }
   }
 }

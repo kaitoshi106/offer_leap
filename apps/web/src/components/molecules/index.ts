@@ -1,4 +1,5 @@
 export * from './Alert';
+export * from './FileDropzone';
 export * from './FormField';
 export * from './LocaleSwitcher';
 export * from './PasswordInput';

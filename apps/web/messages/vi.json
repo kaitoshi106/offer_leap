@@ -58,7 +58,11 @@
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng.",
     "AUTH_EMAIL_ALREADY_VERIFIED": "Email này đã được xác thực. Bạn có thể đăng nhập.",
     "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại.",
-    "ONBOARDING_REQUIRED": "Vui lòng hoàn thiện hồ sơ để tiếp tục."
+    "ONBOARDING_REQUIRED": "Vui lòng hoàn thiện hồ sơ để tiếp tục.",
+    "COMMON_FILE_TOO_LARGE": "File quá lớn (tối đa 10 MB).",
+    "COMMON_UNSUPPORTED_FILE_TYPE": "Chỉ hỗ trợ file PDF, DOCX, PNG, JPG hoặc WEBP.",
+    "RESUME_PARSE_FAILED": "AI không đọc được CV này. Hãy thử file khác hoặc tự nhập thông tin.",
+    "AI_UNAVAILABLE": "Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút hoặc tự nhập thông tin."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -156,12 +160,14 @@
     "progress": "Tiến độ hoàn thiện hồ sơ",
     "completedStep": "(đã xong)",
     "steps": {
+      "resume": "CV",
       "personal": "Cá nhân",
       "career": "Nghề nghiệp",
       "preferences": "Mong muốn",
       "review": "Xem lại"
     },
     "stepTitles": {
+      "resume": "Điền nhanh bằng CV",
       "personal": "Thông tin cá nhân",
       "career": "Kinh nghiệm và kỹ năng",
       "preferences": "Công việc mong muốn",
@@ -220,6 +226,23 @@
       "salaryTo": "Đến {max} triệu"
     },
     "incomplete": "Còn thông tin chưa hợp lệ ở bước này, vui lòng kiểm tra lại.",
-    "done": "Hồ sơ đã hoàn tất"
+    "done": "Hồ sơ đã hoàn tất",
+    "resume": {
+      "intro": "Tải CV lên, AI sẽ đọc và điền thông tin vào các bước sau (ghi đè thông tin bạn đã nhập nếu CV có). Bạn vẫn kiểm tra và sửa lại được. Bước này không bắt buộc.",
+      "dropTitle": "Kéo thả CV vào đây hoặc bấm để chọn file",
+      "dropHint": "PDF, DOCX, PNG, JPG hoặc WEBP · tối đa 10 MB",
+      "skip": "Bỏ qua, tự nhập",
+      "processingTitle": "AI đang đọc CV…",
+      "processingBody": "Thường mất vài giây, đôi khi tới nửa phút. Bạn có thể đợi hoặc bỏ qua để tự nhập.",
+      "doneTitle": "Đã đọc xong {fileName}",
+      "doneBody": "{count, plural, =0 {AI không tìm thấy thông tin phù hợp — bạn hãy tự nhập ở các bước sau.} other {Đã điền # mục từ CV vào các bước sau (thay cho thông tin cũ). Hãy kiểm tra lại trước khi lưu.}}",
+      "failedTitle": "Không đọc được {fileName}",
+      "uploadAnother": "Tải CV khác",
+      "privacy": "CV chỉ được dùng để điền hồ sơ của bạn."
+    },
+    "suggestion": {
+      "badge": "AI gợi ý",
+      "check": "AI chưa chắc chắn ở mục này — hãy kiểm tra lại."
+    }
   }
 }

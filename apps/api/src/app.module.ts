@@ -11,11 +11,14 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
+import { AiModule } from './modules/ai/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { ResumesModule } from './modules/resumes/resumes.module';
 import { TaxonomiesModule } from './modules/taxonomies/taxonomies.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { StorageModule } from './storage/storage.module';
 
 /**
  * @description Splits a `redis://user:pass@host:port/db` URL into the options BullMQ's ioredis client expects.
@@ -53,14 +56,19 @@ function redisConnection(url: string) {
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => ({
         connection: redisConnection(config.get('REDIS_URL', { infer: true })),
+        // Tests share Redis with `pnpm dev`: a separate prefix keeps the dev workers from taking test jobs.
+        prefix: config.get('NODE_ENV', { infer: true }) === 'test' ? 'bull-test' : 'bull',
       }),
     }),
     PrismaModule,
+    StorageModule,
+    AiModule,
     HealthModule,
     AuthModule,
     TaxonomiesModule,
     OnboardingModule,
     ProfileModule,
+    ResumesModule,
   ],
   providers: [
     // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.

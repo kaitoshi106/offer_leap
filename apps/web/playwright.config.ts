@@ -7,7 +7,8 @@ import { defineConfig, devices } from '@playwright/test';
  * Default: reuses (or starts) `pnpm dev` on :3000 / :4000.
  * Isolated run next to your own dev servers: `E2E_WEB_PORT=3100 E2E_API_PORT=4100 pnpm test:browser`
  * (start the web app with `NEXT_PUBLIC_API_URL=http://localhost:4100/api/v1` and the API with
- * `NODE_ENV=test API_PORT=4100 WEB_ORIGIN=http://localhost:3100`).
+ * `NODE_ENV=test AI_PROVIDER=mock API_PORT=4100 WEB_ORIGIN=http://localhost:3100`).
+ * A reused `pnpm dev` API uses your AI_PROVIDER: with `gemini` the CV test calls the real API (and may be slow).
  * A reused `pnpm dev` API keeps its rate limits (5 sign-ups / logins per minute), so rerun after a minute.
  */
 const WEB_PORT = Number(process.env.E2E_WEB_PORT ?? 3000);
@@ -32,7 +33,13 @@ export default defineConfig({
       cwd: '../..',
       url: `http://localhost:${API_PORT}/api/v1/health`,
       // NODE_ENV=test turns off rate limiting, which repeated runs would otherwise hit.
-      env: { API_PORT: String(API_PORT), WEB_ORIGIN: `http://localhost:${WEB_PORT}`, NODE_ENV: 'test' },
+      env: {
+        API_PORT: String(API_PORT),
+        WEB_ORIGIN: `http://localhost:${WEB_PORT}`,
+        NODE_ENV: 'test',
+        // Canned AI answers: fast, free and deterministic.
+        AI_PROVIDER: 'mock',
+      },
       reuseExistingServer: true,
       timeout: 120_000,
     },

@@ -14,7 +14,7 @@ English.
 | ------- | ----------------------------------------------------------------------------------- |
 | Web     | Next.js (App Router), React, Tailwind CSS, next-intl — custom atomic-design UI      |
 | API     | NestJS, Prisma, PostgreSQL + pgvector, BullMQ + Redis                               |
-| AI      | Anthropic Claude (structured outputs, streaming, document & vision input)           |
+| AI      | Google Gemini behind a provider interface (structured output, PDF & image input)    |
 | Shared  | `@offerleap/shared` — error codes, roles, schemas used by both apps                 |
 | Tooling | pnpm workspaces, Turborepo, TypeScript, ESLint, Prettier, Vitest, Husky, commitlint |
 | Infra   | Docker Compose (Postgres, Redis, Mailpit), GitHub Actions                           |

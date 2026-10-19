@@ -1,3 +1,4 @@
+import type { ResumeSummary } from '../resume/types';
 import type { CareerLevel, OnboardingStep, WorkType } from './constants';
 
 export interface TaxonomyItem {
@@ -30,4 +31,6 @@ export interface OnboardingState {
   step: OnboardingStep;
   completed: boolean;
   values: ProfileValues;
+  /** The latest uploaded CV, if any, with the AI's suggestions once parsed. */
+  resume: ResumeSummary | null;
 }

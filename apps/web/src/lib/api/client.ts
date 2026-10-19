@@ -9,6 +9,7 @@ const SESSION_CODES = new Set<string>([ErrorCode.AUTH_UNAUTHENTICATED, ErrorCode
 
 export interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  /** Sent as JSON, except `FormData` (file uploads), which the browser encodes as multipart itself. */
   body?: unknown;
   /** Try one session refresh on 401. Off for the auth endpoints themselves. Default `true`. */
   refreshOnUnauthorized?: boolean;
@@ -42,14 +43,16 @@ export function refreshSession(): Promise<boolean> {
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const { method = 'GET', body, refreshOnUnauthorized = true, signal } = options;
 
+  const isJson = body !== undefined && !(body instanceof FormData);
   let response: Response;
   try {
     response = await fetch(`${API_URL}${path}`, {
       method,
       credentials: 'include',
       signal,
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      // No Content-Type for FormData: the browser adds `multipart/form-data; boundary=…` itself.
+      headers: isJson ? { 'Content-Type': 'application/json' } : undefined,
+      body: isJson ? JSON.stringify(body) : (body as FormData | undefined),
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;

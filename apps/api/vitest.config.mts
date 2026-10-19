@@ -27,6 +27,9 @@ export default defineConfig({
             NODE_ENV: 'test',
             DATABASE_URL: TEST_DATABASE_URL,
             JWT_ACCESS_SECRET: 'e2e-secret-that-is-long-enough-for-hs256-signing',
+            // Never call a real AI from tests, whatever the local .env says.
+            AI_PROVIDER: 'mock',
+            STORAGE_DIR: 'storage/test',
           },
           include: ['test/**/*.e2e.test.ts'],
           globalSetup: ['test/global-setup.ts'],

@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { expect, registerAndVerify, test } from './support';
 
 test.describe('onboarding', () => {
@@ -10,6 +12,10 @@ test.describe('onboarding', () => {
     await page.goto('/vi/dashboard');
     await expect(page).toHaveURL(/\/vi\/onboarding$/);
     await expect(page.getByRole('navigation', { name: 'Tiến độ hoàn thiện hồ sơ' })).toBeVisible();
+
+    // The CV step is optional.
+    await page.getByRole('button', { name: 'Bỏ qua, tự nhập' }).click();
+    await expect(page.getByRole('heading', { name: 'Thông tin cá nhân' })).toBeFocused();
 
     // Step 1: validation, then accent-insensitive province search.
     await page.getByLabel(/^Số điện thoại/).fill('12345');
@@ -70,5 +76,51 @@ test.describe('onboarding', () => {
     // A finished profile can't reopen the wizard.
     await page.goto('/vi/onboarding');
     await expect(page).toHaveURL(/\/vi\/dashboard$/);
+  });
+
+  test('fills the next steps from an uploaded CV, replacing what was entered', async ({ page }) => {
+    await registerAndVerify(page, 'Minh CV');
+
+    // Fill step 1 by hand first, then go back and upload a CV.
+    await page.getByRole('button', { name: 'Bỏ qua, tự nhập' }).click();
+    await expect(page.getByRole('heading', { name: 'Thông tin cá nhân' })).toBeFocused();
+    await page.getByLabel(/^Số điện thoại/).fill('0987 000 111');
+    await page.getByRole('combobox', { name: /Tỉnh\/thành phố/ }).fill('da nang');
+    await page.getByRole('option', { name: 'Đà Nẵng' }).click();
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+    await expect(page.getByRole('heading', { name: 'Kinh nghiệm và kỹ năng' })).toBeFocused();
+    await page.getByRole('button', { name: 'Quay lại' }).click();
+    await page.getByRole('button', { name: 'Quay lại' }).click();
+
+    await page
+      .getByLabel(/Kéo thả CV/)
+      .setInputFiles(path.join(__dirname, 'fixtures', 'CV Nguyễn Văn An.pdf'));
+    // The API runs with AI_PROVIDER=mock, so the "AI" answers instantly with a fixed profile.
+    await expect(page.getByText('Đã đọc xong CV Nguyễn Văn An.pdf')).toBeVisible({ timeout: 15_000 });
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+    // Step 1: everything the CV contains replaced what was entered, and is marked.
+    await expect(page.getByLabel(/^Họ và tên/)).toHaveValue('Nguyễn Văn An');
+    await expect(page.getByLabel(/^Số điện thoại/)).toHaveValue('0912345678');
+    await expect(page.getByLabel(/^Số điện thoại/)).toHaveAccessibleDescription(
+      'AI chưa chắc chắn ở mục này — hãy kiểm tra lại.',
+    );
+    await expect(page.getByRole('combobox', { name: /Tỉnh\/thành phố/ })).toHaveValue('Hà Nội');
+    await expect(page.getByText('AI gợi ý', { exact: true })).toHaveCount(3);
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+
+    // Step 2 is entirely pre-filled and valid as is.
+    await expect(page.getByLabel(/^Vị trí hiện tại/)).toHaveValue('Frontend Developer');
+    await expect(page.getByLabel(/^Cấp bậc/)).toHaveValue('SENIOR');
+    await expect(page.getByRole('button', { name: /^Xoá / })).toHaveCount(5);
+    await page.getByRole('button', { name: 'Tiếp tục' }).click();
+    await expect(page.getByRole('heading', { name: 'Công việc mong muốn' })).toBeFocused();
+
+    // Going back to the CV step shows the parsed result instead of the drop zone.
+    await page.reload();
+    await page.getByRole('button', { name: 'Quay lại' }).click();
+    await page.getByRole('button', { name: 'Quay lại' }).click();
+    await page.getByRole('button', { name: 'Quay lại' }).click();
+    await expect(page.getByText('Đã đọc xong CV Nguyễn Văn An.pdf')).toBeVisible();
   });
 });

@@ -20,12 +20,20 @@ describe('personalStepSchema', () => {
     expect(
       personalStepSchema.parse({ fullName: 'Minh', phone: '0912 345 678', provinceCode: 'ha-noi' }).phone,
     ).toBe('0912345678');
-    expect(
-      personalStepSchema.parse({ fullName: 'Minh', phone: '+84.912.345.678', provinceCode: 'ha-noi' }).phone,
-    ).toBe('+84912345678');
+    for (const phone of ['+84.912.345.678', '84 912 345 678', '(+84) 912-345-678']) {
+      expect(personalStepSchema.parse({ fullName: 'Minh', phone, provinceCode: 'ha-noi' }).phone).toBe(
+        '0912345678',
+      );
+    }
     expect(
       personalStepSchema.safeParse({ fullName: 'Minh', phone: '', provinceCode: 'ha-noi' }).success,
     ).toBe(true);
+  });
+
+  it.each(['12345', '0912abc678', '+1 415 555 0100', '849123456789'])('rejects the phone %s', (phone) => {
+    expect(rules(personalStepSchema.safeParse({ fullName: 'Minh', phone, provinceCode: 'ha-noi' }))).toEqual([
+      { field: 'phone', rule: 'invalidPhone', params: undefined },
+    ]);
   });
 
   it('rejects a malformed phone and a missing province', () => {

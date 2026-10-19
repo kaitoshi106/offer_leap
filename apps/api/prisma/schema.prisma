@@ -55,6 +55,7 @@ model User {
   refreshTokens         RefreshToken[]
   tokens                UserToken[]
   profile               Profile?
+  resumes               Resume[]
 
   @@map("users")
 }
@@ -164,4 +165,38 @@ model Profile {
   @@index([provinceCode])
   @@index([industryCode])
   @@map("profiles")
+}
+
+enum ResumeStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+/// An uploaded CV. The file stays on disk (`storageKey`); a BullMQ job asks the AI to read it and stores the
+/// suggested profile values in `suggestions`.
+model Resume {
+  id           String       @id @default(cuid())
+  userId       String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  /// Path inside STORAGE_DIR.
+  storageKey   String       @unique
+  status       ResumeStatus @default(PENDING)
+  /// `ResumeSuggestions` from @offerleap/shared, validated before saving.
+  suggestions  Json?
+  /// ErrorCode when parsing failed.
+  errorCode    String?
+  aiModel      String?
+  inputTokens  Int?
+  outputTokens Int?
+  processedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("resumes")
 }

@@ -11,3 +11,6 @@ allowBuilds:
   msgpackr-extract: true
   # Telemetry ping from swagger-ui-dist — not needed.
   '@scarf/scarf': false
+  # No-op preinstall echo / version-scheme warning — nothing to build.
+  '@google/genai': false
+  protobufjs: false

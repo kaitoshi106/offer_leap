@@ -16,7 +16,9 @@ import { useOnboardingState } from '../api/use-onboarding';
 import { CareerStep } from './CareerStep';
 import { PersonalStep } from './PersonalStep';
 import { PreferencesStep } from './PreferencesStep';
+import { ResumeStep } from './ResumeStep';
 import { ReviewStep } from './ReviewStep';
+import { suggestedFields } from './suggestions';
 
 /**
  * @description The onboarding wizard: resumes at the saved step, saves each step before moving on, and sends the
@@ -53,7 +55,10 @@ export function OnboardingWizard() {
   }
 
   const current = stepIndex ?? ONBOARDING_STEPS.indexOf(state.step);
-  const step = ONBOARDING_STEPS[current] ?? 'personal';
+  const step = ONBOARDING_STEPS[current] ?? 'resume';
+  // The API has already written the CV's values into the draft; this only marks which fields came from it.
+  const { values } = state;
+  const suggested = suggestedFields(values, state.resume);
 
   function goTo(target: OnboardingStep, options?: { incomplete?: boolean }) {
     setStepIndex(ONBOARDING_STEPS.indexOf(target));
@@ -100,8 +105,20 @@ export function OnboardingWizard() {
           </Alert>
         )}
 
-        {step === 'personal' && <PersonalStep key={step} values={state.values} onSaved={next} />}
-        {step === 'career' && <CareerStep key={step} values={state.values} onSaved={next} onBack={back} />}
+        {step === 'resume' && (
+          <ResumeStep
+            key={step}
+            resume={state.resume}
+            suggestedCount={Object.keys(suggested).length}
+            onSaved={next}
+          />
+        )}
+        {step === 'personal' && (
+          <PersonalStep key={step} values={values} suggested={suggested} onSaved={next} onBack={back} />
+        )}
+        {step === 'career' && (
+          <CareerStep key={step} values={values} suggested={suggested} onSaved={next} onBack={back} />
+        )}
         {step === 'preferences' && (
           <PreferencesStep key={step} values={state.values} onSaved={next} onBack={back} />
         )}

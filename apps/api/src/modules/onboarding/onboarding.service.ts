@@ -15,6 +15,7 @@ import { AppException } from '../../common/errors/app.exception';
 import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { toProfileValues } from '../profile/profile.mapper';
+import { ResumesService } from '../resumes/resumes.service';
 import { TaxonomiesService } from '../taxonomies/taxonomies.service';
 
 /** 1-based position of each step, as stored in `Profile.onboardingStep`. */
@@ -37,6 +38,7 @@ export class OnboardingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly taxonomies: TaxonomiesService,
+    private readonly resumes: ResumesService,
   ) {}
 
   /**
@@ -44,14 +46,15 @@ export class OnboardingService {
    * @param userId - Signed-in user.
    */
   async getState(userId: string): Promise<OnboardingState> {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-      include: { profile: true },
-    });
+    const [user, resume] = await Promise.all([
+      this.prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } }),
+      this.resumes.latest(userId),
+    ]);
     return {
       step: stepName(user.profile?.onboardingStep ?? 1),
       completed: user.onboardingCompletedAt !== null,
       values: toProfileValues(user, user.profile),
+      resume,
     };
   }
 
@@ -110,6 +113,9 @@ export class OnboardingService {
 
   private profileData(input: SaveOnboardingStep): Omit<Prisma.ProfileUncheckedCreateInput, 'userId'> {
     switch (input.step) {
+      // Nothing to store: the CV itself is saved by the resumes module.
+      case 'resume':
+        return {};
       case 'personal':
         return { phone: input.values.phone || null, provinceCode: input.values.provinceCode };
       case 'career':

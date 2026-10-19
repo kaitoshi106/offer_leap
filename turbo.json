@@ -16,8 +16,9 @@
     "SMTP_*",
     "MAIL_FROM",
     "ROOT_ADMIN_*",
-    "ANTHROPIC_API_KEY",
-    "AI_MODEL"
+    "STORAGE_DIR",
+    "AI_PROVIDER",
+    "GEMINI_*"
   ],
   "globalEnv": ["NEXT_PUBLIC_*"],
   "tasks": {

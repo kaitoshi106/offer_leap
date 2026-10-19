@@ -87,6 +87,13 @@ const STORY_COPY = {
       signOut: 'Đăng xuất',
     },
     visuallyHidden: { profile: 'Hồ sơ', newTab: '(mở trong tab mới)' },
+    dropzone: {
+      title: 'Kéo thả CV vào đây hoặc bấm để chọn file',
+      hint: 'PDF, DOCX, PNG, JPG hoặc WEBP · tối đa 10 MB',
+      accepted: 'Đã nhận',
+      tooLarge: 'File quá lớn (tối đa 10 MB).',
+      wrongType: 'Chỉ hỗ trợ file PDF, DOCX, PNG, JPG hoặc WEBP.',
+    },
   },
   en: {
     button: { upload: 'Upload CV', uploading: 'Uploading', next: 'Continue' },
@@ -165,6 +172,13 @@ const STORY_COPY = {
       signOut: 'Sign out',
     },
     visuallyHidden: { profile: 'Profile', newTab: '(opens in a new tab)' },
+    dropzone: {
+      title: 'Drag your CV here or click to choose a file',
+      hint: 'PDF, DOCX, PNG, JPG or WEBP · up to 10 MB',
+      accepted: 'Accepted',
+      tooLarge: 'The file is too large (max 10 MB).',
+      wrongType: 'Only PDF, DOCX, PNG, JPG or WEBP files are supported.',
+    },
   },
 } satisfies Record<Locale, unknown>;
 

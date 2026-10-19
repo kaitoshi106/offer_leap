@@ -1,10 +1,14 @@
 # AI prompts, evals and cost
 
-- **Provider**: Anthropic Claude via `@anthropic-ai/sdk`; model from `AI_MODEL` (default `claude-opus-5-5`).
-- **Where**: only `apps/api/src/modules/ai`. Other modules call `AiService` methods (`parseResume`, `scoreMatch`,
-  `interviewTurn`, `writeCoverLetter`).
-- **Versioning**: `prompts/<task>.v<N>.ts` exports `{ system, buildUserContent, outputSchema }`. Released versions are
-  immutable.
+- **Provider**: behind the `AiProvider` interface (`AI_PROVIDER` token, `modules/ai`). `gemini` uses `@google/genai`
+  with `GEMINI_MODEL` (default `gemini-3.5-flash`) and `GEMINI_FALLBACK_MODELS` tried on 429/5xx; `mock` returns
+  canned answers per task for tests and offline dev. Why Gemini: see ADR 0004.
+- **Where**: vendor SDKs are imported only in `apps/api/src/modules/ai/providers`. Feature modules inject
+  `AI_PROVIDER` and call `generateJson({ task, system, parts, schema })`.
+- **Versioning**: `prompts/<task>.v<N>.ts` exports the task id, system prompt, a parts builder and the output schema.
+  Released versions are immutable. The mock provider keys its answers by task id.
+- **Settings**: temperature 0, `thinkingLevel: MINIMAL` for extraction (LOW took ~80 s vs ~9 s for the same answer
+  on a one-page CV).
 - **Structured output**: JSON schema derived from Zod; responses are re-validated before use.
 - **Untrusted input**: CV, JD and chat text are wrapped in tags and described as data. The system prompt tells the
   model to ignore instructions found inside them.

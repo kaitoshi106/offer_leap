@@ -9,9 +9,9 @@ apps/web (Next.js) ───────────────► apps/api (Ne
         │ imports                        ├─► PostgreSQL + pgvector
         ▼                                ├─► Redis (BullMQ queues)
 packages/shared ◄──── imports ───────────┤
-(error codes, roles, schemas)            ├─► Object storage (R2 / S3)
+(error codes, roles, schemas)            ├─► File storage (local disk; S3/R2 later)
                                          ├─► SMTP (Mailpit locally)
-                                         └─► Claude API
+                                         └─► AI provider (Gemini; mock in tests)
 ```
 
 - **web** renders UI, owns all translations, talks to the API only (never to the DB or AI provider).
@@ -98,14 +98,25 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 ## Resume parsing pipeline
 
 ```
-upload (PDF/DOCX/JPG/PNG/WebP) → magic-byte check + size limit → object storage → BullMQ job
-worker: DOCX → mammoth text | image → sharp resize | PDF → as is
-      → Claude (document / image / text block) + structured output schema
-      → Zod validation → map industry/province to taxonomy codes → store parsed JSON + per-field confidence
-      → SSE event → onboarding form pre-filled, AI fields highlighted
+POST /resumes (multipart, ≤ 10 MB) → magic-byte check (PDF/DOCX/PNG/JPEG/WEBP) → StorageService → Resume row
+  (PENDING) → BullMQ `resume` job → 202
+worker: PDF / image → sent inline to the model | DOCX → mammoth raw text inside <cv> tags
+      → AiProvider.generateJson (prompt resume-extraction.v1, JSON Schema from Zod, taxonomy codes as enums)
+      → Zod validation → toResumeSuggestions (re-validated with the onboarding rules)
+      → one transaction: values found overwrite the onboarding draft + resume COMPLETED with token usage
+web: polls GET /resumes/:id every 1.5 s → refetches GET /onboarding → fields holding the CV's values are marked
+     "AI suggested"; fields the model flagged as guesses ask the user to check
 ```
 
-No separate OCR service: the model reads PDFs (text and scanned) and images directly.
+- No separate OCR service: Gemini reads PDFs (text and scanned) and images natively.
+- Failures: a busy provider (429/5xx, timeout) tries the fallback models, then BullMQ retries the job (3 attempts,
+  exponential backoff) → `AI_UNAVAILABLE`. An unusable answer or empty DOCX fails at once → `RESUME_PARSE_FAILED`.
+  The CV step is optional, so the user can always skip and type.
+- The CV wins at the moment parsing finishes: every value it contains replaces the draft value (fields it lacks,
+  like salary, are kept). Edits saved afterwards win as usual. Only while onboarding is open.
+- Phone numbers are stored as 10 digits starting with 0 (`+84 912 345 678` → `0912345678`) by the shared schema.
+- `AI_PROVIDER=mock` (default, and forced in tests) returns canned answers; `gemini` needs `GEMINI_API_KEY`.
+- Queues use the `bull-test` prefix when `NODE_ENV=test`, so dev workers never pick up test jobs.
 
 ## Theming & i18n
 

@@ -24,8 +24,9 @@ src/modules/<feature>/
   script that does) after changing the schema.
 - Root-admin restrictions use `canManageOwnPassword()` / `canInviteAdmins()` from shared.
 - Long work (CV parsing, embeddings, emails) runs in BullMQ processors, never inside the request.
-- AI calls go through `AiService` only: model from `AI_MODEL`, structured output validated with Zod, token usage
-  logged per user. Treat CV/JD text as untrusted input (prompt-injection) — never let it change instructions.
+- AI calls go through the injected `AiProvider` (`AI_PROVIDER` token) only — never import a vendor SDK in a feature
+  module. Structured output is validated with Zod; token usage is stored with the result (e.g. on `Resume`).
+  Tests run with `AI_PROVIDER=mock`. Treat CV/JD text as untrusted input (prompt-injection) — never let it change instructions.
 - Document every endpoint for Swagger (`/api/docs`, dev only): `@ApiTags`, `@ApiOperation`, `@ApiZodBody(schema)`,
   `@ApiZodResponse(status, schema, description)` and `@ApiErrors(...codes)` from `common/openapi`. Docs are
   generated from the shared Zod schemas — never write separate DTO classes for them.

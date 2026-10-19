@@ -62,14 +62,22 @@ describe('onboarding', () => {
     await agent.get('/api/v1/auth/me').expect(200);
     const state = await agent.get('/api/v1/onboarding').expect(200);
     expect(state.body).toMatchObject({
-      step: 'personal',
+      step: 'resume',
       completed: false,
       values: { fullName: 'Trần Minh', skills: [] },
+      resume: null,
     });
   });
 
   it('walks through the steps, saving a resumable draft, and unlocks the profile', async () => {
     const agent = await signUpAndVerify(ctx);
+
+    // The CV step is optional: saving it without values just moves on.
+    const afterResume = await agent
+      .put('/api/v1/onboarding/draft')
+      .send({ step: 'resume', values: {} })
+      .expect(200);
+    expect(afterResume.body.step).toBe('personal');
 
     const afterPersonal = await agent
       .put('/api/v1/onboarding/draft')

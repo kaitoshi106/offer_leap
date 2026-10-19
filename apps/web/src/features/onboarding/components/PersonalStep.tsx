@@ -17,11 +17,25 @@ import { sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-error
 import { useTaxonomies } from '../api/use-onboarding';
 import { toOptions } from './options';
 import { StepActions } from './StepActions';
+import { useSuggestionProps } from './SuggestionBadge';
+import type { SuggestedFields } from './suggestions';
 import { useStepSave } from './use-step-save';
 
 /** Step 1: name, phone (optional) and province. */
-export function PersonalStep({ values, onSaved }: { values: ProfileValues; onSaved: () => void }) {
+export function PersonalStep({
+  values,
+  suggested = {},
+  onSaved,
+  onBack,
+}: {
+  values: ProfileValues;
+  /** Fields pre-filled from the CV. */
+  suggested?: SuggestedFields;
+  onSaved: () => void;
+  onBack: () => void;
+}) {
   const t = useTranslations('onboarding');
+  const suggestion = useSuggestionProps();
   const locale = useLocale();
   const fieldError = useFieldErrorText();
   const { provinces } = useTaxonomies();
@@ -38,17 +52,31 @@ export function PersonalStep({ values, onSaved }: { values: ProfileValues; onSav
 
   return (
     <form noValidate onSubmit={form.handleSubmit(submit)} className="flex flex-col gap-5">
-      <FormField label={t('fields.fullName')} error={fieldError(errors.fullName)} required>
+      <FormField
+        label={t('fields.fullName')}
+        {...suggestion(suggested.fullName)}
+        error={fieldError(errors.fullName)}
+        required
+      >
         {(field) => <Input {...field} {...form.register('fullName')} autoComplete="name" />}
       </FormField>
 
-      <FormField label={t('fields.phone')} hint={t('fields.phoneHint')} error={fieldError(errors.phone)}>
+      <FormField
+        label={t('fields.phone')}
+        {...suggestion(suggested.phone, t('fields.phoneHint'))}
+        error={fieldError(errors.phone)}
+      >
         {(field) => (
           <Input {...field} {...form.register('phone')} type="tel" inputMode="tel" autoComplete="tel" />
         )}
       </FormField>
 
-      <FormField label={t('fields.province')} error={fieldError(errors.provinceCode)} required>
+      <FormField
+        label={t('fields.province')}
+        {...suggestion(suggested.provinceCode)}
+        error={fieldError(errors.provinceCode)}
+        required
+      >
         {(field) => (
           <Controller
             control={form.control}
@@ -69,7 +97,7 @@ export function PersonalStep({ values, onSaved }: { values: ProfileValues; onSav
         )}
       </FormField>
 
-      <StepActions loading={save.isPending} />
+      <StepActions onBack={onBack} loading={save.isPending} />
     </form>
   );
 }

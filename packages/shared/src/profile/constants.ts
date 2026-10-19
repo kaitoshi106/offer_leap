@@ -18,8 +18,8 @@ export const WorkType = {
 export type WorkType = (typeof WorkType)[keyof typeof WorkType];
 export const WORK_TYPES = Object.values(WorkType);
 
-/** Wizard steps in order. The CV upload step is added in front of these once AI parsing exists. */
-export const ONBOARDING_STEPS = ['personal', 'career', 'preferences', 'review'] as const;
+/** Wizard steps in order. `resume` (optional CV upload that pre-fills the next steps) comes first. */
+export const ONBOARDING_STEPS = ['resume', 'personal', 'career', 'preferences', 'review'] as const;
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
 export const PROFILE_LIMITS = {

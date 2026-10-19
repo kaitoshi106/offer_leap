@@ -89,9 +89,13 @@ export async function registerAndVerify(page: Page, fullName = 'Trần Minh'): P
  * @description Fills every onboarding step with valid data and finishes on the dashboard.
  */
 export async function completeOnboarding(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Bỏ qua, tự nhập' }).click();
+  // The wizard focuses the new step's title; typing before that would lose focus and close the list.
+  await expect(page.getByRole('heading', { name: 'Thông tin cá nhân' })).toBeFocused();
   await page.getByRole('combobox', { name: /Tỉnh\/thành phố/ }).fill('ha noi');
   await page.getByRole('option', { name: 'Hà Nội' }).click();
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect(page.getByRole('heading', { name: 'Kinh nghiệm và kỹ năng' })).toBeFocused();
 
   await page.getByRole('combobox', { name: /Ngành nghề/ }).fill('phan mem');
   await page.getByRole('option', { name: 'Công nghệ thông tin / Phần mềm' }).click();
@@ -101,6 +105,7 @@ export async function completeOnboarding(page: Page): Promise<void> {
   await page.getByLabel(/^Kỹ năng/).fill('React');
   await page.keyboard.press('Enter');
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect(page.getByRole('heading', { name: 'Công việc mong muốn' })).toBeFocused();
 
   await page.getByLabel('Từ xa').check();
   await page.getByRole('button', { name: 'Tiếp tục' }).click();

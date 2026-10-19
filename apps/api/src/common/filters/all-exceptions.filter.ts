@@ -18,6 +18,8 @@ const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {
   [HttpStatus.UNAUTHORIZED]: ErrorCode.AUTH_UNAUTHENTICATED,
   [HttpStatus.FORBIDDEN]: ErrorCode.AUTH_FORBIDDEN,
   [HttpStatus.NOT_FOUND]: ErrorCode.COMMON_NOT_FOUND,
+  [HttpStatus.PAYLOAD_TOO_LARGE]: ErrorCode.COMMON_FILE_TOO_LARGE,
+  [HttpStatus.UNSUPPORTED_MEDIA_TYPE]: ErrorCode.COMMON_UNSUPPORTED_FILE_TYPE,
   [HttpStatus.TOO_MANY_REQUESTS]: ErrorCode.COMMON_RATE_LIMITED,
 };
 

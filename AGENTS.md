@@ -12,7 +12,7 @@ This file is the entry point for any AI coding assistant. Read it fully, then th
 | Path              | What lives there                                                     | Guide                |
 | ----------------- | -------------------------------------------------------------------- | -------------------- |
 | `apps/web`        | Next.js (App Router) + Tailwind, atomic-design components, next-intl | `apps/web/AGENTS.md` |
-| `apps/api`        | NestJS REST API, Prisma, BullMQ workers, Claude integration          | `apps/api/AGENTS.md` |
+| `apps/api`        | NestJS REST API, Prisma, BullMQ workers, AI provider (Gemini)        | `apps/api/AGENTS.md` |
 | `packages/shared` | Contracts used by both apps: error codes, roles, constants, schemas  | this file            |
 | `docs/ai`         | Architecture, conventions, best practices                            | `docs/ai/*.md`       |
 | `docs/adr`        | Architecture Decision Records                                        | `docs/adr/README.md` |

@@ -19,6 +19,8 @@ import { sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-error
 import { useTaxonomies } from '../api/use-onboarding';
 import { toOptions } from './options';
 import { StepActions } from './StepActions';
+import { useSuggestionProps } from './SuggestionBadge';
+import type { SuggestedFields } from './suggestions';
 import { useStepSave } from './use-step-save';
 
 /** Empty number inputs become `undefined` so the schema reports "required" instead of `NaN`. */
@@ -27,14 +29,18 @@ const toNumber = (value: unknown) => (value === '' || value == null ? undefined 
 /** Step 2: industry, title, level, experience and skills. */
 export function CareerStep({
   values,
+  suggested = {},
   onSaved,
   onBack,
 }: {
   values: ProfileValues;
+  /** Fields pre-filled from the CV. */
+  suggested?: SuggestedFields;
   onSaved: () => void;
   onBack: () => void;
 }) {
   const t = useTranslations('onboarding');
+  const suggestion = useSuggestionProps();
   const locale = useLocale();
   const fieldError = useFieldErrorText();
   const { industries } = useTaxonomies();
@@ -53,7 +59,12 @@ export function CareerStep({
 
   return (
     <form noValidate onSubmit={form.handleSubmit(submit)} className="flex flex-col gap-5">
-      <FormField label={t('fields.industry')} error={fieldError(errors.industryCode)} required>
+      <FormField
+        label={t('fields.industry')}
+        {...suggestion(suggested.industryCode)}
+        error={fieldError(errors.industryCode)}
+        required
+      >
         {(field) => (
           <Controller
             control={form.control}
@@ -74,14 +85,24 @@ export function CareerStep({
         )}
       </FormField>
 
-      <FormField label={t('fields.jobTitle')} error={fieldError(errors.jobTitle)} required>
+      <FormField
+        label={t('fields.jobTitle')}
+        {...suggestion(suggested.jobTitle)}
+        error={fieldError(errors.jobTitle)}
+        required
+      >
         {(field) => (
           <Input {...field} {...form.register('jobTitle')} placeholder={t('fields.jobTitlePlaceholder')} />
         )}
       </FormField>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <FormField label={t('fields.level')} error={fieldError(errors.level)} required>
+        <FormField
+          label={t('fields.level')}
+          {...suggestion(suggested.level)}
+          error={fieldError(errors.level)}
+          required
+        >
           {(field) => (
             <Select
               {...field}
@@ -98,7 +119,12 @@ export function CareerStep({
           )}
         </FormField>
 
-        <FormField label={t('fields.years')} error={fieldError(errors.yearsOfExperience)} required>
+        <FormField
+          label={t('fields.years')}
+          {...suggestion(suggested.yearsOfExperience)}
+          error={fieldError(errors.yearsOfExperience)}
+          required
+        >
           {(field) => (
             <Input
               {...field}
@@ -114,7 +140,7 @@ export function CareerStep({
 
       <FormField
         label={t('fields.skills')}
-        hint={t('fields.skillsHint')}
+        {...suggestion(suggested.skills, t('fields.skillsHint'))}
         error={fieldError(errors.skills)}
         required
       >

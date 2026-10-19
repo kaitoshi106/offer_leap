@@ -4,6 +4,7 @@ import request from 'supertest';
 
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
+import { AI_PROVIDER, type AiProvider } from '../../src/modules/ai/ai.types';
 import { MailService } from '../../src/modules/mail/mail.service';
 import type { MailJob } from '../../src/modules/mail/mail.types';
 import { PrismaService } from '../../src/prisma/prisma.service';
@@ -39,14 +40,16 @@ export interface TestContext {
 
 /**
  * @description Boots the real AppModule (real Postgres + Redis) with the fake mailer.
+ * @param options.ai - Replaces the AI provider (default: the mock provider from AI_PROVIDER=mock).
  * @returns The initialised app and handles used by assertions.
  */
-export async function createTestApp(): Promise<TestContext> {
+export async function createTestApp(options: { ai?: AiProvider } = {}): Promise<TestContext> {
   const mail = new FakeMailService();
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+  let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MailService)
-    .useValue(mail)
-    .compile();
+    .useValue(mail);
+  if (options.ai) builder = builder.overrideProvider(AI_PROVIDER).useValue(options.ai);
+  const moduleRef = await builder.compile();
 
   const app = moduleRef.createNestApplication();
   configureApp(app);
@@ -61,7 +64,7 @@ export async function createTestApp(): Promise<TestContext> {
  */
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
+    'TRUNCATE TABLE "resumes", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
   );
 }
 

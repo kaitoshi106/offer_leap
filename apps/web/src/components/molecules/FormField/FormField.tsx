@@ -18,6 +18,8 @@ export interface FormFieldProps {
   label: ReactNode;
   /** Help text under the control. */
   hint?: ReactNode;
+  /** Small tag at the end of the label row, e.g. an "AI suggested" badge. */
+  badge?: ReactNode;
   /** Translated error message; when set the control is marked invalid and the message is announced. */
   error?: string;
   required?: boolean;
@@ -33,7 +35,7 @@ export interface FormFieldProps {
  * pointing to hint and error, `aria-invalid` when there is an error.
  * @param props - {@link FormFieldProps}
  */
-export function FormField({ label, hint, error, required, id, className, children }: FormFieldProps) {
+export function FormField({ label, hint, badge, error, required, id, className, children }: FormFieldProps) {
   const generatedId = useId();
   const controlId = id ?? generatedId;
   const hintId = hint ? `${controlId}-hint` : undefined;
@@ -42,9 +44,12 @@ export function FormField({ label, hint, error, required, id, className, childre
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <Label htmlFor={controlId} required={required}>
-        {label}
-      </Label>
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor={controlId} required={required}>
+          {label}
+        </Label>
+        {badge}
+      </div>
       {children({
         id: controlId,
         'aria-describedby': describedBy,

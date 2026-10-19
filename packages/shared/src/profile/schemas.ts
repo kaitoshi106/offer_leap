@@ -6,15 +6,18 @@ import { CAREER_LEVELS, PROFILE_LIMITS, WORK_TYPES } from './constants';
 
 const required = { error: ValidationRule.REQUIRED };
 
-/** Vietnamese mobile numbers: 0xxxxxxxxx or +84xxxxxxxxx (spaces, dots and dashes are ignored). */
+/**
+ * Vietnamese mobile numbers, stored as 10 digits starting with 0. Spaces, dots, dashes, brackets and `+` are
+ * dropped and the country code becomes 0: "+84 912 345 678" / "(84) 912.345.678" → "0912345678".
+ */
 export const phoneSchema = z
   .string()
-  .transform((value) => value.replace(/[\s.-]/g, ''))
-  .pipe(z.string().regex(/^(0|\+84)\d{9}$/, { error: ValidationRule.INVALID_PHONE }));
+  .transform((value) => value.replace(/[\s.()+-]/g, '').replace(/^84(?=\d{9}$)/, '0'))
+  .pipe(z.string().regex(/^0\d{9}$/, { error: ValidationRule.INVALID_PHONE }));
 
 const codeSchema = z.string(required).trim().min(1, required).max(50);
 
-const skillSchema = z
+export const skillSchema = z
   .string()
   .trim()
   .min(1, required)
@@ -86,6 +89,8 @@ export const completeOnboardingSchema = personalStepSchema
  * rest of the draft stays as it was. The review step has nothing to save.
  */
 export const saveOnboardingStepSchema = z.discriminatedUnion('step', [
+  // Uploading a CV is optional; saving this step just moves the resume point forward.
+  z.object({ step: z.literal('resume'), values: z.object({}).strict() }),
   z.object({ step: z.literal('personal'), values: personalStepSchema }),
   z.object({ step: z.literal('career'), values: careerStepSchema }),
   z.object({ step: z.literal('preferences'), values: preferencesStepSchema }),

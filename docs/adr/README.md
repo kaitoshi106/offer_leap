@@ -8,3 +8,4 @@ ADR's decision — supersede it with a new one.
 | 0001 | Monorepo with pnpm workspaces and Turborepo   | Accepted |
 | 0002 | Shared error codes, translations on the web   | Accepted |
 | 0003 | Root admin and invitation-only general admins | Accepted |
+| 0004 | AI behind a provider interface, Gemini first  | Accepted |
