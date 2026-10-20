@@ -2,21 +2,19 @@ import { Injectable } from '@nestjs/common';
 import {
   completeOnboardingSchema,
   ErrorCode,
-  type FieldError,
   ONBOARDING_STEPS,
   type OnboardingState,
   type OnboardingStep,
   type SaveOnboardingStep,
   toFieldErrors,
-  ValidationRule,
+  type UpdateProfileSection,
 } from '@offerleap/shared';
 
 import { AppException } from '../../common/errors/app.exception';
-import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { toProfileValues } from '../profile/profile.mapper';
 import { ResumesService } from '../resumes/resumes.service';
-import { TaxonomiesService } from '../taxonomies/taxonomies.service';
+import { ProfileService } from '../profile/profile.service';
 
 /** 1-based position of each step, as stored in `Profile.onboardingStep`. */
 const STEP_NUMBER = Object.fromEntries(ONBOARDING_STEPS.map((step, index) => [step, index + 1])) as Record<
@@ -37,7 +35,7 @@ function stepName(stepNumber: number): OnboardingStep {
 export class OnboardingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly taxonomies: TaxonomiesService,
+    private readonly profile: ProfileService,
     private readonly resumes: ResumesService,
   ) {}
 
@@ -67,21 +65,29 @@ export class OnboardingService {
    * @throws AppException COMMON_VALIDATION_FAILED when a province/industry code doesn't exist.
    */
   async saveStep(userId: string, input: SaveOnboardingStep): Promise<OnboardingState> {
-    await this.assertKnownCodes(input);
-
     const current = await this.prisma.profile.findUnique({
       where: { userId },
       select: { onboardingStep: true },
     });
     const onboardingStep = Math.max(current?.onboardingStep ?? 1, STEP_NUMBER[input.step] + 1);
-    const data = { ...this.profileData(input), onboardingStep };
 
-    await this.prisma.$transaction([
-      ...(input.step === 'personal'
-        ? [this.prisma.user.update({ where: { id: userId }, data: { fullName: input.values.fullName } })]
-        : []),
-      this.prisma.profile.upsert({ where: { userId }, update: data, create: { userId, ...data } }),
-    ]);
+    if (input.step === 'resume') {
+      // Nothing to store: the CV itself is saved by the resumes module.
+      await this.prisma.profile.upsert({
+        where: { userId },
+        update: { onboardingStep },
+        create: { userId, onboardingStep },
+      });
+    } else {
+      // Same rules as the profile page; the resume point is written in the same transaction.
+      await this.profile.saveSection(
+        userId,
+        { section: input.step, values: input.values } as UpdateProfileSection,
+        {
+          onboardingStep,
+        },
+      );
+    }
     return this.getState(userId);
   }
 
@@ -109,46 +115,5 @@ export class OnboardingService {
       this.prisma.profile.update({ where: { userId }, data: { onboardingStep: STEP_NUMBER.review } }),
     ]);
     return { ...state, step: 'review', completed: true };
-  }
-
-  private profileData(input: SaveOnboardingStep): Omit<Prisma.ProfileUncheckedCreateInput, 'userId'> {
-    switch (input.step) {
-      // Nothing to store: the CV itself is saved by the resumes module.
-      case 'resume':
-        return {};
-      case 'personal':
-        return { phone: input.values.phone || null, provinceCode: input.values.provinceCode };
-      case 'career':
-        return {
-          industryCode: input.values.industryCode,
-          jobTitle: input.values.jobTitle,
-          level: input.values.level,
-          yearsOfExperience: input.values.yearsOfExperience,
-          skills: input.values.skills,
-        };
-      case 'preferences':
-        return {
-          expectedSalaryMin: input.values.expectedSalaryMin ?? null,
-          expectedSalaryMax: input.values.expectedSalaryMax ?? null,
-          workTypes: input.values.workTypes,
-        };
-    }
-  }
-
-  private async assertKnownCodes(input: SaveOnboardingStep): Promise<void> {
-    const codes = {
-      provinceCode: input.step === 'personal' ? input.values.provinceCode : undefined,
-      industryCode: input.step === 'career' ? input.values.industryCode : undefined,
-    };
-    const found = await this.taxonomies.exists(codes);
-    const fieldErrors: FieldError[] = [];
-    if (!found.province) fieldErrors.push({ field: 'provinceCode', rule: ValidationRule.INVALID });
-    if (!found.industry) fieldErrors.push({ field: 'industryCode', rule: ValidationRule.INVALID });
-    if (fieldErrors.length > 0) {
-      throw new AppException(ErrorCode.COMMON_VALIDATION_FAILED, {
-        message: 'Unknown taxonomy code',
-        fieldErrors,
-      });
-    }
   }
 }

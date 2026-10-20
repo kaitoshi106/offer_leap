@@ -26,6 +26,31 @@ describe('Pagination', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Page 3 of 3');
   });
 
+  it('offers page sizes and keeps the picker when everything fits on one page', async () => {
+    const onPageSize = vi.fn();
+    render(
+      <Pagination
+        page={1}
+        pages={1}
+        onChange={vi.fn()}
+        labels={labels(1, 1)}
+        pageSize={{
+          value: 50,
+          options: [10, 50, 100],
+          onChange: onPageSize,
+          label: 'Items per page',
+          optionLabel: (size) => `${size} / page`,
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    const select = screen.getByRole('combobox', { name: 'Items per page' });
+    expect(select).toHaveValue('50');
+    await userEvent.selectOptions(select, '100 / page');
+    expect(onPageSize).toHaveBeenCalledWith(100);
+  });
+
   it('is hidden with a single page', () => {
     const { container } = render(<Pagination page={1} pages={1} onChange={vi.fn()} labels={labels(1, 1)} />);
     expect(container).toBeEmptyDOMElement();

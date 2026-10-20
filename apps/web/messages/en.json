@@ -174,6 +174,7 @@
     "applications": "Applications",
     "interviews": "Interviews",
     "documents": "Documents",
+    "profile": "Profile",
     "admin": "Admin",
     "settings": "Account settings",
     "signOut": "Sign out"
@@ -434,6 +435,31 @@
       "belowFloor": "Below the threshold — not used"
     }
   },
+  "profile": {
+    "metaTitle": "Profile",
+    "title": "Your profile",
+    "description": "AI uses your profile to analyse your CV, write cover letters and prepare interview questions. Each section saves on its own.",
+    "saved": "Changes saved",
+    "cvs": {
+      "title": "Uploaded CVs",
+      "description": "Uploading a new CV doesn't change your profile. You pick a CV for each analysis; cover letters use the latest one.",
+      "empty": "No CVs yet.",
+      "upload": "Upload a new CV",
+      "uploaded": "CV uploaded",
+      "statuses": {
+        "PENDING": "Waiting",
+        "PROCESSING": "AI is reading",
+        "COMPLETED": "Read",
+        "FAILED": "Couldn't read"
+      },
+      "meta": "{date} · {count, plural, =0 {no analyses} one {# analysis} other {# analyses}}",
+      "delete": "Delete",
+      "deleteTitle": "Delete {fileName}?",
+      "deleteBody": "{count, plural, =0 {The CV file will be deleted permanently. What it filled into your profile stays.} one {The CV file and # analysis made with it will be deleted permanently. What it filled into your profile stays.} other {The CV file and # analyses made with it will be deleted permanently. What it filled into your profile stays.}}",
+      "cancel": "Cancel",
+      "deleted": "CV deleted"
+    }
+  },
   "admin": {
     "metaTitle": "Admin",
     "title": "Admin",
@@ -475,7 +501,9 @@
       "unverified": "Email not verified",
       "previous": "Previous page",
       "next": "Next page",
-      "page": "Page {page} of {pages}"
+      "page": "Page {page} of {pages}",
+      "pageSize": "Items per page",
+      "pageSizeOption": "{size} / page"
     },
     "user": {
       "back": "All users",
@@ -678,7 +706,8 @@
       "next": "Continue",
       "finish": "Finish",
       "edit": "Edit",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "save": "Save changes"
     },
     "review": {
       "notProvided": "Not provided",

@@ -25,4 +25,6 @@ export interface ResumeSummary {
   /** Why parsing failed (`RESUME_PARSE_FAILED`, `AI_UNAVAILABLE`…). */
   errorCode: ErrorCode | null;
   createdAt: string;
+  /** Analyses that used this CV (they are deleted with it). Only in `GET /resumes`. */
+  analysisCount?: number;
 }

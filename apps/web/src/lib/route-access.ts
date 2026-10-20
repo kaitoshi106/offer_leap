@@ -9,6 +9,7 @@ const PROTECTED_PREFIXES = [
   '/applications',
   '/interviews',
   '/documents',
+  '/profile',
   '/settings',
   '/admin',
 ];

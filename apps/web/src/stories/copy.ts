@@ -99,6 +99,8 @@ const STORY_COPY = {
       previous: 'Trang trước',
       next: 'Trang sau',
       status: (page: number, pages: number) => `Trang ${page}/${pages}`,
+      pageSize: 'Số mục mỗi trang',
+      pageSizeOption: (size: number) => `${size} / trang`,
     },
     scoreGauge: { label: 'Mức độ phù hợp' },
     appLayout: {
@@ -206,6 +208,8 @@ const STORY_COPY = {
       previous: 'Previous page',
       next: 'Next page',
       status: (page: number, pages: number) => `Page ${page} of ${pages}`,
+      pageSize: 'Items per page',
+      pageSizeOption: (size: number) => `${size} / page`,
     },
     scoreGauge: { label: 'Match score' },
     appLayout: {

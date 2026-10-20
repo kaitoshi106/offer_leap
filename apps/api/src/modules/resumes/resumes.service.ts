@@ -94,8 +94,25 @@ export class ResumesService {
 
   /** The user's CVs, newest first (to pick one for a job analysis). */
   async list(userId: string): Promise<ResumeSummary[]> {
-    const resumes = await this.prisma.resume.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
-    return resumes.map(toResumeSummary);
+    const resumes = await this.prisma.resume.findMany({
+      where: { userId },
+      include: { _count: { select: { analyses: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return resumes.map((resume) => ({ ...toResumeSummary(resume), analysisCount: resume._count.analyses }));
+  }
+
+  /**
+   * @description Deletes a CV, its file and the analyses made with it (they can't be re-run without the CV);
+   * applications created from those analyses stay, just unlinked. Profile values filled from the CV stay too —
+   * they belong to the user now.
+   * @throws AppException COMMON_NOT_FOUND (also for someone else's CV).
+   */
+  async remove(userId: string, id: string): Promise<void> {
+    const resume = await this.prisma.resume.findFirst({ where: { id, userId } });
+    if (!resume) throw new AppException(ErrorCode.COMMON_NOT_FOUND, { message: 'Resume not found' });
+    await this.prisma.resume.delete({ where: { id } });
+    await this.storage.remove(resume.storageKey);
   }
 
   /** The user's most recent upload, or null. */

@@ -21,13 +21,14 @@ import { toOptions } from './options';
 import { StepActions } from './StepActions';
 import { useSuggestionProps } from './SuggestionBadge';
 import type { SuggestedFields } from './suggestions';
-import { useStepSave } from './use-step-save';
+import { type StepFormMode, useStepSave } from './use-step-save';
 
 /** Empty number inputs become `undefined` so the schema reports "required" instead of `NaN`. */
 const toNumber = (value: unknown) => (value === '' || value == null ? undefined : Number(value));
 
 /** Step 2: industry, title, level, experience and skills. */
 export function CareerStep({
+  mode = 'onboarding',
   values,
   suggested = {},
   onSaved,
@@ -37,7 +38,10 @@ export function CareerStep({
   /** Fields pre-filled from the CV. */
   suggested?: SuggestedFields;
   onSaved: () => void;
-  onBack: () => void;
+  /** Omitted on the first wizard step and on the profile page. */
+  onBack?: () => void;
+  /** `profile`: same form on the profile page — saves the profile, one "Save" button. */
+  mode?: StepFormMode;
 }) {
   const t = useTranslations('onboarding');
   const suggestion = useSuggestionProps();
@@ -54,7 +58,7 @@ export function CareerStep({
       skills: values.skills,
     },
   });
-  const { submit, save } = useStepSave('career', form.setError, onSaved);
+  const { submit, save } = useStepSave('career', form.setError, onSaved, mode);
   const { errors } = form.formState;
 
   return (
@@ -164,7 +168,11 @@ export function CareerStep({
         )}
       </FormField>
 
-      <StepActions onBack={onBack} loading={save.isPending} />
+      {mode === 'profile' ? (
+        <StepActions loading={save.isPending} submitLabel={t('actions.save')} icon={false} />
+      ) : (
+        <StepActions onBack={onBack} loading={save.isPending} />
+      )}
     </form>
   );
 }

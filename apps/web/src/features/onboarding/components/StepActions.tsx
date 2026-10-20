@@ -9,15 +9,18 @@ import { Button, Icon } from '@/components/atoms';
  * @param props.onBack - Omit on the first step.
  * @param props.loading - While the step is being saved.
  * @param props.submitLabel - Overrides "Continue" (e.g. "Finish").
+ * @param props.icon - Arrow on the submit button (off for a plain "Save").
  */
 export function StepActions({
   onBack,
   loading,
   submitLabel,
+  icon = true,
 }: {
   onBack?: () => void;
   loading?: boolean;
   submitLabel?: string;
+  icon?: boolean;
 }) {
   const t = useTranslations('onboarding.actions');
   return (
@@ -29,7 +32,11 @@ export function StepActions({
       ) : (
         <span />
       )}
-      <Button type="submit" loading={loading} rightIcon={<Icon name="arrow-right" size="sm" />}>
+      <Button
+        type="submit"
+        loading={loading}
+        rightIcon={icon ? <Icon name="arrow-right" size="sm" /> : undefined}
+      >
         {submitLabel ?? t('next')}
       </Button>
     </div>

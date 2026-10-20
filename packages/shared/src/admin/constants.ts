@@ -15,5 +15,3 @@ export type InvitationStatus = (typeof InvitationStatus)[keyof typeof Invitation
 
 /** How long an admin invitation link stays valid. */
 export const ADMIN_INVITATION_TTL_HOURS = 48;
-
-export const ADMIN_USERS_PAGE_SIZE = { default: 20, max: 50 } as const;

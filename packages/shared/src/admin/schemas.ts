@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { emailSchema, fullNameSchema, localeSchema, passwordSchema } from '../auth/schemas';
 import { Role } from '../auth/roles';
 import { ValidationRule } from '../validation/rules';
-import { ADMIN_USERS_PAGE_SIZE, USER_STATUSES } from './constants';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '../constants/app';
+import { USER_STATUSES } from './constants';
 
 /** `POST /admin/invitations` (root only). `locale` is the language of the email. */
 export const inviteAdminSchema = z.object({ email: emailSchema, locale: localeSchema });
@@ -21,12 +22,8 @@ export const adminUsersQuerySchema = z.object({
   role: z.enum([Role.USER, Role.ADMIN]).optional(),
   status: z.enum(USER_STATUSES).optional(),
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(ADMIN_USERS_PAGE_SIZE.max)
-    .default(ADMIN_USERS_PAGE_SIZE.default),
+  /** Only the sizes offered in the UI, so a crafted URL can't ask for a huge page. */
+  pageSize: z.coerce.number().pipe(z.literal(PAGE_SIZES)).default(DEFAULT_PAGE_SIZE),
 });
 
 /** `PATCH /admin/users/:id/status`. */

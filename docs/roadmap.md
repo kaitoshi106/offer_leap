@@ -14,3 +14,6 @@
 - [x] AI eval runner with baseline datasets
 - [x] Docker deployment, README with screenshots
 - [x] RAG over personal documents (pgvector, Gemini embeddings, sources in analyses)
+- [x] Profile page (edit sections, manage CVs); page-size picker for paginated lists
+- [ ] Data export and account deletion
+- [ ] Automated accessibility checks (axe)

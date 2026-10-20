@@ -1,6 +1,12 @@
 'use client';
 
-import { type AdminUsersQueryInput, Role, USER_STATUSES } from '@offerleap/shared';
+import {
+  type AdminUsersQueryInput,
+  DEFAULT_PAGE_SIZE,
+  PAGE_SIZES,
+  Role,
+  USER_STATUSES,
+} from '@offerleap/shared';
 import { useSearchParams } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -15,8 +21,13 @@ import { roleKey, STATUS_TONE } from './labels';
 
 const SEARCH_DELAY_MS = 300;
 
+/** A size from the URL, or the default when it is missing or not one we offer (an old or hand-edited link). */
+const toPageSize = (value: string | null) =>
+  PAGE_SIZES.find((size) => String(size) === value) ?? DEFAULT_PAGE_SIZE;
+
 /**
- * @description Paginated, searchable list of accounts. Filters and page live in the URL (`?q=&role=&status=&page=`)
+ * @description Paginated, searchable list of accounts. Filters, page and page size live in the URL
+ * (`?q=&role=&status=&page=&pageSize=`)
  * so a filtered list can be shared, survives a reload and works with the back button.
  */
 export function AdminUsersView() {
@@ -32,12 +43,15 @@ export function AdminUsersView() {
     role: (searchParams.get('role') as AdminUsersQueryInput['role']) ?? undefined,
     status: (searchParams.get('status') as AdminUsersQueryInput['status']) ?? undefined,
     page: Number(searchParams.get('page') ?? 1),
+    pageSize: toPageSize(searchParams.get('pageSize')),
   };
   const { data, error, isPending, isPlaceholderData } = useAdminUsers(query);
   const [search, setSearch] = useState(query.q ?? '');
 
-  /** Writes filters to the URL; any filter change goes back to page 1. */
-  function update(changes: Partial<Record<'q' | 'role' | 'status' | 'page', string | undefined>>) {
+  /** Writes filters to the URL; any filter or page-size change goes back to page 1. */
+  function update(
+    changes: Partial<Record<'q' | 'role' | 'status' | 'page' | 'pageSize', string | undefined>>,
+  ) {
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(changes)) {
       if (value) params.set(key, value);
@@ -181,6 +195,20 @@ export function AdminUsersView() {
                 next: t('users.next'),
                 status: t('users.page', { page: data.page, pages }),
               }}
+              // Worth offering only when the list doesn't fit in the smallest page.
+              pageSize={
+                data.total > PAGE_SIZES[0]
+                  ? {
+                      value: data.pageSize,
+                      options: PAGE_SIZES,
+                      // The default size stays out of the URL.
+                      onChange: (size) =>
+                        update({ pageSize: size === DEFAULT_PAGE_SIZE ? undefined : String(size) }),
+                      label: t('users.pageSize'),
+                      optionLabel: (size) => t('users.pageSizeOption', { size }),
+                    }
+                  : undefined
+              }
             />
           </>
         )

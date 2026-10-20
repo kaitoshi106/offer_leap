@@ -50,9 +50,9 @@ describe('AdminUsersView', () => {
           account('a', { status: 'DISABLED' }),
           account('b', { role: 'ADMIN', adminLevel: 'ROOT', onboardingCompleted: false }),
         ],
-        total: 42,
+        total: 22,
         page: 2,
-        pageSize: 20,
+        pageSize: 10,
       }),
     );
     renderWithProviders(<AdminUsersView />);
@@ -61,21 +61,26 @@ describe('AdminUsersView', () => {
     expect(within(rows[1]!).getByRole('link', { name: 'User a' })).toHaveAttribute('href', '/admin/users/a');
     expect(within(rows[1]!).getByText('Đã khoá')).toBeInTheDocument();
     expect(within(rows[2]!).getByText('Quản trị gốc')).toBeInTheDocument();
-    expect(screen.getByText('42 tài khoản')).toBeInTheDocument();
+    expect(screen.getByText('22 tài khoản')).toBeInTheDocument();
     expect(screen.getByText('Trang 2/3')).toBeInTheDocument();
-    expect(String(fetchMock.mock.calls[0]![0])).toMatch(/\/admin\/users\?status=DISABLED&page=2$/);
+    expect(String(fetchMock.mock.calls[0]![0])).toMatch(
+      /\/admin\/users\?status=DISABLED&page=2&pageSize=10$/,
+    );
   });
 
   it('writes filters, search and paging to the URL (filters restart at page 1)', async () => {
     const user = userEvent.setup();
     searchParams = new URLSearchParams('page=2');
     fetchMock.mockResolvedValue(
-      jsonResponse(200, { items: [account('a')], total: 60, page: 2, pageSize: 20 }),
+      jsonResponse(200, { items: [account('a')], total: 60, page: 2, pageSize: 10 }),
     );
     renderWithProviders(<AdminUsersView />);
 
     await user.click(await screen.findByRole('button', { name: 'Trang sau' }));
     expect(replace).toHaveBeenLastCalledWith('/admin/users?page=3');
+
+    await user.selectOptions(screen.getByLabelText('Số mục mỗi trang'), '50 / trang');
+    expect(replace).toHaveBeenLastCalledWith('/admin/users?pageSize=50');
 
     await user.selectOptions(screen.getByLabelText('Vai trò'), 'ADMIN');
     expect(replace).toHaveBeenLastCalledWith('/admin/users?role=ADMIN');

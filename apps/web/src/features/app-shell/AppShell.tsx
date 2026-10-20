@@ -11,18 +11,20 @@ import { useAuthRedirect } from '@/lib/auth-redirect';
 
 type NavItem = {
   href: string;
-  key: 'dashboard' | 'analyses' | 'applications' | 'interviews' | 'documents' | 'admin';
+  key: 'dashboard' | 'analyses' | 'applications' | 'interviews' | 'documents' | 'profile' | 'admin';
   icon: IconName;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', key: 'dashboard', icon: 'user' },
+  { href: '/dashboard', key: 'dashboard', icon: 'home' },
   { href: '/analyses', key: 'analyses', icon: 'target' },
   { href: '/applications', key: 'applications', icon: 'file-text' },
   { href: '/interviews', key: 'interviews', icon: 'message-square' },
   { href: '/documents', key: 'documents', icon: 'book' },
 ];
 const ADMIN_ITEM: NavItem = { href: '/admin', key: 'admin', icon: 'shield' };
+/** Admins have no career profile (they skip onboarding). */
+const PROFILE_ITEM: NavItem = { href: '/profile', key: 'profile', icon: 'user' };
 
 /**
  * @description Layout for signed-in pages: navigation, account and sign-out. Also enforces what the proxy can't
@@ -54,17 +56,19 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
       navLabel={t('label')}
       // The admin link is UX only: the admin API checks the role itself.
-      nav={[...NAV_ITEMS, ...(user?.role === 'ADMIN' ? [ADMIN_ITEM] : [])].map(({ href, key, icon }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
-        return (
-          <li key={key}>
-            <Link href={href} aria-current={active ? 'page' : undefined} className={navLinkClasses(active)}>
-              <Icon name={icon} size="sm" />
-              {t(key)}
-            </Link>
-          </li>
-        );
-      })}
+      nav={[...NAV_ITEMS, ...(user?.role === 'ADMIN' ? [ADMIN_ITEM] : [PROFILE_ITEM])].map(
+        ({ href, key, icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <li key={key}>
+              <Link href={href} aria-current={active ? 'page' : undefined} className={navLinkClasses(active)}>
+                <Icon name={icon} size="sm" />
+                {t(key)}
+              </Link>
+            </li>
+          );
+        },
+      )}
       actions={
         <>
           {user && (

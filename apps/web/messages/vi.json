@@ -174,6 +174,7 @@
     "applications": "Ứng tuyển",
     "interviews": "Phỏng vấn",
     "documents": "Tài liệu",
+    "profile": "Hồ sơ",
     "admin": "Quản trị",
     "settings": "Cài đặt tài khoản",
     "signOut": "Đăng xuất"
@@ -434,6 +435,31 @@
       "belowFloor": "Dưới ngưỡng, AI không dùng"
     }
   },
+  "profile": {
+    "metaTitle": "Hồ sơ",
+    "title": "Hồ sơ của bạn",
+    "description": "AI dùng hồ sơ này khi phân tích CV, viết cover letter và soạn câu hỏi phỏng vấn. Mỗi phần lưu riêng.",
+    "saved": "Đã lưu thay đổi",
+    "cvs": {
+      "title": "CV đã tải lên",
+      "description": "Tải CV mới không làm thay đổi hồ sơ. Bạn chọn CV khi phân tích hoặc AI dùng CV mới nhất cho cover letter.",
+      "empty": "Chưa có CV nào.",
+      "upload": "Tải CV mới",
+      "uploaded": "Đã tải CV lên",
+      "statuses": {
+        "PENDING": "Đang chờ",
+        "PROCESSING": "AI đang đọc",
+        "COMPLETED": "Đã đọc",
+        "FAILED": "Không đọc được"
+      },
+      "meta": "{date} · {count, plural, =0 {chưa có phân tích} other {# phân tích}}",
+      "delete": "Xoá",
+      "deleteTitle": "Xoá {fileName}?",
+      "deleteBody": "{count, plural, =0 {File CV sẽ bị xoá vĩnh viễn. Thông tin đã điền vào hồ sơ vẫn giữ nguyên.} other {File CV và # phân tích dùng CV này sẽ bị xoá vĩnh viễn. Thông tin đã điền vào hồ sơ vẫn giữ nguyên.}}",
+      "cancel": "Huỷ",
+      "deleted": "Đã xoá CV"
+    }
+  },
   "admin": {
     "metaTitle": "Quản trị",
     "title": "Quản trị",
@@ -475,7 +501,9 @@
       "unverified": "Chưa xác thực email",
       "previous": "Trang trước",
       "next": "Trang sau",
-      "page": "Trang {page}/{pages}"
+      "page": "Trang {page}/{pages}",
+      "pageSize": "Số mục mỗi trang",
+      "pageSizeOption": "{size} / trang"
     },
     "user": {
       "back": "Danh sách người dùng",
@@ -678,7 +706,8 @@
       "next": "Tiếp tục",
       "finish": "Hoàn tất",
       "edit": "Sửa",
-      "signOut": "Đăng xuất"
+      "signOut": "Đăng xuất",
+      "save": "Lưu thay đổi"
     },
     "review": {
       "notProvided": "Chưa cung cấp",

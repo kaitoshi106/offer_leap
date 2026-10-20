@@ -14,9 +14,25 @@ export const isResumeFinal = (resume: ResumeSummary) => RESUME_FINAL_STATUSES.in
 
 export const resumesKey = ['resumes'] as const;
 
-/** The user's CVs, newest first. */
+/** The user's CVs, newest first. Refreshes itself while the AI is still reading one. */
 export function useResumes() {
-  return useQuery({ queryKey: resumesKey, queryFn: ({ signal }) => resumesApi.list(signal) });
+  return useQuery({
+    queryKey: resumesKey,
+    queryFn: ({ signal }) => resumesApi.list(signal),
+    refetchInterval: (query) => (query.state.data?.some((resume) => !isResumeFinal(resume)) ? 2_000 : false),
+  });
+}
+
+/** Deletes a CV (and, on the API, the analyses made with it). */
+export function useDeleteResume() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: resumesApi.remove,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: resumesKey, exact: true });
+      void queryClient.invalidateQueries({ queryKey: ['analyses'] });
+    },
+  });
 }
 
 /** Uploads a CV; the new (pending) CV becomes the onboarding state's `resume` and joins the CV list. */

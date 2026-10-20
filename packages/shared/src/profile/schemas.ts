@@ -96,6 +96,16 @@ export const saveOnboardingStepSchema = z.discriminatedUnion('step', [
   z.object({ step: z.literal('preferences'), values: preferencesStepSchema }),
 ]);
 
+/**
+ * `PUT /profile/sections`: edit one part of a completed profile. Same parts and rules as the onboarding steps, so
+ * the profile can never hold values onboarding would reject.
+ */
+export const updateProfileSectionSchema = z.discriminatedUnion('section', [
+  z.object({ section: z.literal('personal'), values: personalStepSchema }),
+  z.object({ section: z.literal('career'), values: careerStepSchema }),
+  z.object({ section: z.literal('preferences'), values: preferencesStepSchema }),
+]);
+
 export type PersonalStepInput = z.input<typeof personalStepSchema>;
 export type PersonalStep = z.output<typeof personalStepSchema>;
 export type CareerStepInput = z.input<typeof careerStepSchema>;
@@ -105,3 +115,6 @@ export type PreferencesStep = z.output<typeof preferencesStepSchema>;
 export type CompleteOnboardingInput = z.output<typeof completeOnboardingSchema>;
 export type SaveOnboardingStepInput = z.input<typeof saveOnboardingStepSchema>;
 export type SaveOnboardingStep = z.output<typeof saveOnboardingStepSchema>;
+export type UpdateProfileSectionInput = z.input<typeof updateProfileSectionSchema>;
+export type UpdateProfileSection = z.output<typeof updateProfileSectionSchema>;
+export type ProfileSection = UpdateProfileSection['section'];

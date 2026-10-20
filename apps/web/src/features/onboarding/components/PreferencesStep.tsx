@@ -17,20 +17,24 @@ import { FormField } from '@/components/molecules';
 import { sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
 
 import { StepActions } from './StepActions';
-import { useStepSave } from './use-step-save';
+import { type StepFormMode, useStepSave } from './use-step-save';
 
 /** Optional salary inputs: empty means "not provided" (`null`). */
 const toOptionalNumber = (value: unknown) => (value === '' || value == null ? null : Number(value));
 
 /** Step 3: expected salary range (optional) and work arrangements. */
 export function PreferencesStep({
+  mode = 'onboarding',
   values,
   onSaved,
   onBack,
 }: {
   values: ProfileValues;
   onSaved: () => void;
-  onBack: () => void;
+  /** Omitted on the first wizard step and on the profile page. */
+  onBack?: () => void;
+  /** `profile`: same form on the profile page — saves the profile, one "Save" button. */
+  mode?: StepFormMode;
 }) {
   const t = useTranslations('onboarding');
   const fieldError = useFieldErrorText();
@@ -43,7 +47,7 @@ export function PreferencesStep({
       workTypes: values.workTypes,
     },
   });
-  const { submit, save } = useStepSave('preferences', form.setError, onSaved);
+  const { submit, save } = useStepSave('preferences', form.setError, onSaved, mode);
   const { errors } = form.formState;
   const workTypesError = fieldError(errors.workTypes);
   const salaryInput = {
@@ -118,7 +122,11 @@ export function PreferencesStep({
         )}
       </fieldset>
 
-      <StepActions onBack={onBack} loading={save.isPending} />
+      {mode === 'profile' ? (
+        <StepActions loading={save.isPending} submitLabel={t('actions.save')} icon={false} />
+      ) : (
+        <StepActions onBack={onBack} loading={save.isPending} />
+      )}
     </form>
   );
 }

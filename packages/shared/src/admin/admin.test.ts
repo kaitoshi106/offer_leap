@@ -26,9 +26,11 @@ describe('adminUsersQuerySchema', () => {
   it('coerces query-string numbers and applies defaults', () => {
     expect(adminUsersQuerySchema.parse({ page: '2', q: ' minh ' })).toEqual({
       page: 2,
-      pageSize: 20,
+      pageSize: 10,
       q: 'minh',
     });
+    expect(adminUsersQuerySchema.parse({ pageSize: '50' }).pageSize).toBe(50);
+    expect(adminUsersQuerySchema.safeParse({ pageSize: '20' }).success).toBe(false);
     expect(adminUsersQuerySchema.safeParse({ pageSize: '500' }).success).toBe(false);
   });
 });

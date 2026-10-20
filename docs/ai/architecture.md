@@ -94,6 +94,10 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 - Taxonomies (`industries`, `provinces` — the 34 units in effect since 1 July 2025) are seeded by code and served
   publicly with `Cache-Control: public, max-age=3600`.
 - Web: verify-email and login send unfinished profiles to `/onboarding`; the dashboard does the same.
+- After onboarding, `/profile` reuses the wizard's step forms: `PUT /profile/sections` with `{ section, values }`
+  validates one section with the same shared schema (`ProfileService.saveSection` serves both endpoints). The page
+  also lists CVs (`GET /resumes` with `analysisCount`) and deletes them (`DELETE /resumes/:id`: its analyses go
+  with it, applications keep their data and lose the link). Deleting a CV never changes the profile.
 
 ## Resume parsing pipeline
 
@@ -176,7 +180,8 @@ POST /interviews/:id/complete                       → AI summary, overall 0–
   `POST /auth/admin-invitations/preview` (POST keeps the token out of URL logs) and sets name + password with
   `POST /auth/accept-invitation`, which creates a verified ADMIN/GENERAL account and signs it in. Acceptance is a
   conditional update in a transaction, so a link can't be used twice.
-- **Users** (`/admin/users`, any admin): paginated search (`q` on email/name, role, status), detail with career
+- **Users** (`/admin/users`, any admin): paginated search (`q` on email/name, role, status; `pageSize` is one of
+  the shared `PAGE_SIZES` 10/50/100, picked in the UI and kept in the URL), detail with career
   summary and activity counts (never documents), disable/enable. Disabling revokes every refresh token, so the
   account is signed out within one access-token lifetime (≤ 15 min) and login answers `AUTH_ACCOUNT_LOCKED`.
 - **Who may change whom** is one shared rule, `canManageAccount`: nobody changes themselves or root; general admins

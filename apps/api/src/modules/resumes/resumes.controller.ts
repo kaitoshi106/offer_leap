@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -83,5 +84,13 @@ export class ResumesController {
   @Get(':id')
   findOne(@CurrentUser() user: AccessTokenPayload, @Param('id') id: string): Promise<ResumeSummary> {
     return this.resumes.findOwned(user.sub, id);
+  }
+
+  @ApiOperation({ summary: 'Delete a CV, its file and the analyses made with it' })
+  @ApiErrors(ErrorCode.COMMON_NOT_FOUND)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  remove(@CurrentUser() user: AccessTokenPayload, @Param('id') id: string): Promise<void> {
+    return this.resumes.remove(user.sub, id);
   }
 }

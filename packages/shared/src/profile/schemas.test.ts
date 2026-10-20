@@ -100,3 +100,22 @@ describe('completeOnboardingSchema', () => {
     );
   });
 });
+
+describe('updateProfileSectionSchema', () => {
+  it('validates the values of the chosen section with the onboarding rules', async () => {
+    const { updateProfileSectionSchema } = await import('./schemas');
+    expect(
+      updateProfileSectionSchema.parse({
+        section: 'personal',
+        values: { fullName: 'Minh', phone: '+84 912 345 678', provinceCode: 'ha-noi' },
+      }),
+    ).toEqual({
+      section: 'personal',
+      values: { fullName: 'Minh', phone: '0912345678', provinceCode: 'ha-noi' },
+    });
+    expect(updateProfileSectionSchema.safeParse({ section: 'career', values: { skills: [] } }).success).toBe(
+      false,
+    );
+    expect(updateProfileSectionSchema.safeParse({ section: 'resume', values: {} }).success).toBe(false);
+  });
+});

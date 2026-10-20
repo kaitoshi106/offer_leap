@@ -138,9 +138,11 @@ describe('admin users', () => {
     await signUpOnboarded(ctx, 'minh@example.com');
     await signUpAndVerify(ctx, 'lan@example.com');
 
-    const all = await admin.get('/api/v1/admin/users').query({ pageSize: 2 }).expect(200);
-    expect(all.body).toMatchObject({ total: 3, page: 1, pageSize: 2 });
-    expect(all.body.items).toHaveLength(2);
+    const all = await admin.get('/api/v1/admin/users').expect(200);
+    expect(all.body).toMatchObject({ total: 3, page: 1, pageSize: 10 });
+    expect(all.body.items).toHaveLength(3);
+    const second = await admin.get('/api/v1/admin/users').query({ page: 2, pageSize: 50 }).expect(200);
+    expect(second.body).toMatchObject({ total: 3, page: 2, pageSize: 50, items: [] });
 
     // Case-insensitive, on email or name.
     const search = await admin.get('/api/v1/admin/users').query({ q: 'MINH@', role: 'USER' }).expect(200);
@@ -148,6 +150,7 @@ describe('admin users', () => {
     expect(search.body.items[0]).toMatchObject({ onboardingCompleted: true, status: 'ACTIVE' });
 
     await admin.get('/api/v1/admin/users').query({ pageSize: 500 }).expect(422);
+    await admin.get('/api/v1/admin/users').query({ pageSize: 2 }).expect(422);
   });
 
   it('shows account details with activity counts but no documents', async () => {

@@ -10,4 +10,5 @@ export const resumesApi = {
     return apiRequest<ResumeSummary>('/resumes', { method: 'POST', body });
   },
   get: (id: string, signal?: AbortSignal) => apiRequest<ResumeSummary>(`/resumes/${id}`, { signal }),
+  remove: (id: string) => apiRequest<void>(`/resumes/${id}`, { method: 'DELETE' }),
 };
