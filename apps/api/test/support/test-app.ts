@@ -4,6 +4,7 @@ import request from 'supertest';
 
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
+import { hashPassword } from '../../src/common/security/hashing';
 import { AI_PROVIDER, type AiProvider } from '../../src/modules/ai/ai.types';
 import { MailService } from '../../src/modules/mail/mail.service';
 import type { MailJob } from '../../src/modules/mail/mail.types';
@@ -64,7 +65,7 @@ export async function createTestApp(options: { ai?: AiProvider } = {}): Promise<
  */
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "interview_questions", "interview_sessions", "resumes", "job_applications", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
+    'TRUNCATE TABLE "admin_invitations", "interview_questions", "interview_sessions", "resumes", "job_applications", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
   );
 }
 
@@ -124,5 +125,32 @@ export async function signUpOnboarded(ctx: TestContext, email = 'minh@example.co
   ];
   for (const body of steps) await agent.put('/api/v1/onboarding/draft').send(body).expect(200);
   await agent.post('/api/v1/onboarding/complete').expect(200);
+  return agent;
+}
+
+/**
+ * @description Creates an admin directly in the database (root is normally seeded) and signs in.
+ * @param ctx - Test app context.
+ * @param level - ROOT or GENERAL.
+ * @param email - Account email.
+ */
+export async function signInAdmin(
+  ctx: TestContext,
+  level: 'ROOT' | 'GENERAL',
+  email = `${level.toLowerCase()}@offerleap.local`,
+) {
+  const password = 'admin-pass-2026';
+  await ctx.prisma.user.create({
+    data: {
+      email,
+      fullName: level === 'ROOT' ? 'Root Admin' : 'General Admin',
+      passwordHash: await hashPassword(password),
+      role: 'ADMIN',
+      adminLevel: level,
+      emailVerifiedAt: new Date(),
+    },
+  });
+  const agent = request.agent(ctx.app.getHttpServer());
+  await agent.post('/api/v1/auth/login').send({ email, password }).expect(200);
   return agent;
 }

@@ -68,7 +68,9 @@
     "INTERVIEW_ALREADY_ANSWERED": "This question has already been answered.",
     "INTERVIEW_NOT_FINISHED": "Answer or skip every question before the summary.",
     "INTERVIEW_ALREADY_COMPLETED": "This interview has ended.",
-    "AI_FAILED": "The AI returned something unusable. Please try again."
+    "AI_FAILED": "The AI returned something unusable. Please try again.",
+    "ADMIN_ACTION_NOT_ALLOWED": "You aren't allowed to do this to that account.",
+    "ADMIN_INVITATION_PENDING": "This email already has a pending invitation. Use \"Resend\"."
   },
   "validation": {
     "required": "This field is required.",
@@ -149,6 +151,15 @@
     "showcase": {
       "match": "Match with the JD",
       "ai": "AI filled in your profile"
+    },
+    "invite": {
+      "title": "Set up your admin account",
+      "description": "You've been invited to be an admin. Choose your name and password to start.",
+      "checking": "Checking your invitation…",
+      "email": "Invited email",
+      "submit": "Create account",
+      "missingToken": "This invitation link is invalid.",
+      "askRoot": "Ask the root admin to send a new invitation."
     }
   },
   "nav": {
@@ -157,6 +168,8 @@
     "analyses": "CV analysis",
     "applications": "Applications",
     "interviews": "Interviews",
+    "admin": "Admin",
+    "settings": "Account settings",
     "signOut": "Sign out"
   },
   "dashboard": {
@@ -367,6 +380,119 @@
       "listening": "Listening… press again to stop.",
       "error": "The microphone isn't available. Check the browser's microphone permission."
     }
+  },
+  "admin": {
+    "metaTitle": "Admin",
+    "title": "Admin",
+    "forbidden": "This page is for admins only.",
+    "tabs": {
+      "label": "Admin sections",
+      "users": "Users",
+      "admins": "Admins"
+    },
+    "roles": {
+      "USER": "User",
+      "ADMIN": "Admin",
+      "ROOT": "Root admin",
+      "GENERAL": "Admin"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "DISABLED": "Disabled"
+    },
+    "users": {
+      "title": "Users",
+      "search": "Search by email or name",
+      "role": "Role",
+      "status": "Status",
+      "all": "All",
+      "total": "{total, plural, =0 {No accounts} one {# account} other {# accounts}}",
+      "empty": "No matching accounts.",
+      "columns": {
+        "name": "Name",
+        "role": "Role",
+        "status": "Status",
+        "onboarding": "Profile",
+        "createdAt": "Created"
+      },
+      "onboardingDone": "Complete",
+      "onboardingPending": "In progress",
+      "unverified": "Email not verified",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page} of {pages}"
+    },
+    "user": {
+      "back": "All users",
+      "account": "Account",
+      "career": "Career",
+      "activity": "Activity",
+      "noProfile": "No career profile yet.",
+      "createdAt": "Created",
+      "lastLogin": "Last sign-in",
+      "never": "Never",
+      "jobTitle": "Job title",
+      "level": "Level",
+      "years": "Experience",
+      "yearsValue": "{years} years",
+      "counts": {
+        "resumes": "CVs",
+        "analyses": "Analyses",
+        "applications": "Applications",
+        "interviews": "Interviews"
+      },
+      "disable": "Disable account",
+      "enable": "Enable account",
+      "disableTitle": "Disable {email}?",
+      "disableBody": "The user is signed out everywhere and cannot sign in until the account is enabled again.",
+      "enableTitle": "Enable {email}?",
+      "enableBody": "The user can sign in again.",
+      "cancel": "Cancel",
+      "disabled": "Account disabled",
+      "enabled": "Account enabled",
+      "notManageable": "You can't change this account."
+    },
+    "admins": {
+      "title": "Admins",
+      "inviteTitle": "Invite a new admin",
+      "description": "Invite a new admin by email. The link is valid for 48 hours and can be used once.",
+      "email": "Invitee's email",
+      "language": "Email language",
+      "invite": "Send invitation",
+      "invited": "Invitation sent to {email}",
+      "list": "Invitations",
+      "empty": "No invitations yet.",
+      "invitedBy": "Invited by {name} · {date}",
+      "expires": "Expires {date}",
+      "resend": "Resend",
+      "resent": "Invitation sent again",
+      "revoke": "Revoke",
+      "revoked": "Invitation revoked",
+      "statuses": {
+        "PENDING": "Pending",
+        "ACCEPTED": "Accepted",
+        "EXPIRED": "Expired",
+        "REVOKED": "Revoked"
+      }
+    },
+    "languages": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    }
+  },
+  "settings": {
+    "metaTitle": "Settings",
+    "title": "Account settings",
+    "account": "Account",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "password": "Change password",
+    "passwordDescription": "Other devices are signed out after the change.",
+    "currentPassword": "Current password",
+    "submit": "Change password",
+    "changed": "Password changed",
+    "rootPassword": "The root admin's password can only be changed through server configuration."
   },
   "onboarding": {
     "metaTitle": "Complete your profile",

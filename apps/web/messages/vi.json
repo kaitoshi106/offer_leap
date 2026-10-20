@@ -68,7 +68,9 @@
     "INTERVIEW_ALREADY_ANSWERED": "Câu hỏi này đã được trả lời.",
     "INTERVIEW_NOT_FINISHED": "Hãy trả lời hoặc bỏ qua tất cả câu hỏi trước khi xem tổng kết.",
     "INTERVIEW_ALREADY_COMPLETED": "Buổi phỏng vấn đã kết thúc.",
-    "AI_FAILED": "AI trả về kết quả không dùng được. Vui lòng thử lại."
+    "AI_FAILED": "AI trả về kết quả không dùng được. Vui lòng thử lại.",
+    "ADMIN_ACTION_NOT_ALLOWED": "Bạn không có quyền thực hiện thao tác này với tài khoản đó.",
+    "ADMIN_INVITATION_PENDING": "Email này đã có lời mời đang chờ. Hãy dùng \"Gửi lại\"."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -149,6 +151,15 @@
     "showcase": {
       "match": "Độ phù hợp với JD",
       "ai": "AI đã điền hồ sơ"
+    },
+    "invite": {
+      "title": "Tạo tài khoản quản trị",
+      "description": "Bạn được mời trở thành quản trị viên. Đặt tên và mật khẩu để bắt đầu.",
+      "checking": "Đang kiểm tra lời mời…",
+      "email": "Email được mời",
+      "submit": "Tạo tài khoản",
+      "missingToken": "Liên kết mời không hợp lệ.",
+      "askRoot": "Hãy nhờ quản trị viên gốc gửi lại lời mời."
     }
   },
   "nav": {
@@ -157,6 +168,8 @@
     "analyses": "Phân tích CV",
     "applications": "Ứng tuyển",
     "interviews": "Phỏng vấn",
+    "admin": "Quản trị",
+    "settings": "Cài đặt tài khoản",
     "signOut": "Đăng xuất"
   },
   "dashboard": {
@@ -367,6 +380,119 @@
       "listening": "Đang nghe… bấm lại để dừng.",
       "error": "Không dùng được micro. Hãy kiểm tra quyền truy cập micro của trình duyệt."
     }
+  },
+  "admin": {
+    "metaTitle": "Quản trị",
+    "title": "Quản trị",
+    "forbidden": "Trang này chỉ dành cho quản trị viên.",
+    "tabs": {
+      "label": "Mục quản trị",
+      "users": "Người dùng",
+      "admins": "Quản trị viên"
+    },
+    "roles": {
+      "USER": "Người dùng",
+      "ADMIN": "Quản trị viên",
+      "ROOT": "Quản trị gốc",
+      "GENERAL": "Quản trị viên"
+    },
+    "statuses": {
+      "ACTIVE": "Đang hoạt động",
+      "DISABLED": "Đã khoá"
+    },
+    "users": {
+      "title": "Người dùng",
+      "search": "Tìm theo email hoặc tên",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "all": "Tất cả",
+      "total": "{total, plural, =0 {Không có tài khoản nào} other {# tài khoản}}",
+      "empty": "Không tìm thấy tài khoản phù hợp.",
+      "columns": {
+        "name": "Họ tên",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "onboarding": "Hồ sơ",
+        "createdAt": "Ngày tạo"
+      },
+      "onboardingDone": "Đã hoàn tất",
+      "onboardingPending": "Chưa xong",
+      "unverified": "Chưa xác thực email",
+      "previous": "Trang trước",
+      "next": "Trang sau",
+      "page": "Trang {page}/{pages}"
+    },
+    "user": {
+      "back": "Danh sách người dùng",
+      "account": "Tài khoản",
+      "career": "Nghề nghiệp",
+      "activity": "Hoạt động",
+      "noProfile": "Chưa có hồ sơ nghề nghiệp.",
+      "createdAt": "Ngày tạo",
+      "lastLogin": "Đăng nhập gần nhất",
+      "never": "Chưa đăng nhập",
+      "jobTitle": "Vị trí",
+      "level": "Cấp bậc",
+      "years": "Kinh nghiệm",
+      "yearsValue": "{years} năm",
+      "counts": {
+        "resumes": "CV",
+        "analyses": "Phân tích",
+        "applications": "Ứng tuyển",
+        "interviews": "Phỏng vấn"
+      },
+      "disable": "Khoá tài khoản",
+      "enable": "Mở khoá tài khoản",
+      "disableTitle": "Khoá tài khoản {email}?",
+      "disableBody": "Người dùng bị đăng xuất khỏi mọi thiết bị và không thể đăng nhập cho tới khi được mở khoá.",
+      "enableTitle": "Mở khoá tài khoản {email}?",
+      "enableBody": "Người dùng có thể đăng nhập lại.",
+      "cancel": "Huỷ",
+      "disabled": "Đã khoá tài khoản",
+      "enabled": "Đã mở khoá tài khoản",
+      "notManageable": "Bạn không có quyền thay đổi tài khoản này."
+    },
+    "admins": {
+      "title": "Quản trị viên",
+      "inviteTitle": "Mời quản trị viên mới",
+      "description": "Mời quản trị viên mới qua email. Liên kết có hiệu lực 48 giờ và chỉ dùng được một lần.",
+      "email": "Email người được mời",
+      "language": "Ngôn ngữ email",
+      "invite": "Gửi lời mời",
+      "invited": "Đã gửi lời mời tới {email}",
+      "list": "Lời mời đã gửi",
+      "empty": "Chưa gửi lời mời nào.",
+      "invitedBy": "Mời bởi {name} · {date}",
+      "expires": "Hết hạn {date}",
+      "resend": "Gửi lại",
+      "resent": "Đã gửi lại lời mời",
+      "revoke": "Thu hồi",
+      "revoked": "Đã thu hồi lời mời",
+      "statuses": {
+        "PENDING": "Đang chờ",
+        "ACCEPTED": "Đã chấp nhận",
+        "EXPIRED": "Hết hạn",
+        "REVOKED": "Đã thu hồi"
+      }
+    },
+    "languages": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    }
+  },
+  "settings": {
+    "metaTitle": "Cài đặt",
+    "title": "Cài đặt tài khoản",
+    "account": "Tài khoản",
+    "name": "Họ tên",
+    "email": "Email",
+    "role": "Vai trò",
+    "password": "Đổi mật khẩu",
+    "passwordDescription": "Sau khi đổi, các thiết bị khác sẽ bị đăng xuất.",
+    "currentPassword": "Mật khẩu hiện tại",
+    "submit": "Đổi mật khẩu",
+    "changed": "Đã đổi mật khẩu",
+    "rootPassword": "Mật khẩu của quản trị viên gốc chỉ thay đổi được qua cấu hình máy chủ."
   },
   "onboarding": {
     "metaTitle": "Hoàn thiện hồ sơ",

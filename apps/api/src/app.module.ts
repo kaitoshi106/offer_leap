@@ -11,6 +11,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AnalysesModule } from './modules/analyses/analyses.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
@@ -75,6 +76,7 @@ function redisConnection(url: string) {
     AnalysesModule,
     ApplicationsModule,
     InterviewsModule,
+    AdminModule,
   ],
   providers: [
     // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.

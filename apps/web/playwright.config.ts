@@ -9,6 +9,9 @@ import { defineConfig, devices } from '@playwright/test';
  * (start the web app with `NEXT_PUBLIC_API_URL=http://localhost:4100/api/v1` and the API with
  * `NODE_ENV=test AI_PROVIDER=mock API_PORT=4100 WEB_ORIGIN=http://localhost:3100`).
  * A reused `pnpm dev` API uses your AI_PROVIDER: with `gemini` the CV test calls the real API (and may be slow).
+ * Admin tests need a root account whose password the test knows: run the isolated API on the test database
+ * (`DATABASE_URL=$DATABASE_URL_TEST`, migrated and seeded with ROOT_ADMIN_EMAIL/PASSWORD) and pass the same values
+ * as E2E_ROOT_EMAIL / E2E_ROOT_PASSWORD. Without them the admin tests are skipped — the dev root is never touched.
  * A reused `pnpm dev` API keeps its rate limits (5 sign-ups / logins per minute), so rerun after a minute.
  */
 const WEB_PORT = Number(process.env.E2E_WEB_PORT ?? 3000);

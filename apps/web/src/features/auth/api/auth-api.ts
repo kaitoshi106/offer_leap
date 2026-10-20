@@ -1,4 +1,6 @@
 import type {
+  AcceptInvitationInput,
+  InvitationPreview,
   AuthSession,
   AuthUser,
   ChangePasswordInput,
@@ -27,6 +29,14 @@ export const authApi = {
     apiRequest<void>('/auth/forgot-password', { method: 'POST', body, ...PUBLIC }),
   resetPassword: (body: ResetPasswordInput) =>
     apiRequest<void>('/auth/reset-password', { method: 'POST', body, ...PUBLIC }),
+  previewInvitation: (token: string) =>
+    apiRequest<InvitationPreview>('/auth/admin-invitations/preview', {
+      method: 'POST',
+      body: { token },
+      ...PUBLIC,
+    }),
+  acceptInvitation: (body: AcceptInvitationInput) =>
+    apiRequest<AuthSession>('/auth/accept-invitation', { method: 'POST', body, ...PUBLIC }),
   changePassword: (body: ChangePasswordInput) =>
     apiRequest<AuthSession>('/auth/change-password', { method: 'POST', body }),
 };

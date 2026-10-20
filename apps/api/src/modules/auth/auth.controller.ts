@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@ne
 import { ConfigService } from '@nestjs/config';
 import {
   ApiAcceptedResponse,
+  ApiOkResponse,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOperation,
@@ -10,7 +11,10 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import {
   type AuthSession,
+  type AcceptInvitationInput,
+  acceptInvitationSchema,
   authSessionSchema,
+  type InvitationPreview,
   type AuthUser,
   authUserSchema,
   type ChangePasswordInput,
@@ -40,6 +44,7 @@ import { ApiErrors, ApiZodBody, ApiZodResponse } from '../../common/openapi/open
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import type { Env } from '../../config/env.schema';
 import { clearSessionCookies, REFRESH_TOKEN_COOKIE, setSessionCookies } from './auth.cookies';
+import { AdminInvitationsService } from './admin-invitations.service';
 import { AuthService, type SessionResult } from './auth.service';
 
 /** Tight limit for endpoints that are attractive to brute force or email spam: 5 requests / minute / IP. */
@@ -67,6 +72,7 @@ export class AuthController {
 
   constructor(
     private readonly auth: AuthService,
+    private readonly invitations: AdminInvitationsService,
     config: ConfigService<Env, true>,
   ) {
     this.secureCookies = config.get('NODE_ENV', { infer: true }) === 'production';
@@ -254,6 +260,48 @@ export class AuthController {
       await this.auth.changePassword(user.sub, body, clientInfo(request)),
       response,
     );
+  }
+
+  @Public()
+  @Throttle(SENSITIVE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check an admin invitation link',
+    description: 'POST so the token never ends up in URL logs. Returns the invited email.',
+  })
+  @ApiZodBody(tokenOnlySchema)
+  @ApiOkResponse({ description: 'Invitation is valid.' })
+  @ApiErrors(ErrorCode.AUTH_TOKEN_INVALID, ErrorCode.AUTH_TOKEN_EXPIRED)
+  @Post('admin-invitations/preview')
+  previewInvitation(
+    @Body(new ZodValidationPipe(tokenOnlySchema)) body: TokenOnlyInput,
+  ): Promise<InvitationPreview> {
+    return this.invitations.preview(body.token);
+  }
+
+  @Public()
+  @Throttle(SENSITIVE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Accept an admin invitation',
+    description: 'Creates the general admin account and signs it in.',
+  })
+  @ApiZodBody(acceptInvitationSchema)
+  @ApiZodResponse(200, authSessionSchema, SESSION_SET)
+  @ApiErrors(
+    ErrorCode.COMMON_VALIDATION_FAILED,
+    ErrorCode.AUTH_TOKEN_INVALID,
+    ErrorCode.AUTH_TOKEN_EXPIRED,
+    ErrorCode.AUTH_EMAIL_TAKEN,
+  )
+  @Post('accept-invitation')
+  async acceptInvitation(
+    @Body(new ZodValidationPipe(acceptInvitationSchema)) body: AcceptInvitationInput,
+    @Req() request: AppRequest,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthSession> {
+    const user = await this.invitations.accept(body, requestLocale(request));
+    return this.respondWithSession(await this.auth.startSession(user, clientInfo(request)), response);
   }
 
   private respondWithSession({ user, tokens }: SessionResult, response: Response): AuthSession {

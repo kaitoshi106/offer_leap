@@ -217,7 +217,8 @@ export class AuthService {
     return this.startSession(updated, client);
   }
 
-  private async startSession(user: User, client: ClientInfo): Promise<SessionResult> {
+  /** Signs an account in (also used for a general admin who just accepted an invitation). */
+  async startSession(user: User, client: ClientInfo): Promise<SessionResult> {
     return { user: toAuthUser(user), tokens: await this.tokens.createSession(user, client) };
   }
 

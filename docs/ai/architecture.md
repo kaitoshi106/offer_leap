@@ -169,6 +169,23 @@ POST /interviews/:id/complete                       → AI summary, overall 0–
 - Gemini: not every model supports the MINIMAL thinking level — the provider retries that model with LOW and
   remembers it (found when a 503 on the main model made the fallback reject MINIMAL).
 
+## Admin console
+
+- **Invitations** (root only, `/admin/invitations`): `AdminInvitation` stores the SHA-256 of a random token, 48 h
+  validity; resend rotates the token, revoke ends it. The invitee checks the link with
+  `POST /auth/admin-invitations/preview` (POST keeps the token out of URL logs) and sets name + password with
+  `POST /auth/accept-invitation`, which creates a verified ADMIN/GENERAL account and signs it in. Acceptance is a
+  conditional update in a transaction, so a link can't be used twice.
+- **Users** (`/admin/users`, any admin): paginated search (`q` on email/name, role, status), detail with career
+  summary and activity counts (never documents), disable/enable. Disabling revokes every refresh token, so the
+  account is signed out within one access-token lifetime (≤ 15 min) and login answers `AUTH_ACCOUNT_LOCKED`.
+- **Who may change whom** is one shared rule, `canManageAccount`: nobody changes themselves or root; general admins
+  manage users; root also manages general admins. The API enforces it (`ADMIN_ACTION_NOT_ALLOWED`) and returns
+  `manageable` so the UI only offers allowed actions.
+- **Settings** (`/settings`): account details and password change (root sees why it can't — config only).
+- Web: admin pages live under `/admin/*` with an `AdminShell` (admin-only gate + section tabs); list filters are kept
+  in the URL so they survive reloads and can be shared.
+
 ## Theming & i18n
 
 - Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user

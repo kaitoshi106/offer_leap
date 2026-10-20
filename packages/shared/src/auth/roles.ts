@@ -46,3 +46,17 @@ export function canManageOwnPassword(account: AccountIdentity): boolean {
 export function canInviteAdmins(account: AccountIdentity): boolean {
   return isRootAdmin(account);
 }
+
+/**
+ * @description Whether an admin may change another account (disable it, enable it). Nobody changes their own
+ * account this way and nobody touches root; general admins manage users, root also manages general admins.
+ * @param actor - The admin acting (with id).
+ * @param target - The account being changed (with id).
+ */
+export function canManageAccount(
+  actor: AccountIdentity & { id: string },
+  target: AccountIdentity & { id: string },
+): boolean {
+  if (actor.role !== Role.ADMIN || actor.id === target.id || isRootAdmin(target)) return false;
+  return target.role === Role.USER || isRootAdmin(actor);
+}

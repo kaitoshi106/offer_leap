@@ -9,16 +9,19 @@ import { useCurrentUser, useLogout } from '@/features/auth/api/use-auth';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useAuthRedirect } from '@/lib/auth-redirect';
 
-const NAV_ITEMS: {
+type NavItem = {
   href: string;
-  key: 'dashboard' | 'analyses' | 'applications' | 'interviews';
+  key: 'dashboard' | 'analyses' | 'applications' | 'interviews' | 'admin';
   icon: IconName;
-}[] = [
+};
+
+const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', key: 'dashboard', icon: 'user' },
   { href: '/analyses', key: 'analyses', icon: 'target' },
   { href: '/applications', key: 'applications', icon: 'file-text' },
   { href: '/interviews', key: 'interviews', icon: 'message-square' },
 ];
+const ADMIN_ITEM: NavItem = { href: '/admin', key: 'admin', icon: 'shield' };
 
 /**
  * @description Layout for signed-in pages: navigation, account and sign-out. Also enforces what the proxy can't
@@ -49,7 +52,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
       )}
       navLabel={t('label')}
-      nav={NAV_ITEMS.map(({ href, key, icon }) => {
+      // The admin link is UX only: the admin API checks the role itself.
+      nav={[...NAV_ITEMS, ...(user?.role === 'ADMIN' ? [ADMIN_ITEM] : [])].map(({ href, key, icon }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
           <li key={key}>
@@ -62,7 +66,16 @@ export function AppShell({ children }: { children: ReactNode }) {
       })}
       actions={
         <>
-          {user && <Avatar name={user.fullName} size="sm" className="hidden sm:inline-flex" />}
+          {user && (
+            <Link
+              href="/settings"
+              aria-label={t('settings')}
+              title={t('settings')}
+              className="hidden rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/40 sm:inline-flex"
+            >
+              <Avatar name={user.fullName} size="sm" />
+            </Link>
+          )}
           <Button variant="ghost" size="sm" loading={logout.isPending} onClick={() => logout.mutate()}>
             {t('signOut')}
           </Button>

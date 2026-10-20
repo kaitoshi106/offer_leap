@@ -35,6 +35,24 @@ const COPY = {
       ignore: "If you didn't ask for this, ignore this email — your password stays the same.",
     },
   },
+  'admin-invitation': {
+    vi: {
+      subject: `Lời mời làm quản trị viên – ${APP_NAME}`,
+      greeting: () => 'Xin chào,',
+      body: (inviter: string) =>
+        `${inviter} mời bạn trở thành quản trị viên của ${APP_NAME}. Nhấn vào nút bên dưới để tạo tài khoản. Liên kết có hiệu lực trong 48 giờ và chỉ dùng được một lần.`,
+      action: 'Tạo tài khoản quản trị',
+      ignore: 'Nếu bạn không mong đợi lời mời này, hãy bỏ qua email.',
+    },
+    en: {
+      subject: `You're invited to be an admin – ${APP_NAME}`,
+      greeting: () => 'Hello,',
+      body: (inviter: string) =>
+        `${inviter} invited you to become an admin of ${APP_NAME}. Click the button below to set up your account. The link is valid for 48 hours and can be used once.`,
+      action: 'Set up admin account',
+      ignore: "If you weren't expecting this invitation, you can ignore this email.",
+    },
+  },
 } satisfies Record<MailJob['template'], Record<Locale, unknown>>;
 
 /**
@@ -54,8 +72,10 @@ function escapeHtml(value: string): string {
 export function renderMail(job: MailJob): RenderedMail {
   const copy = COPY[job.template][job.locale];
   const greeting = copy.greeting(job.fullName);
+  // The invitation names the inviting admin in the body (escaped below: names are user input).
+  const body = typeof copy.body === 'function' ? copy.body(job.fullName) : copy.body;
 
-  const text = [greeting, '', copy.body, '', job.link, '', copy.ignore].join('\n');
+  const text = [greeting, '', body, '', job.link, '', copy.ignore].join('\n');
   const html = `<!doctype html>
 <html lang="${job.locale}">
   <body style="margin:0;padding:24px;background:#f6f7fb;font-family:Roboto,Arial,sans-serif;color:#1f2330">
@@ -63,7 +83,7 @@ export function renderMail(job: MailJob): RenderedMail {
       <tr><td>
         <p style="font-size:20px;font-weight:700;margin:0 0 24px">${APP_NAME}</p>
         <p style="margin:0 0 12px">${escapeHtml(greeting)}</p>
-        <p style="margin:0 0 24px;line-height:1.5">${copy.body}</p>
+        <p style="margin:0 0 24px;line-height:1.5">${escapeHtml(body)}</p>
         <a href="${escapeHtml(job.link)}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600">${copy.action}</a>
         <p style="margin:24px 0 0;font-size:13px;color:#6b7080">${copy.ignore}</p>
       </td></tr>

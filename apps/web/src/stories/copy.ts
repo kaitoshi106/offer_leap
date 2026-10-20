@@ -87,6 +87,12 @@ const STORY_COPY = {
       signOut: 'Đăng xuất',
     },
     visuallyHidden: { profile: 'Hồ sơ', newTab: '(mở trong tab mới)' },
+    pagination: {
+      nav: 'Phân trang',
+      previous: 'Trang trước',
+      next: 'Trang sau',
+      status: (page: number, pages: number) => `Trang ${page}/${pages}`,
+    },
     scoreGauge: { label: 'Mức độ phù hợp' },
     appLayout: {
       navLabel: 'Điều hướng chính',
@@ -181,6 +187,12 @@ const STORY_COPY = {
       signOut: 'Sign out',
     },
     visuallyHidden: { profile: 'Profile', newTab: '(opens in a new tab)' },
+    pagination: {
+      nav: 'Pagination',
+      previous: 'Previous page',
+      next: 'Next page',
+      status: (page: number, pages: number) => `Page ${page} of ${pages}`,
+    },
     scoreGauge: { label: 'Match score' },
     appLayout: {
       navLabel: 'Main navigation',

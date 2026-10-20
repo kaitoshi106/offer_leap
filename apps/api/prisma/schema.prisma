@@ -59,6 +59,7 @@ model User {
   analyses              JobAnalysis[]
   applications          JobApplication[]
   interviews            InterviewSession[]
+  sentInvitations       AdminInvitation[]
 
   @@map("users")
 }
@@ -330,4 +331,22 @@ model InterviewQuestion {
 
   @@unique([sessionId, index])
   @@map("interview_questions")
+}
+
+/// An invitation for a general admin, sent by root. Only a hash of the token is stored; accepting it creates an
+/// already-verified ADMIN/GENERAL account.
+model AdminInvitation {
+  id          String    @id @default(cuid())
+  email       String
+  /// SHA-256 of the token in the email link.
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  invitedBy   User      @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@map("admin_invitations")
 }

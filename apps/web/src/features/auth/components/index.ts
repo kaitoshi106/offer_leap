@@ -4,3 +4,4 @@ export * from './RegisterForm';
 export * from './ResetPasswordForm';
 export * from './VerifyEmail';
 export * from './AuthPage';
+export * from './AcceptInvitationForm';

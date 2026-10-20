@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import type { Env } from '../../config/env.schema';
 import { MailModule } from '../mail/mail.module';
 import { UsersModule } from '../users/users.module';
+import { AdminInvitationsService } from './admin-invitations.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { TokenService } from './token.service';
@@ -25,6 +26,7 @@ import { UserTokenService } from './user-token.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService, UserTokenService],
+  providers: [AuthService, TokenService, UserTokenService, AdminInvitationsService],
+  exports: [TokenService, AdminInvitationsService],
 })
 export class AuthModule {}
