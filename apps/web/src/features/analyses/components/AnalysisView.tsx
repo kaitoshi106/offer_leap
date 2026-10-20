@@ -7,6 +7,7 @@ import { type ReactNode, useState } from 'react';
 import { Badge, Button, Heading, Icon, Skeleton, Spinner, Text } from '@/components/atoms';
 import { Alert, ScoreGauge } from '@/components/molecules';
 import { Dialog, useToast } from '@/components/organisms';
+import { ApplicationFormDialog } from '@/features/applications/components/ApplicationFormDialog';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorText } from '@/lib/api/use-error-text';
 
@@ -64,7 +65,10 @@ function AnalysisBody({ analysis }: { analysis: AnalysisDetail }) {
           {format.dateTime(new Date(analysis.createdAt), { dateStyle: 'medium', timeStyle: 'short' })}
         </Text>
       </div>
-      <DeleteAnalysis id={analysis.id} />
+      <div className="flex items-center gap-2">
+        {analysis.status === 'COMPLETED' && <SaveToBoard analysis={analysis} />}
+        <DeleteAnalysis id={analysis.id} />
+      </div>
     </div>
   );
 
@@ -286,6 +290,35 @@ function DeleteAnalysis({ id }: { id: string }) {
             </Button>
           </>
         }
+      />
+    </>
+  );
+}
+
+/** Turns a finished analysis into a tracked application (the API copies the job description and links the score). */
+function SaveToBoard({ analysis }: { analysis: AnalysisDetail }) {
+  const t = useTranslations('analyses.result');
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        leftIcon={<Icon name="file-text" size="sm" />}
+        onClick={() => setOpen(true)}
+      >
+        {t('saveToBoard')}
+      </Button>
+      <ApplicationFormDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onCreated={(application) => router.push(`/applications/${application.id}`)}
+        defaults={{
+          company: analysis.company ?? '',
+          jobTitle: analysis.jobTitle ?? '',
+          analysisId: analysis.id,
+        }}
       />
     </>
   );

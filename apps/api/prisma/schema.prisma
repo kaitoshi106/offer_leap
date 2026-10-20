@@ -57,6 +57,7 @@ model User {
   profile               Profile?
   resumes               Resume[]
   analyses              JobAnalysis[]
+  applications          JobApplication[]
 
   @@map("users")
 }
@@ -228,8 +229,41 @@ model JobAnalysis {
   updatedAt      DateTime     @updatedAt
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   resume         Resume       @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  applications   JobApplication[]
 
   @@index([userId, createdAt])
   @@index([resumeId])
   @@map("job_analyses")
+}
+
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+/// A job the user is tracking on the kanban board, with its cover letter.
+model JobApplication {
+  id             String            @id @default(cuid())
+  userId         String
+  company        String
+  jobTitle       String
+  jobUrl         String?
+  jobDescription String?
+  status         ApplicationStatus @default(SAVED)
+  /// Order inside the column. Fractional: dropping between two cards takes the midpoint.
+  position       Float
+  notes          String?
+  coverLetter    String?
+  /// Analysis the application was created from (kept when the analysis is deleted, just unlinked).
+  analysisId     String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis       JobAnalysis?      @relation(fields: [analysisId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status, position])
+  @@map("job_applications")
 }

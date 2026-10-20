@@ -20,7 +20,7 @@ const fixture = (name: string) => readFileSync(join(__dirname, 'fixtures', name)
 const PDF = Buffer.from('%PDF-1.7\n1 0 obj << >> endobj\ntrailer << >>\n%%EOF\n');
 
 /** Delegates to the mock by default; individual tests swap in failures. */
-const ai = { name: 'test', generateJson: vi.fn() } satisfies AiProvider;
+const ai = { name: 'test', generateJson: vi.fn(), streamText: vi.fn() } satisfies AiProvider;
 const mock = new MockAiProvider();
 
 let ctx: TestContext;

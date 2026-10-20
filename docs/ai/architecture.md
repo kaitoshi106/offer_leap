@@ -135,6 +135,20 @@ web: /analyses (form + history) → /analyses/:id polls every 2 s → score gaug
 - Score bands (`matchLevel` in shared): ≥ 80 strong, ≥ 65 good, ≥ 45 fair, else weak — same labels everywhere.
 - Prompts state today's date: without it the model counts "2019 – present" up to its training cutoff.
 
+## Applications & cover letters
+
+- `JobApplication`: a kanban card (`SAVED → APPLIED → INTERVIEW → OFFER / REJECTED`) with job details, notes and a
+  cover letter; optionally linked to the analysis it was created from (its job description is copied, its score
+  shown; the link is cleared if the analysis is deleted).
+- Ordering uses **fractional positions**: a moved card gets the midpoint of its new neighbours, so a move is one
+  `PATCH /applications/:id/move { status, position }`. The board updates optimistically and rolls back on error.
+  Cards move by HTML5 drag and drop or by a per-card column `<select>` (keyboard, touch, screen readers).
+- Cover letters are **streamed**: `POST /applications/:id/cover-letter` answers `text/plain` chunks while the
+  model writes (`AiProvider.streamText`, prompt `cover-letter.v1`). Everything that can fail cleanly (no job
+  description, AI unavailable) is checked before the first byte, so it is still a JSON error; a failure mid-way
+  cuts the connection and the client shows `STREAM_INTERRUPTED`. The finished letter is saved; leaving the page
+  aborts the request and the server stops reading from the model.
+
 ## Theming & i18n
 
 - Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user

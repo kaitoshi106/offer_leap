@@ -10,7 +10,7 @@ import { AnalysisView } from './AnalysisView';
 
 const replace = vi.fn();
 vi.mock('@/i18n/navigation', () => ({
-  useRouter: () => ({ replace }),
+  useRouter: () => ({ replace, push: vi.fn() }),
   Link: ({ href, ...rest }: ComponentProps<'a'>) => <a href={href} {...rest} />,
 }));
 

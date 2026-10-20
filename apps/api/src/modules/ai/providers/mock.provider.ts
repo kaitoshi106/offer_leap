@@ -1,4 +1,4 @@
-import type { AiJsonRequest, AiJsonResult, AiProvider } from '../ai.types';
+import type { AiJsonRequest, AiJsonResult, AiProvider, AiTextRequest, AiTextStream } from '../ai.types';
 import { AiInvalidOutputError } from '../ai.errors';
 import { parseJsonOutput } from './json-output';
 
@@ -35,6 +35,18 @@ const MOCK_ANSWERS: Record<string, unknown> = {
   },
 };
 
+/** Canned free-text answers per task (streamed word by word). */
+const MOCK_TEXTS: Record<string, string> = {
+  'cover-letter.v1': `Dear Hiring Team,
+
+I am excited to apply for this role. Over the past six years I have built fast, accessible web applications with React, TypeScript and Next.js.
+
+I would welcome the chance to bring that experience to your team.
+
+Best regards,
+Nguyễn Văn An`,
+};
+
 /**
  * Deterministic provider for tests and offline development (`AI_PROVIDER=mock`): no network, no key, no cost.
  * Answers still go through schema validation, so a fixture that drifts from the prompt's schema fails loudly.
@@ -50,5 +62,15 @@ export class MockAiProvider implements AiProvider {
       model: 'mock',
       usage: { inputTokens: 0, outputTokens: 0 },
     };
+  }
+
+  async streamText(request: AiTextRequest): Promise<AiTextStream> {
+    const text = MOCK_TEXTS[request.task];
+    if (text === undefined) throw new AiInvalidOutputError(`No mock text for ${request.task}`);
+    async function* chunks(): AsyncGenerator<string> {
+      // Keep the whitespace so the pieces join back into the exact text.
+      for (const piece of text!.split(/(?<=\s)/)) yield piece;
+    }
+    return { model: 'mock', chunks: chunks(), usage: () => ({ inputTokens: 0, outputTokens: 0 }) };
   }
 }

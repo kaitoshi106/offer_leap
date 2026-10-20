@@ -63,7 +63,8 @@
     "COMMON_UNSUPPORTED_FILE_TYPE": "Chỉ hỗ trợ file PDF, DOCX, PNG, JPG hoặc WEBP.",
     "RESUME_PARSE_FAILED": "AI không đọc được CV này. Hãy thử file khác hoặc tự nhập thông tin.",
     "AI_UNAVAILABLE": "Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút hoặc tự nhập thông tin.",
-    "ANALYSIS_FAILED": "AI không phân tích được CV này với mô tả công việc. Hãy thử lại hoặc dùng CV khác."
+    "ANALYSIS_FAILED": "AI không phân tích được CV này với mô tả công việc. Hãy thử lại hoặc dùng CV khác.",
+    "STREAM_INTERRUPTED": "Kết nối bị gián đoạn khi AI đang viết. Vui lòng thử lại."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -150,6 +151,7 @@
     "label": "Điều hướng chính",
     "dashboard": "Tổng quan",
     "analyses": "Phân tích CV",
+    "applications": "Ứng tuyển",
     "signOut": "Đăng xuất"
   },
   "dashboard": {
@@ -220,7 +222,72 @@
       "deleteTitle": "Xoá phân tích này?",
       "deleteBody": "Kết quả sẽ bị xoá vĩnh viễn.",
       "cancel": "Huỷ",
-      "deleted": "Đã xoá phân tích"
+      "deleted": "Đã xoá phân tích",
+      "saveToBoard": "Lưu vào bảng ứng tuyển"
+    }
+  },
+  "applications": {
+    "metaTitle": "Ứng tuyển",
+    "title": "Theo dõi ứng tuyển",
+    "description": "Kéo thả thẻ giữa các cột để cập nhật tiến độ. Mở một thẻ để ghi chú hoặc nhờ AI viết cover letter.",
+    "add": "Thêm ứng tuyển",
+    "empty": "Chưa có",
+    "board": "Bảng ứng tuyển",
+    "statuses": {
+      "SAVED": "Đã lưu",
+      "APPLIED": "Đã nộp",
+      "INTERVIEW": "Phỏng vấn",
+      "OFFER": "Có offer",
+      "REJECTED": "Bị từ chối"
+    },
+    "card": {
+      "moveTo": "Chuyển {jobTitle} tại {company} sang cột",
+      "score": "Phù hợp {score}%",
+      "coverLetter": "Đã có cover letter",
+      "open": "Mở {jobTitle} tại {company}"
+    },
+    "moved": "Đã chuyển {jobTitle} sang cột {status}.",
+    "form": {
+      "createTitle": "Thêm ứng tuyển",
+      "company": "Công ty",
+      "jobTitle": "Vị trí",
+      "jobUrl": "Link tin tuyển dụng",
+      "jobUrlHint": "Không bắt buộc. VD: https://…",
+      "jobDescription": "Mô tả công việc (JD)",
+      "jobDescriptionHint": "Không bắt buộc, nhưng cần có để AI viết cover letter.",
+      "status": "Cột",
+      "notes": "Ghi chú",
+      "notesPlaceholder": "Người liên hệ, lịch phỏng vấn, mức lương đã trao đổi…",
+      "create": "Thêm",
+      "save": "Lưu thay đổi",
+      "cancel": "Huỷ",
+      "saved": "Đã lưu thay đổi",
+      "created": "Đã thêm vào bảng ứng tuyển"
+    },
+    "detail": {
+      "back": "Bảng ứng tuyển",
+      "details": "Thông tin",
+      "analysis": "Xem phân tích ({score} điểm)",
+      "openJob": "Mở tin tuyển dụng",
+      "delete": "Xoá",
+      "deleteTitle": "Xoá ứng tuyển này?",
+      "deleteBody": "Ghi chú và cover letter cũng sẽ bị xoá.",
+      "deleted": "Đã xoá ứng tuyển"
+    },
+    "coverLetter": {
+      "title": "Cover letter",
+      "description": "AI viết dựa trên CV, hồ sơ của bạn và mô tả công việc. Bạn có thể chỉnh sửa trước khi gửi.",
+      "generate": "Viết bằng AI",
+      "regenerate": "Viết lại",
+      "writing": "AI đang viết…",
+      "stop": "Dừng",
+      "done": "Đã viết xong cover letter.",
+      "needsJd": "Thêm mô tả công việc (JD) ở phần Thông tin để AI có thể viết cover letter.",
+      "label": "Nội dung cover letter",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép",
+      "save": "Lưu",
+      "saved": "Đã lưu cover letter"
     }
   },
   "onboarding": {

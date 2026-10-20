@@ -19,7 +19,7 @@ const JOB = `Acme Tech is hiring a Senior Frontend Engineer.
 Requirements: 5+ years with React and TypeScript, GraphQL, testing with Playwright.
 Nice to have: Next.js, design systems.`;
 
-const ai = { name: 'test', generateJson: vi.fn() } satisfies AiProvider;
+const ai = { name: 'test', generateJson: vi.fn(), streamText: vi.fn() } satisfies AiProvider;
 const mock = new MockAiProvider();
 
 let ctx: TestContext;

@@ -95,3 +95,75 @@ describe('GeminiProvider', () => {
     await expect(provider.generateJson(request)).rejects.toBeInstanceOf(AiInvalidOutputError);
   });
 });
+
+describe('GeminiProvider.streamText', () => {
+  const textRequest = {
+    task: 'letter.v1',
+    system: 'Write a letter.',
+    parts: [{ type: 'text' as const, text: 'Hi' }],
+  };
+
+  async function* chunks(...items: (Error | { text?: string; usageMetadata?: object })[]) {
+    for (const item of items) {
+      if (item instanceof Error) throw item;
+      yield item;
+    }
+  }
+
+  function setupStream(...streams: AsyncGenerator<unknown>[]) {
+    const generateContentStream = vi.fn();
+    for (const stream of streams) generateContentStream.mockResolvedValueOnce(stream);
+    const provider = new GeminiProvider({
+      client: { models: { generateContentStream } } as never,
+      models: ['main-model', 'fallback-model'],
+    });
+    return { provider, generateContentStream };
+  }
+
+  async function collect(iterable: AsyncIterable<string>) {
+    let text = '';
+    for await (const piece of iterable) text += piece;
+    return text;
+  }
+
+  it('streams the pieces and reports the final usage', async () => {
+    const { provider, generateContentStream } = setupStream(
+      chunks(
+        { text: 'Dear ', usageMetadata: { promptTokenCount: 50, candidatesTokenCount: 1 } },
+        {
+          text: 'team',
+          usageMetadata: { promptTokenCount: 50, candidatesTokenCount: 2, thoughtsTokenCount: 3 },
+        },
+      ),
+    );
+
+    const stream = await provider.streamText(textRequest);
+
+    expect(await collect(stream.chunks)).toBe('Dear team');
+    expect(stream).toMatchObject({ model: 'main-model' });
+    expect(stream.usage()).toEqual({ inputTokens: 50, outputTokens: 5 });
+    expect(generateContentStream.mock.calls[0]![0].config).toMatchObject({
+      systemInstruction: 'Write a letter.',
+    });
+  });
+
+  it('falls back when the first chunk reports an overloaded model', async () => {
+    const { provider } = setupStream(
+      chunks(new ApiError({ message: 'overloaded', status: 503 })),
+      chunks({ text: 'Hello' }),
+    );
+
+    const stream = await provider.streamText(textRequest);
+
+    expect(stream.model).toBe('fallback-model');
+    expect(await collect(stream.chunks)).toBe('Hello');
+  });
+
+  it('reports the provider as unavailable when no model can start', async () => {
+    const { provider } = setupStream(
+      chunks(new ApiError({ message: 'overloaded', status: 503 })),
+      chunks(new ApiError({ message: 'quota', status: 429 })),
+    );
+    await expect(provider.streamText(textRequest)).rejects.toBeInstanceOf(AiUnavailableError);
+  });
+});

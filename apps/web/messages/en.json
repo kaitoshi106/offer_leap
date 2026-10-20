@@ -63,7 +63,8 @@
     "COMMON_UNSUPPORTED_FILE_TYPE": "Only PDF, DOCX, PNG, JPG or WEBP files are supported.",
     "RESUME_PARSE_FAILED": "AI couldn’t read this CV. Try another file or fill in your details yourself.",
     "AI_UNAVAILABLE": "The AI service is busy. Please try again in a few minutes or fill in your details yourself.",
-    "ANALYSIS_FAILED": "AI could not analyse this CV against the job description. Try again or use another CV."
+    "ANALYSIS_FAILED": "AI could not analyse this CV against the job description. Try again or use another CV.",
+    "STREAM_INTERRUPTED": "The connection dropped while AI was writing. Please try again."
   },
   "validation": {
     "required": "This field is required.",
@@ -150,6 +151,7 @@
     "label": "Main navigation",
     "dashboard": "Overview",
     "analyses": "CV analysis",
+    "applications": "Applications",
     "signOut": "Sign out"
   },
   "dashboard": {
@@ -220,7 +222,72 @@
       "deleteTitle": "Delete this analysis?",
       "deleteBody": "The result will be deleted permanently.",
       "cancel": "Cancel",
-      "deleted": "Analysis deleted"
+      "deleted": "Analysis deleted",
+      "saveToBoard": "Save to applications"
+    }
+  },
+  "applications": {
+    "metaTitle": "Applications",
+    "title": "Track your applications",
+    "description": "Drag cards between columns to update your progress. Open a card to take notes or let AI write a cover letter.",
+    "add": "Add application",
+    "empty": "Nothing here",
+    "board": "Application board",
+    "statuses": {
+      "SAVED": "Saved",
+      "APPLIED": "Applied",
+      "INTERVIEW": "Interview",
+      "OFFER": "Offer",
+      "REJECTED": "Rejected"
+    },
+    "card": {
+      "moveTo": "Move {jobTitle} at {company} to column",
+      "score": "{score}% match",
+      "coverLetter": "Has a cover letter",
+      "open": "Open {jobTitle} at {company}"
+    },
+    "moved": "Moved {jobTitle} to {status}.",
+    "form": {
+      "createTitle": "Add application",
+      "company": "Company",
+      "jobTitle": "Job title",
+      "jobUrl": "Job posting link",
+      "jobUrlHint": "Optional. E.g. https://…",
+      "jobDescription": "Job description",
+      "jobDescriptionHint": "Optional, but needed for an AI cover letter.",
+      "status": "Column",
+      "notes": "Notes",
+      "notesPlaceholder": "Contacts, interview dates, salary discussed…",
+      "create": "Add",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "saved": "Changes saved",
+      "created": "Added to your board"
+    },
+    "detail": {
+      "back": "Application board",
+      "details": "Details",
+      "analysis": "View analysis ({score} points)",
+      "openJob": "Open job posting",
+      "delete": "Delete",
+      "deleteTitle": "Delete this application?",
+      "deleteBody": "Its notes and cover letter will be deleted too.",
+      "deleted": "Application deleted"
+    },
+    "coverLetter": {
+      "title": "Cover letter",
+      "description": "AI writes it from your CV, profile and the job description. Edit it before sending.",
+      "generate": "Write with AI",
+      "regenerate": "Rewrite",
+      "writing": "AI is writing…",
+      "stop": "Stop",
+      "done": "Cover letter finished.",
+      "needsJd": "Add the job description under Details so AI can write a cover letter.",
+      "label": "Cover letter text",
+      "copy": "Copy",
+      "copied": "Copied",
+      "save": "Save",
+      "saved": "Cover letter saved"
     }
   },
   "onboarding": {

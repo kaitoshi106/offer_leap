@@ -13,6 +13,7 @@ import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AnalysesModule } from './modules/analyses/analyses.module';
+import { ApplicationsModule } from './modules/applications/applications.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { ProfileModule } from './modules/profile/profile.module';
@@ -71,6 +72,7 @@ function redisConnection(url: string) {
     ProfileModule,
     ResumesModule,
     AnalysesModule,
+    ApplicationsModule,
   ],
   providers: [
     // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.

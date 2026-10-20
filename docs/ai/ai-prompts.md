@@ -7,7 +7,8 @@
   `AI_PROVIDER` and call `generateJson({ task, system, parts, schema })`.
 - **Versioning**: `prompts/<task>.v<N>.ts` exports the task id, system prompt, a parts builder and the output schema.
   Released versions are immutable. The mock provider keys its answers by task id.
-- **Prompts**: `resume-extraction.v2` (v2 added today's date), `job-match.v1` (answers in the user's locale).
+- **Prompts**: `resume-extraction.v2` (v2 added today's date), `job-match.v1` (answers in the user's locale),
+  `cover-letter.v1` (free text, streamed with `streamText`, temperature 0.7).
 - **Settings**: temperature 0, `thinkingLevel: MINIMAL` for extraction (LOW took ~80 s vs ~9 s for the same answer
   on a one-page CV).
 - **Structured output**: JSON schema derived from Zod; responses are re-validated before use.

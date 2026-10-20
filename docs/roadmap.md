@@ -7,7 +7,8 @@
 - [x] Mandatory onboarding
 - [x] AI resume parsing (PDF / DOCX / image) & profile autofill
 - [x] CV vs JD analysis
-- [ ] Mock interview, cover letter, application kanban
+- [x] Application kanban & AI cover letter (streamed)
+- [ ] Mock interview
 - [ ] Admin console: admin invitations, users, taxonomies, AI usage
 - [ ] E2E tests, AI eval, deployment
 - [ ] RAG over personal documents

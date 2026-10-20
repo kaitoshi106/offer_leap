@@ -2,7 +2,9 @@ import { type ErrorCode, type FieldError, isApiErrorResponse } from '@offerleap/
 
 /** Client-side failures that never reach the API (offline, DNS, CORS…). Translated under `errors.*` like API codes. */
 export const NETWORK_ERROR = 'NETWORK_ERROR';
-export type ClientErrorCode = ErrorCode | typeof NETWORK_ERROR;
+/** A streamed answer stopped before it was complete (connection or AI failure mid-way). */
+export const STREAM_INTERRUPTED = 'STREAM_INTERRUPTED';
+export type ClientErrorCode = ErrorCode | typeof NETWORK_ERROR | typeof STREAM_INTERRUPTED;
 
 /** A failed API call, normalised from the `ApiErrorResponse` body (or a network failure). */
 export class ApiError extends Error {

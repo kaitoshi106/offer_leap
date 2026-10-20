@@ -1,6 +1,6 @@
 import { ErrorCode } from '@offerleap/shared';
 
-import { ApiError, NETWORK_ERROR, toApiError } from './errors';
+import { ApiError, NETWORK_ERROR, STREAM_INTERRUPTED, toApiError } from './errors';
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
@@ -34,13 +34,12 @@ export function refreshSession(): Promise<boolean> {
 }
 
 /**
- * @description Calls the API with the session cookies, parses JSON and throws `ApiError` on failure.
- * @param path - Path after `/api/v1`, e.g. `/auth/me`.
- * @param options - Method, JSON body, refresh behaviour, abort signal.
- * @returns The parsed body, or `undefined` for empty responses (204/202).
- * @throws ApiError
+ * @description Sends a request with the session cookies. On a 401 caused by an expired access token, refreshes
+ * the session once and retries.
+ * @returns The successful response (body not read yet).
+ * @throws ApiError for network failures and non-2xx responses.
  */
-export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+async function send(path: string, options: ApiRequestOptions): Promise<Response> {
   const { method = 'GET', body, refreshOnUnauthorized = true, signal } = options;
 
   const isJson = body !== undefined && !(body instanceof FormData);
@@ -58,19 +57,71 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
     throw new ApiError(0, NETWORK_ERROR);
   }
+  if (response.ok) return response;
 
   const text = await response.text();
-  const data: unknown = text ? JSON.parse(text) : undefined;
-  if (response.ok) return data as T;
-
-  const error = toApiError(response.status, data);
+  const error = toApiError(response.status, text ? safeJson(text) : null);
   if (
     refreshOnUnauthorized &&
     response.status === 401 &&
     SESSION_CODES.has(error.code) &&
     (await refreshSession())
   ) {
-    return apiRequest<T>(path, { ...options, refreshOnUnauthorized: false });
+    return send(path, { ...options, refreshOnUnauthorized: false });
   }
   throw error;
+}
+
+function safeJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @description Calls the API with the session cookies, parses JSON and throws `ApiError` on failure.
+ * @param path - Path after `/api/v1`, e.g. `/auth/me`.
+ * @param options - Method, JSON body, refresh behaviour, abort signal.
+ * @returns The parsed body, or `undefined` for empty responses (204/202).
+ * @throws ApiError
+ */
+export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  const response = await send(path, options);
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
+}
+
+/**
+ * @description Calls an endpoint that streams plain text (e.g. an AI writing a letter) and reports the text so
+ * far after every piece. Errors before streaming starts are normal `ApiError`s (validation, AI unavailable).
+ * @param path - Path after `/api/v1`.
+ * @param options - As for {@link apiRequest}, plus `onText(textSoFar)`.
+ * @returns The complete text.
+ * @throws ApiError — `STREAM_INTERRUPTED` when the stream breaks off half-way.
+ */
+export async function apiStream(
+  path: string,
+  options: ApiRequestOptions & { onText: (text: string) => void },
+): Promise<string> {
+  const response = await send(path, options);
+  if (!response.body) throw new ApiError(response.status, STREAM_INTERRUPTED);
+
+  const reader = response.body.getReader();
+  // `stream: true` keeps a multi-byte character (Vietnamese diacritics) split across two pieces intact.
+  const decoder = new TextDecoder();
+  let text = '';
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      text += decoder.decode(value, { stream: true });
+      options.onText(text);
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    throw new ApiError(response.status, STREAM_INTERRUPTED);
+  }
+  return text + decoder.decode();
 }

@@ -5,3 +5,4 @@ export * from './validation';
 export * from './profile';
 export * from './resume';
 export * from './analysis';
+export * from './application';

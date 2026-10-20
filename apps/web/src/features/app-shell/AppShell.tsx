@@ -9,9 +9,10 @@ import { useCurrentUser, useLogout } from '@/features/auth/api/use-auth';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useAuthRedirect } from '@/lib/auth-redirect';
 
-const NAV_ITEMS: { href: string; key: 'dashboard' | 'analyses'; icon: IconName }[] = [
+const NAV_ITEMS: { href: string; key: 'dashboard' | 'analyses' | 'applications'; icon: IconName }[] = [
   { href: '/dashboard', key: 'dashboard', icon: 'user' },
   { href: '/analyses', key: 'analyses', icon: 'target' },
+  { href: '/applications', key: 'applications', icon: 'file-text' },
 ];
 
 /**

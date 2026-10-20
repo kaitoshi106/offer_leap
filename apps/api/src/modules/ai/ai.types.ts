@@ -27,6 +27,24 @@ export interface AiJsonResult<T> {
   usage: AiUsage;
 }
 
+export interface AiTextRequest {
+  task: string;
+  system: string;
+  parts: AiContentPart[];
+  /** 0 = deterministic; writing tasks use more to sound natural. */
+  temperature?: number;
+  maxOutputTokens?: number;
+}
+
+/** A text answer arriving piece by piece. */
+export interface AiTextStream {
+  /** Model that is answering (may be a fallback). */
+  model: string;
+  chunks: AsyncIterable<string>;
+  /** Token usage, complete once `chunks` is exhausted. */
+  usage: () => AiUsage;
+}
+
 /** One implementation per vendor (Strategy pattern); the rest of the app only sees this interface. */
 export interface AiProvider {
   readonly name: string;
@@ -36,6 +54,12 @@ export interface AiProvider {
    * @throws AiInvalidOutputError when the answer is empty or doesn't match the schema.
    */
   generateJson<T>(request: AiJsonRequest<T>): Promise<AiJsonResult<T>>;
+  /**
+   * @description Streams a free-text answer. Resolves once the first piece has arrived, so "no model available"
+   * is still reported as an error before anything was sent to the client.
+   * @throws AiUnavailableError when no model could start answering.
+   */
+  streamText(request: AiTextRequest): Promise<AiTextStream>;
 }
 
 /** Nest injection token for the configured `AiProvider`. */
