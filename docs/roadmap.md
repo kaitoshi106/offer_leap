@@ -8,7 +8,7 @@
 - [x] AI resume parsing (PDF / DOCX / image) & profile autofill
 - [x] CV vs JD analysis
 - [x] Application kanban & AI cover letter (streamed)
-- [ ] Mock interview
+- [x] Mock interview (AI questions, feedback per answer, summary, voice input)
 - [ ] Admin console: admin invitations, users, taxonomies, AI usage
 - [ ] E2E tests, AI eval, deployment
 - [ ] RAG over personal documents

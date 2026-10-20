@@ -29,11 +29,10 @@ import {
 import type { Response } from 'express';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators';
-import { AppException } from '../../common/errors/app.exception';
 import type { AccessTokenPayload } from '../../common/http/request';
 import { ApiErrors, ApiZodBody } from '../../common/openapi/openapi.decorators';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { AiUnavailableError } from '../ai/ai.errors';
+import { callAi } from '../ai/call-ai';
 import { ApplicationsService } from './applications.service';
 
 const ONE_HOUR = 60 * 60_000;
@@ -121,14 +120,7 @@ export class ApplicationsController {
     @Body(new ZodValidationPipe(generateCoverLetterSchema)) body: GenerateCoverLetter,
     @Res() res: Response,
   ): Promise<void> {
-    let stream;
-    try {
-      stream = await this.applications.startCoverLetter(user.sub, id, body.locale);
-    } catch (error) {
-      if (error instanceof AiUnavailableError)
-        throw new AppException(ErrorCode.AI_UNAVAILABLE, { cause: error });
-      throw error;
-    }
+    const stream = await callAi(() => this.applications.startCoverLetter(user.sub, id, body.locale));
 
     let closed = false;
     res.on('close', () => (closed = true));

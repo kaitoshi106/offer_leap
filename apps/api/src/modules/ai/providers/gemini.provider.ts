@@ -53,6 +53,8 @@ function toGeminiParts(parts: AiContentPart[]): Part[] {
 export class GeminiProvider implements AiProvider {
   readonly name = 'gemini';
   private readonly logger = new Logger(GeminiProvider.name);
+  /** Models found not to support the MINIMAL thinking level. */
+  private readonly lowThinkingModels = new Set<string>();
 
   constructor(private readonly options: GeminiProviderOptions) {}
 
@@ -60,92 +62,101 @@ export class GeminiProvider implements AiProvider {
     const contents = [{ role: 'user', parts: toGeminiParts(request.parts) }];
     const responseJsonSchema = toResponseJsonSchema(request.schema);
 
-    for (const model of this.options.models) {
-      let response;
-      try {
-        response = await this.options.client.models.generateContent({
-          model,
-          contents,
-          config: {
-            systemInstruction: request.system,
-            temperature: 0,
-            responseMimeType: 'application/json',
-            responseJsonSchema,
-            // Extraction needs almost no reasoning. Measured on a 1-page CV: LOW took ~80 s, MINIMAL ~9 s with the
-            // same answer.
-            thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
-            maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-            abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-          },
-        });
-      } catch (error) {
-        if (this.isRetryable(error)) {
-          this.logger.warn(
-            `${request.task}: ${model} unavailable (${this.describe(error)}), trying next model`,
-          );
-          continue;
-        }
-        throw error;
-      }
-
+    return this.withModels(request.task, async (model, thinkingLevel) => {
+      const response = await this.options.client.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction: request.system,
+          temperature: 0,
+          responseMimeType: 'application/json',
+          responseJsonSchema,
+          thinkingConfig: { thinkingLevel },
+          maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      });
       return {
         data: parseJsonOutput(response.text, request.schema),
         model,
         usage: toUsage(response.usageMetadata),
       };
-    }
-
-    throw new AiUnavailableError(`No Gemini model available for ${request.task}`);
+    });
   }
 
   async streamText(request: AiTextRequest): Promise<AiTextStream> {
     const contents = [{ role: 'user', parts: toGeminiParts(request.parts) }];
 
-    for (const model of this.options.models) {
-      let iterator: AsyncIterator<{ text?: string; usageMetadata?: GeminiUsage }>;
-      let first: IteratorResult<{ text?: string; usageMetadata?: GeminiUsage }>;
-      try {
-        const stream = await this.options.client.models.generateContentStream({
-          model,
-          contents,
-          config: {
-            systemInstruction: request.system,
-            temperature: request.temperature ?? 0.7,
-            thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
-            maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-            abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-          },
-        });
-        iterator = stream[Symbol.asyncIterator]();
-        // Overload errors often surface on the first chunk rather than on the call itself.
-        first = await iterator.next();
-      } catch (error) {
-        if (this.isRetryable(error)) {
-          this.logger.warn(
-            `${request.task}: ${model} unavailable (${this.describe(error)}), trying next model`,
-          );
-          continue;
-        }
-        throw error;
-      }
+    return this.withModels(request.task, async (model, thinkingLevel) => {
+      const stream = await this.options.client.models.generateContentStream({
+        model,
+        contents,
+        config: {
+          systemInstruction: request.system,
+          temperature: request.temperature ?? 0.7,
+          thinkingConfig: { thinkingLevel },
+          maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      });
+      const iterator = stream[Symbol.asyncIterator]();
+      // Overload errors often surface on the first chunk rather than on the call itself, so read it here,
+      // while switching to another model is still possible.
+      const first = await iterator.next();
 
       const usage: AiUsage = { inputTokens: 0, outputTokens: 0 };
-      const track = (chunk: { usageMetadata?: GeminiUsage }) => {
-        // Every chunk carries the running totals; the last one is final.
-        if (chunk.usageMetadata) Object.assign(usage, toUsage(chunk.usageMetadata));
-      };
       async function* chunks(): AsyncGenerator<string> {
         let current = first;
         while (!current.done) {
-          track(current.value);
+          // Every chunk carries the running totals; the last one is final.
+          if (current.value.usageMetadata) Object.assign(usage, toUsage(current.value.usageMetadata));
           if (current.value.text) yield current.value.text;
           current = await iterator.next();
         }
       }
       return { model, chunks: chunks(), usage: () => usage };
-    }
+    });
+  }
 
-    throw new AiUnavailableError(`No Gemini model available for ${request.task}`);
+  /**
+   * @description Tries each model in order until one answers. Busy models are skipped; a model that rejects the
+   * MINIMAL thinking level (not every model supports it) is retried at once with LOW and remembered.
+   * @param task - For logs.
+   * @param attempt - One request to one model.
+   * @throws AiUnavailableError when every model is busy; other errors (bad request, bad key) at once.
+   */
+  private async withModels<T>(
+    task: string,
+    attempt: (model: string, thinkingLevel: ThinkingLevel) => Promise<T>,
+  ): Promise<T> {
+    for (const model of this.options.models) {
+      try {
+        try {
+          return await attempt(model, this.thinkingLevel(model));
+        } catch (error) {
+          if (!this.rejectsMinimalThinking(error)) throw error;
+          this.lowThinkingModels.add(model);
+          this.logger.warn(`${task}: ${model} does not support MINIMAL thinking, using LOW`);
+          return await attempt(model, ThinkingLevel.LOW);
+        }
+      } catch (error) {
+        if (!this.isRetryable(error)) throw error;
+        this.logger.warn(`${task}: ${model} unavailable (${this.describe(error)}), trying next model`);
+      }
+    }
+    throw new AiUnavailableError(`No Gemini model available for ${task}`);
+  }
+
+  /**
+   * Extraction-style tasks need almost no reasoning. Measured on a one-page CV: LOW took ~80 s, MINIMAL ~9 s with
+   * the same answer — so MINIMAL wherever the model supports it.
+   */
+  private thinkingLevel(model: string): ThinkingLevel {
+    return this.lowThinkingModels.has(model) ? ThinkingLevel.LOW : ThinkingLevel.MINIMAL;
+  }
+
+  private rejectsMinimalThinking(error: unknown): boolean {
+    return error instanceof ApiError && error.status === 400 && /thinking level/i.test(error.message);
   }
 
   /** Busy/rate-limited models, timeouts and network failures are worth another try; bad requests are not. */

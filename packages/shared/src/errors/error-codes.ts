@@ -32,7 +32,15 @@ export const ErrorCode = {
   // Resume & AI
   RESUME_PARSE_FAILED: 'RESUME_PARSE_FAILED',
   ANALYSIS_FAILED: 'ANALYSIS_FAILED',
+
+  // Mock interviews
+  INTERVIEW_ALREADY_ANSWERED: 'INTERVIEW_ALREADY_ANSWERED',
+  INTERVIEW_NOT_FINISHED: 'INTERVIEW_NOT_FINISHED',
+  INTERVIEW_ALREADY_COMPLETED: 'INTERVIEW_ALREADY_COMPLETED',
+
   AI_UNAVAILABLE: 'AI_UNAVAILABLE',
+  /** The AI answered, but not with something usable. */
+  AI_FAILED: 'AI_FAILED',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -61,7 +69,11 @@ export const ERROR_HTTP_STATUS = {
 
   RESUME_PARSE_FAILED: 422,
   ANALYSIS_FAILED: 422,
+  INTERVIEW_ALREADY_ANSWERED: 409,
+  INTERVIEW_NOT_FINISHED: 409,
+  INTERVIEW_ALREADY_COMPLETED: 409,
   AI_UNAVAILABLE: 503,
+  AI_FAILED: 502,
 } as const satisfies Record<ErrorCode, number>;
 
 const ERROR_CODE_SET: ReadonlySet<string> = new Set(Object.values(ErrorCode));

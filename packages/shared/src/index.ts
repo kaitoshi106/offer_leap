@@ -6,3 +6,4 @@ export * from './profile';
 export * from './resume';
 export * from './analysis';
 export * from './application';
+export * from './interview';

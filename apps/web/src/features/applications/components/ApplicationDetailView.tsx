@@ -90,6 +90,13 @@ function Header({ application }: { application: ApplicationDetail }) {
               <Icon name="arrow-right" size="xs" className="-rotate-45" />
             </a>
           )}
+          <Link
+            href={`/interviews?applicationId=${application.id}`}
+            className="inline-flex items-center gap-1 font-medium text-primary-text hover:underline"
+          >
+            <Icon name="message-square" size="xs" />
+            {t('detail.practice')}
+          </Link>
           {application.analysisId && application.score !== null && (
             <Link
               href={`/analyses/${application.analysisId}`}

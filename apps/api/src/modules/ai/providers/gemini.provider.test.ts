@@ -167,3 +167,24 @@ describe('GeminiProvider.streamText', () => {
     await expect(provider.streamText(textRequest)).rejects.toBeInstanceOf(AiUnavailableError);
   });
 });
+
+describe('GeminiProvider thinking level', () => {
+  it('retries a model that rejects MINIMAL thinking with LOW, and remembers it', async () => {
+    const unsupported = new ApiError({
+      message: '{"error":{"code":400,"message":"Thinking level MINIMAL is not supported for this model."}}',
+      status: 400,
+    });
+    const { provider, generateContent } = setup(
+      unsupported,
+      answer('{"name":"An"}'),
+      answer('{"name":"Bình"}'),
+    );
+
+    expect((await provider.generateJson(request)).data).toEqual({ name: 'An' });
+    expect((await provider.generateJson(request)).data).toEqual({ name: 'Bình' });
+
+    const levels = generateContent.mock.calls.map(([params]) => params.config.thinkingConfig.thinkingLevel);
+    expect(levels).toEqual(['MINIMAL', 'LOW', 'LOW']);
+    expect(generateContent.mock.calls.every(([params]) => params.model === 'main-model')).toBe(true);
+  });
+});

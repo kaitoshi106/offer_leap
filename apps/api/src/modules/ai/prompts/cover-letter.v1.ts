@@ -1,11 +1,10 @@
 import type { Locale } from '@offerleap/shared';
 
 import type { AiContentPart } from '../ai.types';
-import { isoDate, type ResumeDocument } from './resume-extraction.v2';
+import type { ResumeDocument } from './resume-extraction.v2';
+import { LANGUAGE, todayLine } from './shared';
 
 export const COVER_LETTER_TASK = 'cover-letter.v1';
-
-const LANGUAGE: Record<Locale, string> = { vi: 'Vietnamese', en: 'English' };
 
 export interface CoverLetterContext {
   locale: Locale;
@@ -27,7 +26,7 @@ export interface CoverLetterContext {
  * @param context - Language and date.
  */
 export function coverLetterSystem({ locale, today }: Pick<CoverLetterContext, 'locale' | 'today'>): string {
-  return `You write cover letters for job applications. Today's date is ${isoDate(today)}.
+  return `You write cover letters for job applications. ${todayLine(today)}
 
 Rules:
 - Write in ${LANGUAGE[locale]}, 220–320 words, in a warm, confident and professional tone.

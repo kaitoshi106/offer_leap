@@ -8,7 +8,8 @@
 - **Versioning**: `prompts/<task>.v<N>.ts` exports the task id, system prompt, a parts builder and the output schema.
   Released versions are immutable. The mock provider keys its answers by task id.
 - **Prompts**: `resume-extraction.v2` (v2 added today's date), `job-match.v1` (answers in the user's locale),
-  `cover-letter.v1` (free text, streamed with `streamText`, temperature 0.7).
+  `cover-letter.v1` (free text, streamed with `streamText`, temperature 0.7), `interview.v1` (questions, feedback,
+  summary). Shared bits (language names, today's date line) live in `prompts/shared.ts`.
 - **Settings**: temperature 0, `thinkingLevel: MINIMAL` for extraction (LOW took ~80 s vs ~9 s for the same answer
   on a one-page CV).
 - **Structured output**: JSON schema derived from Zod; responses are re-validated before use.

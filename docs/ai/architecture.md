@@ -149,6 +149,26 @@ web: /analyses (form + history) → /analyses/:id polls every 2 s → score gaug
   cuts the connection and the client shows `STREAM_INTERRUPTED`. The finished letter is saved; leaving the page
   aborts the request and the server stops reading from the model.
 
+## Mock interviews
+
+```
+POST /interviews { jobTitle, jobDescription?, applicationId?, type, questionCount, locale }
+  → AI writes N questions (interview-questions.v1) → InterviewSession + InterviewQuestion rows
+POST /interviews/:id/questions/:i/answer { answer } → AI scores 0–10 + feedback + better answer (interview-feedback.v1)
+POST /interviews/:id/questions/:i/skip              → score 0, no AI call
+POST /interviews/:id/complete                       → AI summary, overall 0–100 (interview-summary.v1)
+```
+
+- Each step is one short AI call made **inside the request** (2–5 s), so the conversation feels direct; AI errors
+  map to 503 `AI_UNAVAILABLE` / 502 `AI_FAILED` through `callAi`, nothing is saved, and the user retries the step.
+- Rules: a question is answered once (`INTERVIEW_ALREADY_ANSWERED`, also guarded by a conditional update against
+  double submits), the summary needs every question answered or skipped (`INTERVIEW_NOT_FINISHED`), nothing
+  changes after completion (`INTERVIEW_ALREADY_COMPLETED`). Token usage is summed on the session.
+- Web: chat-style page; focus moves to the next question after each answer; answers can be dictated with the Web
+  Speech API where the browser supports it (progressive enhancement).
+- Gemini: not every model supports the MINIMAL thinking level — the provider retries that model with LOW and
+  remembers it (found when a 503 on the main model made the fallback reject MINIMAL).
+
 ## Theming & i18n
 
 - Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user

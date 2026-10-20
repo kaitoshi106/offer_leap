@@ -70,6 +70,12 @@ const ICONS = {
     </>
   ),
   'message-square': <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />,
+  mic: (
+    <>
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" />
+    </>
+  ),
   user: (
     <>
       <circle cx="12" cy="8" r="4" />

@@ -64,7 +64,11 @@
     "RESUME_PARSE_FAILED": "AI không đọc được CV này. Hãy thử file khác hoặc tự nhập thông tin.",
     "AI_UNAVAILABLE": "Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút hoặc tự nhập thông tin.",
     "ANALYSIS_FAILED": "AI không phân tích được CV này với mô tả công việc. Hãy thử lại hoặc dùng CV khác.",
-    "STREAM_INTERRUPTED": "Kết nối bị gián đoạn khi AI đang viết. Vui lòng thử lại."
+    "STREAM_INTERRUPTED": "Kết nối bị gián đoạn khi AI đang viết. Vui lòng thử lại.",
+    "INTERVIEW_ALREADY_ANSWERED": "Câu hỏi này đã được trả lời.",
+    "INTERVIEW_NOT_FINISHED": "Hãy trả lời hoặc bỏ qua tất cả câu hỏi trước khi xem tổng kết.",
+    "INTERVIEW_ALREADY_COMPLETED": "Buổi phỏng vấn đã kết thúc.",
+    "AI_FAILED": "AI trả về kết quả không dùng được. Vui lòng thử lại."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -152,6 +156,7 @@
     "dashboard": "Tổng quan",
     "analyses": "Phân tích CV",
     "applications": "Ứng tuyển",
+    "interviews": "Phỏng vấn",
     "signOut": "Đăng xuất"
   },
   "dashboard": {
@@ -272,7 +277,8 @@
       "delete": "Xoá",
       "deleteTitle": "Xoá ứng tuyển này?",
       "deleteBody": "Ghi chú và cover letter cũng sẽ bị xoá.",
-      "deleted": "Đã xoá ứng tuyển"
+      "deleted": "Đã xoá ứng tuyển",
+      "practice": "Luyện phỏng vấn"
     },
     "coverLetter": {
       "title": "Cover letter",
@@ -288,6 +294,78 @@
       "copied": "Đã sao chép",
       "save": "Lưu",
       "saved": "Đã lưu cover letter"
+    }
+  },
+  "interviews": {
+    "metaTitle": "Phỏng vấn thử",
+    "title": "Phỏng vấn thử với AI",
+    "description": "AI đặt câu hỏi theo vị trí bạn ứng tuyển, nhận xét từng câu trả lời và gợi ý cách trả lời tốt hơn.",
+    "types": {
+      "BEHAVIORAL": "Hành vi",
+      "TECHNICAL": "Chuyên môn",
+      "MIXED": "Kết hợp"
+    },
+    "typeHints": {
+      "BEHAVIORAL": "Tình huống thực tế, làm việc nhóm, xử lý xung đột (trả lời theo STAR).",
+      "TECHNICAL": "Kiến thức và kỹ năng mà công việc yêu cầu.",
+      "MIXED": "Khoảng 1/3 câu hỏi hành vi, còn lại là chuyên môn."
+    },
+    "form": {
+      "title": "Buổi phỏng vấn mới",
+      "application": "Luyện cho vị trí đã lưu",
+      "applicationNone": "Không chọn — tự nhập vị trí",
+      "applicationOption": "{jobTitle} · {company}",
+      "jobTitle": "Vị trí ứng tuyển",
+      "jobTitlePlaceholder": "VD: Senior Frontend Engineer",
+      "jobDescription": "Mô tả công việc (JD)",
+      "jobDescriptionHint": "Không bắt buộc. Có JD thì câu hỏi sát với công việc hơn.",
+      "jobDescriptionFromApplication": "Dùng mô tả công việc đã lưu của vị trí này.",
+      "type": "Loại câu hỏi",
+      "questionCount": "Số câu hỏi",
+      "questionCountOption": "{count} câu",
+      "submit": "Bắt đầu phỏng vấn",
+      "preparing": "AI đang soạn câu hỏi…"
+    },
+    "history": {
+      "title": "Các buổi đã luyện",
+      "empty": "Chưa có buổi phỏng vấn nào.",
+      "progress": "{answered}/{total} câu",
+      "inProgress": "Đang làm",
+      "completed": "Đã xong"
+    },
+    "session": {
+      "back": "Tất cả buổi phỏng vấn",
+      "progress": "Đã trả lời {answered}/{total} câu",
+      "questionLabel": "Câu {n}/{total}",
+      "you": "Bạn",
+      "interviewer": "Người phỏng vấn",
+      "skipped": "Đã bỏ qua câu này.",
+      "score": "{score}/10 điểm",
+      "betterAnswer": "Gợi ý câu trả lời tốt hơn",
+      "answer": "Câu trả lời của bạn",
+      "answerPlaceholder": "Trả lời như khi phỏng vấn thật. Bạn có thể bấm micro để nói.",
+      "send": "Gửi câu trả lời",
+      "skip": "Bỏ qua",
+      "reviewing": "AI đang nhận xét câu trả lời…",
+      "next": "Câu tiếp theo",
+      "finish": "Xem tổng kết",
+      "finishing": "AI đang tổng kết buổi phỏng vấn…",
+      "allAnswered": "Bạn đã trả lời hết các câu hỏi.",
+      "summaryTitle": "Tổng kết",
+      "overall": "Mức sẵn sàng",
+      "strengths": "Điểm mạnh",
+      "improvements": "Nên luyện thêm",
+      "delete": "Xoá",
+      "deleteTitle": "Xoá buổi phỏng vấn này?",
+      "deleteBody": "Câu hỏi, câu trả lời và nhận xét sẽ bị xoá vĩnh viễn.",
+      "cancel": "Huỷ",
+      "deleted": "Đã xoá buổi phỏng vấn"
+    },
+    "speech": {
+      "start": "Trả lời bằng giọng nói",
+      "stop": "Dừng ghi âm",
+      "listening": "Đang nghe… bấm lại để dừng.",
+      "error": "Không dùng được micro. Hãy kiểm tra quyền truy cập micro của trình duyệt."
     }
   },
   "onboarding": {

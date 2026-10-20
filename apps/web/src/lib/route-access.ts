@@ -2,7 +2,15 @@
 export const SESSION_FLAG_COOKIE = 'ol_session';
 
 /** Pages that need a signed-in user. Matching is by path prefix, without the locale. */
-const PROTECTED_PREFIXES = ['/dashboard', '/onboarding', '/analyses', '/applications', '/settings', '/admin'];
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/onboarding',
+  '/analyses',
+  '/applications',
+  '/interviews',
+  '/settings',
+  '/admin',
+];
 /** Pages that make no sense once signed in. */
 const GUEST_ONLY_PATHS = ['/login', '/register', '/forgot-password', '/reset-password'];
 
