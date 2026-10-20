@@ -12,13 +12,22 @@ const POLL_INTERVAL_MS = 1_500;
 
 export const isResumeFinal = (resume: ResumeSummary) => RESUME_FINAL_STATUSES.includes(resume.status);
 
-/** Uploads a CV; the new (pending) CV becomes the onboarding state's `resume`. */
+export const resumesKey = ['resumes'] as const;
+
+/** The user's CVs, newest first. */
+export function useResumes() {
+  return useQuery({ queryKey: resumesKey, queryFn: ({ signal }) => resumesApi.list(signal) });
+}
+
+/** Uploads a CV; the new (pending) CV becomes the onboarding state's `resume` and joins the CV list. */
 export function useUploadResume() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: resumesApi.upload,
-    onSuccess: (resume) =>
-      queryClient.setQueryData<OnboardingState>(onboardingKey, (state) => state && { ...state, resume }),
+    onSuccess: (resume) => {
+      queryClient.setQueryData<OnboardingState>(onboardingKey, (state) => state && { ...state, resume });
+      queryClient.setQueryData<ResumeSummary[]>(resumesKey, (resumes) => resumes && [resume, ...resumes]);
+    },
   });
 }
 
@@ -31,7 +40,7 @@ export function useUploadResume() {
 export function useResumePolling(resume: ResumeSummary | null) {
   const queryClient = useQueryClient();
   return useQuery({
-    queryKey: ['resumes', resume?.id],
+    queryKey: [...resumesKey, resume?.id],
     queryFn: async ({ signal }) => {
       const latest = await resumesApi.get(resume!.id, signal);
       if (isResumeFinal(latest)) {

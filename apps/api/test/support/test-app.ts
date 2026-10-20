@@ -64,7 +64,7 @@ export async function createTestApp(options: { ai?: AiProvider } = {}): Promise<
  */
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "resumes", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
+    'TRUNCATE TABLE "resumes", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
   );
 }
 
@@ -97,5 +97,32 @@ export async function signUpAndVerify(ctx: TestContext, email = 'minh@example.co
     .post('/api/v1/auth/verify-email')
     .send({ token: ctx.mail.lastToken(email, 'verify-email') })
     .expect(200);
+  return agent;
+}
+
+/**
+ * @description Registers, verifies and completes onboarding through the API, for tests of features that need a
+ * finished profile.
+ * @param ctx - Test app context (taxonomies must be seeded).
+ * @param email - Account email.
+ */
+export async function signUpOnboarded(ctx: TestContext, email = 'minh@example.com') {
+  const agent = await signUpAndVerify(ctx, email);
+  const steps = [
+    { step: 'personal', values: { fullName: 'Trần Minh', provinceCode: 'ha-noi' } },
+    {
+      step: 'career',
+      values: {
+        industryCode: 'software',
+        jobTitle: 'Frontend Developer',
+        level: 'SENIOR',
+        yearsOfExperience: 6,
+        skills: ['React'],
+      },
+    },
+    { step: 'preferences', values: { workTypes: ['REMOTE'] } },
+  ];
+  for (const body of steps) await agent.put('/api/v1/onboarding/draft').send(body).expect(200);
+  await agent.post('/api/v1/onboarding/complete').expect(200);
   return agent;
 }

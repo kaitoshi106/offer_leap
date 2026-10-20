@@ -62,7 +62,8 @@
     "COMMON_FILE_TOO_LARGE": "The file is too large (max 10 MB).",
     "COMMON_UNSUPPORTED_FILE_TYPE": "Only PDF, DOCX, PNG, JPG or WEBP files are supported.",
     "RESUME_PARSE_FAILED": "AI couldn’t read this CV. Try another file or fill in your details yourself.",
-    "AI_UNAVAILABLE": "The AI service is busy. Please try again in a few minutes or fill in your details yourself."
+    "AI_UNAVAILABLE": "The AI service is busy. Please try again in a few minutes or fill in your details yourself.",
+    "ANALYSIS_FAILED": "AI could not analyse this CV against the job description. Try again or use another CV."
   },
   "validation": {
     "required": "This field is required.",
@@ -145,13 +146,82 @@
       "ai": "AI filled in your profile"
     }
   },
+  "nav": {
+    "label": "Main navigation",
+    "dashboard": "Overview",
+    "analyses": "CV analysis",
+    "signOut": "Sign out"
+  },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Overview",
     "greeting": "Hi, {name}!",
-    "comingSoon": "Your profile is ready. Next: upload your CV for AI analysis (coming soon).",
-    "signOut": "Sign out",
-    "account": "Account",
-    "role": "Role"
+    "subtitle": "Which job are you applying for today?",
+    "ctaTitle": "Compare your CV with a job posting",
+    "ctaBody": "Paste a job description and AI will score the fit, list missing skills and suggest how to improve your CV.",
+    "ctaAction": "Analyse now",
+    "recent": "Recent analyses",
+    "viewAll": "View all"
+  },
+  "analyses": {
+    "metaTitle": "CV analysis",
+    "title": "Compare your CV with a job posting",
+    "description": "AI scores how well your CV fits a job description, lists the skills you are missing and suggests how to improve your CV.",
+    "form": {
+      "title": "New analysis",
+      "resume": "CV to analyse",
+      "resumePlaceholder": "Choose a CV",
+      "resumeOption": "{fileName} · {date}",
+      "uploadNew": "Upload another CV",
+      "cancelUpload": "Use an existing CV",
+      "noResume": "You have no CV yet. Upload one to start.",
+      "uploading": "Uploading your CV…",
+      "dropTitle": "Drag your CV here or click to choose a file",
+      "dropHint": "PDF, DOCX, PNG, JPG or WEBP · up to 10 MB",
+      "jobDescription": "Job description",
+      "jobDescriptionPlaceholder": "Paste the whole job posting: role, requirements, benefits…",
+      "jobDescriptionHint": "{count}/{max} characters · at least {min}",
+      "submit": "Analyse"
+    },
+    "history": {
+      "title": "Past analyses",
+      "empty": "No analyses yet. Results will show up here.",
+      "pending": "Analysing…",
+      "failed": "Failed",
+      "resume": "CV: {fileName}"
+    },
+    "status": {
+      "processingTitle": "AI is analysing…",
+      "processingBody": "This usually takes 5–30 seconds. You can leave this page; the result is saved.",
+      "failedTitle": "Analysis failed",
+      "retry": "Try again"
+    },
+    "result": {
+      "back": "All analyses",
+      "score": "Match score",
+      "scoreValue": "{score} out of 100",
+      "levels": {
+        "STRONG": "Strong match",
+        "GOOD": "Good match",
+        "FAIR": "Partial match",
+        "WEAK": "Weak match"
+      },
+      "summary": "Summary",
+      "matchedSkills": "Skills you have",
+      "missingSkills": "Missing skills",
+      "required": "Required",
+      "niceToHave": "Nice to have",
+      "strengths": "Strengths",
+      "gaps": "Gaps",
+      "suggestions": "Suggested CV edits",
+      "none": "Nothing here.",
+      "jobDescription": "Job description used",
+      "resume": "CV: {fileName}",
+      "delete": "Delete",
+      "deleteTitle": "Delete this analysis?",
+      "deleteBody": "The result will be deleted permanently.",
+      "cancel": "Cancel",
+      "deleted": "Analysis deleted"
+    }
   },
   "onboarding": {
     "metaTitle": "Complete your profile",

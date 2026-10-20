@@ -8,7 +8,7 @@ import {
 } from '@offerleap/shared';
 import type { z } from 'zod';
 
-import type { ResumeExtraction } from '../ai/prompts/resume-extraction.v1';
+import type { ResumeExtraction } from '../ai/prompts/resume-extraction.v2';
 
 /**
  * @description Keeps a value only if it passes the same rule the form uses, so a suggestion never puts the

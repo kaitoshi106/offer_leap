@@ -12,6 +12,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
 import { AiModule } from './modules/ai/ai.module';
+import { AnalysesModule } from './modules/analyses/analyses.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { ProfileModule } from './modules/profile/profile.module';
@@ -69,6 +70,7 @@ function redisConnection(url: string) {
     OnboardingModule,
     ProfileModule,
     ResumesModule,
+    AnalysesModule,
   ],
   providers: [
     // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.

@@ -72,6 +72,12 @@ export class ResumesController {
     return this.resumes.upload(user.sub, file);
   }
 
+  @ApiOperation({ summary: 'Your CVs, newest first' })
+  @Get()
+  list(@CurrentUser() user: AccessTokenPayload): Promise<ResumeSummary[]> {
+    return this.resumes.list(user.sub);
+  }
+
   @ApiOperation({ summary: 'Status of an uploaded CV and, once parsed, the suggested profile values' })
   @ApiErrors(ErrorCode.COMMON_NOT_FOUND)
   @Get(':id')

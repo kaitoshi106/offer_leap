@@ -4,7 +4,7 @@ import type { z } from 'zod';
 export type AiContentPart = { type: 'text'; text: string } | { type: 'file'; mimeType: string; data: Buffer };
 
 export interface AiJsonRequest<T> {
-  /** Prompt id + version, e.g. `resume-extraction.v1`. Logged, and used by the mock provider to pick an answer. */
+  /** Prompt id + version, e.g. `resume-extraction.v2`. Logged, and used by the mock provider to pick an answer. */
   task: string;
   /** Fixed instructions. Untrusted content goes in `parts`, never here. */
   system: string;

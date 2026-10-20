@@ -31,6 +31,7 @@ export const ErrorCode = {
 
   // Resume & AI
   RESUME_PARSE_FAILED: 'RESUME_PARSE_FAILED',
+  ANALYSIS_FAILED: 'ANALYSIS_FAILED',
   AI_UNAVAILABLE: 'AI_UNAVAILABLE',
 } as const;
 
@@ -59,6 +60,7 @@ export const ERROR_HTTP_STATUS = {
   ONBOARDING_REQUIRED: 403,
 
   RESUME_PARSE_FAILED: 422,
+  ANALYSIS_FAILED: 422,
   AI_UNAVAILABLE: 503,
 } as const satisfies Record<ErrorCode, number>;
 

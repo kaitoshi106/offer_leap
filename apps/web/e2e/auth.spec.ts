@@ -2,11 +2,16 @@ import { completeOnboarding, expect, linkFromEmail, registerAndVerify, test } fr
 
 test.describe('authentication', () => {
   test('register → verify email → onboarding → dashboard → sign out', async ({ page }) => {
-    const email = await registerAndVerify(page);
+    await registerAndVerify(page);
     await completeOnboarding(page);
 
     await expect(page.getByRole('heading', { name: 'Xin chào, Trần Minh!' })).toBeVisible();
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Điều hướng chính' })
+        .first()
+        .getByRole('link', { name: 'Tổng quan' }),
+    ).toHaveAttribute('aria-current', 'page');
 
     // The session survives a reload (cookies + /auth/me).
     await page.reload();

@@ -10,15 +10,16 @@ import { AppException } from '../../common/errors/app.exception';
 import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
+import { AI_JOB_OPTIONS } from '../ai/ai-job';
 import { AiInvalidOutputError } from '../ai/ai.errors';
 import { AI_PROVIDER, type AiProvider } from '../ai/ai.types';
 import {
   buildResumeExtractionParts,
-  RESUME_EXTRACTION_SYSTEM,
   RESUME_EXTRACTION_TASK,
   type ResumeDocument,
   resumeExtractionSchema,
-} from '../ai/prompts/resume-extraction.v1';
+  resumeExtractionSystem,
+} from '../ai/prompts/resume-extraction.v2';
 import { TaxonomiesService } from '../taxonomies/taxonomies.service';
 import { detectResumeType } from './resume-file';
 import { toResumeSuggestions } from './resume-suggestions';
@@ -74,10 +75,7 @@ export class ResumesService {
       {
         // Same id as the row: queueing the same CV twice is a no-op.
         jobId: resume.id,
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 5_000 },
-        removeOnComplete: 1_000,
-        removeOnFail: 1_000,
+        ...AI_JOB_OPTIONS,
       },
     );
     return toResumeSummary(resume);
@@ -92,6 +90,12 @@ export class ResumesService {
     const resume = await this.prisma.resume.findFirst({ where: { id, userId } });
     if (!resume) throw new AppException(ErrorCode.COMMON_NOT_FOUND, { message: 'Resume not found' });
     return toResumeSummary(resume);
+  }
+
+  /** The user's CVs, newest first (to pick one for a job analysis). */
+  async list(userId: string): Promise<ResumeSummary[]> {
+    const resumes = await this.prisma.resume.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    return resumes.map(toResumeSummary);
   }
 
   /** The user's most recent upload, or null. */
@@ -112,7 +116,7 @@ export class ResumesService {
     if (!resume || resume.status === 'COMPLETED') return;
     await this.prisma.resume.update({ where: { id: resumeId }, data: { status: 'PROCESSING' } });
 
-    const document = await this.readDocument(resume.storageKey, resume.mimeType);
+    const document = await this.loadDocument(resume);
     const [industries, provinces] = await Promise.all([
       this.taxonomies.industries(),
       this.taxonomies.provinces(),
@@ -121,7 +125,7 @@ export class ResumesService {
 
     const result = await this.ai.generateJson({
       task: RESUME_EXTRACTION_TASK,
-      system: RESUME_EXTRACTION_SYSTEM,
+      system: resumeExtractionSystem(new Date()),
       parts: buildResumeExtractionParts(document, context),
       schema: resumeExtractionSchema(context),
     });
@@ -179,9 +183,16 @@ export class ResumesService {
   /**
    * @description PDFs and images go to the model as files. DOCX isn't a format Gemini reads natively, so its
    * text is extracted locally with mammoth (layout is lost, the words are what matter).
+   * @param resume - Stored file location and its detected type.
    * @throws AiInvalidOutputError when a DOCX has no readable text.
    */
-  private async readDocument(storageKey: string, mimeType: string): Promise<ResumeDocument> {
+  async loadDocument({
+    storageKey,
+    mimeType,
+  }: {
+    storageKey: string;
+    mimeType: string;
+  }): Promise<ResumeDocument> {
     const data = await this.storage.get(storageKey);
     if (mimeType !== DOCX) return { type: 'file', mimeType, data };
 

@@ -3,6 +3,7 @@ import type { ResumeSummary } from '@offerleap/shared';
 import { apiRequest } from '@/lib/api/client';
 
 export const resumesApi = {
+  list: (signal?: AbortSignal) => apiRequest<ResumeSummary[]>('/resumes', { signal }),
   upload: (file: File) => {
     const body = new FormData();
     body.append('file', file);

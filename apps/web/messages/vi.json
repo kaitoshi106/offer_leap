@@ -62,7 +62,8 @@
     "COMMON_FILE_TOO_LARGE": "File quá lớn (tối đa 10 MB).",
     "COMMON_UNSUPPORTED_FILE_TYPE": "Chỉ hỗ trợ file PDF, DOCX, PNG, JPG hoặc WEBP.",
     "RESUME_PARSE_FAILED": "AI không đọc được CV này. Hãy thử file khác hoặc tự nhập thông tin.",
-    "AI_UNAVAILABLE": "Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút hoặc tự nhập thông tin."
+    "AI_UNAVAILABLE": "Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút hoặc tự nhập thông tin.",
+    "ANALYSIS_FAILED": "AI không phân tích được CV này với mô tả công việc. Hãy thử lại hoặc dùng CV khác."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -145,13 +146,82 @@
       "ai": "AI đã điền hồ sơ"
     }
   },
+  "nav": {
+    "label": "Điều hướng chính",
+    "dashboard": "Tổng quan",
+    "analyses": "Phân tích CV",
+    "signOut": "Đăng xuất"
+  },
   "dashboard": {
-    "title": "Bảng điều khiển",
+    "title": "Tổng quan",
     "greeting": "Xin chào, {name}!",
-    "comingSoon": "Hồ sơ đã sẵn sàng. Bước tiếp theo: tải CV để AI phân tích (sắp ra mắt).",
-    "signOut": "Đăng xuất",
-    "account": "Tài khoản",
-    "role": "Vai trò"
+    "subtitle": "Hôm nay bạn muốn ứng tuyển vị trí nào?",
+    "ctaTitle": "So sánh CV với tin tuyển dụng",
+    "ctaBody": "Dán mô tả công việc (JD), AI sẽ chấm mức độ phù hợp, chỉ ra kỹ năng còn thiếu và gợi ý cách sửa CV.",
+    "ctaAction": "Phân tích ngay",
+    "recent": "Phân tích gần đây",
+    "viewAll": "Xem tất cả"
+  },
+  "analyses": {
+    "metaTitle": "Phân tích CV",
+    "title": "Phân tích CV với tin tuyển dụng",
+    "description": "AI chấm mức độ phù hợp giữa CV của bạn và mô tả công việc, chỉ ra kỹ năng còn thiếu và gợi ý cách sửa CV.",
+    "form": {
+      "title": "Phân tích mới",
+      "resume": "CV dùng để phân tích",
+      "resumePlaceholder": "Chọn CV",
+      "resumeOption": "{fileName} · {date}",
+      "uploadNew": "Tải CV khác",
+      "cancelUpload": "Dùng CV có sẵn",
+      "noResume": "Bạn chưa có CV nào. Tải CV lên để bắt đầu.",
+      "uploading": "Đang tải CV lên…",
+      "dropTitle": "Kéo thả CV vào đây hoặc bấm để chọn file",
+      "dropHint": "PDF, DOCX, PNG, JPG hoặc WEBP · tối đa 10 MB",
+      "jobDescription": "Mô tả công việc (JD)",
+      "jobDescriptionPlaceholder": "Dán toàn bộ tin tuyển dụng: vị trí, yêu cầu, quyền lợi…",
+      "jobDescriptionHint": "{count}/{max} ký tự · tối thiểu {min}",
+      "submit": "Phân tích"
+    },
+    "history": {
+      "title": "Lịch sử phân tích",
+      "empty": "Chưa có phân tích nào. Kết quả sẽ xuất hiện ở đây.",
+      "pending": "Đang phân tích…",
+      "failed": "Không thành công",
+      "resume": "CV: {fileName}"
+    },
+    "status": {
+      "processingTitle": "AI đang phân tích…",
+      "processingBody": "Thường mất 5–30 giây. Bạn có thể rời trang, kết quả vẫn được lưu lại.",
+      "failedTitle": "Không phân tích được",
+      "retry": "Thử lại"
+    },
+    "result": {
+      "back": "Tất cả phân tích",
+      "score": "Mức độ phù hợp",
+      "scoreValue": "{score} trên 100",
+      "levels": {
+        "STRONG": "Rất phù hợp",
+        "GOOD": "Khá phù hợp",
+        "FAIR": "Phù hợp một phần",
+        "WEAK": "Chưa phù hợp"
+      },
+      "summary": "Nhận xét chung",
+      "matchedSkills": "Kỹ năng đáp ứng",
+      "missingSkills": "Kỹ năng còn thiếu",
+      "required": "Bắt buộc",
+      "niceToHave": "Ưu tiên",
+      "strengths": "Điểm mạnh",
+      "gaps": "Điểm cần cải thiện",
+      "suggestions": "Gợi ý chỉnh sửa CV",
+      "none": "Không có mục nào.",
+      "jobDescription": "Mô tả công việc đã dùng",
+      "resume": "CV: {fileName}",
+      "delete": "Xoá",
+      "deleteTitle": "Xoá phân tích này?",
+      "deleteBody": "Kết quả sẽ bị xoá vĩnh viễn.",
+      "cancel": "Huỷ",
+      "deleted": "Đã xoá phân tích"
+    }
   },
   "onboarding": {
     "metaTitle": "Hoàn thiện hồ sơ",

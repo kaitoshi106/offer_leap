@@ -87,6 +87,15 @@ const STORY_COPY = {
       signOut: 'Đăng xuất',
     },
     visuallyHidden: { profile: 'Hồ sơ', newTab: '(mở trong tab mới)' },
+    scoreGauge: { label: 'Mức độ phù hợp' },
+    appLayout: {
+      navLabel: 'Điều hướng chính',
+      overview: 'Tổng quan',
+      analyses: 'Phân tích CV',
+      signOut: 'Đăng xuất',
+      title: 'Xin chào, Minh!',
+      body: 'Hôm nay bạn muốn ứng tuyển vị trí nào?',
+    },
     dropzone: {
       title: 'Kéo thả CV vào đây hoặc bấm để chọn file',
       hint: 'PDF, DOCX, PNG, JPG hoặc WEBP · tối đa 10 MB',
@@ -172,6 +181,15 @@ const STORY_COPY = {
       signOut: 'Sign out',
     },
     visuallyHidden: { profile: 'Profile', newTab: '(opens in a new tab)' },
+    scoreGauge: { label: 'Match score' },
+    appLayout: {
+      navLabel: 'Main navigation',
+      overview: 'Overview',
+      analyses: 'CV analysis',
+      signOut: 'Sign out',
+      title: 'Hi, Minh!',
+      body: 'Which job are you applying for today?',
+    },
     dropzone: {
       title: 'Drag your CV here or click to choose a file',
       hint: 'PDF, DOCX, PNG, JPG or WEBP · up to 10 MB',

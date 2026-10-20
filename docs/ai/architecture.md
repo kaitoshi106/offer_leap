@@ -101,7 +101,7 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 POST /resumes (multipart, ≤ 10 MB) → magic-byte check (PDF/DOCX/PNG/JPEG/WEBP) → StorageService → Resume row
   (PENDING) → BullMQ `resume` job → 202
 worker: PDF / image → sent inline to the model | DOCX → mammoth raw text inside <cv> tags
-      → AiProvider.generateJson (prompt resume-extraction.v1, JSON Schema from Zod, taxonomy codes as enums)
+      → AiProvider.generateJson (prompt resume-extraction.v2, JSON Schema from Zod, taxonomy codes as enums)
       → Zod validation → toResumeSuggestions (re-validated with the onboarding rules)
       → one transaction: values found overwrite the onboarding draft + resume COMPLETED with token usage
 web: polls GET /resumes/:id every 1.5 s → refetches GET /onboarding → fields holding the CV's values are marked
@@ -117,6 +117,23 @@ web: polls GET /resumes/:id every 1.5 s → refetches GET /onboarding → fields
 - Phone numbers are stored as 10 digits starting with 0 (`+84 912 345 678` → `0912345678`) by the shared schema.
 - `AI_PROVIDER=mock` (default, and forced in tests) returns canned answers; `gemini` needs `GEMINI_API_KEY`.
 - Queues use the `bull-test` prefix when `NODE_ENV=test`, so dev workers never pick up test jobs.
+
+## CV ↔ job analysis
+
+```
+POST /analyses { resumeId, jobDescription, locale } → resume must be the user's → JobAnalysis (PENDING) → BullMQ
+  `analysis` job → 202
+worker: load the CV like the parser (PDF/image inline, DOCX text) + job description in <job> tags
+      → AiProvider.generateJson (prompt job-match.v1, answer in `locale`, today's date in the prompt)
+      → toAnalysisResult (trim, de-duplicate, required gaps first) → score/jobTitle/company columns + result JSON
+web: /analyses (form + history) → /analyses/:id polls every 2 s → score gauge, skills, strengths, gaps, edits
+```
+
+- Both AI jobs share `runAiJob` (`modules/ai/ai-job.ts`): busy provider → BullMQ retry with backoff; anything
+  else → FAILED with the feature's code (`RESUME_PARSE_FAILED`, `ANALYSIS_FAILED`) or `AI_UNAVAILABLE`.
+- Requires a completed profile (global `ProfileCompletedGuard`). Throttled to 20 analyses per hour.
+- Score bands (`matchLevel` in shared): ≥ 80 strong, ≥ 65 good, ≥ 45 fair, else weak — same labels everywhere.
+- Prompts state today's date: without it the model counts "2019 – present" up to its training cutoff.
 
 ## Theming & i18n
 

@@ -76,7 +76,8 @@ describe('resumes', () => {
 
     // The PDF goes to the model as a file, after the taxonomy reference.
     const request = ai.generateJson.mock.calls[0]![0];
-    expect(request.task).toBe('resume-extraction.v1');
+    expect(request.task).toBe('resume-extraction.v2');
+    expect(request.system).toContain(`Today's date is ${new Date().toISOString().slice(0, 10)}`);
     expect(request.parts[1]).toMatchObject({ type: 'file', mimeType: 'application/pdf' });
     expect(request.parts[0].text).toContain('ha-noi: Hà Nội / Hanoi');
 

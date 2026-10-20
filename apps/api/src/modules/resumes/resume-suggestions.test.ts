@@ -1,7 +1,7 @@
 import { PROFILE_LIMITS } from '@offerleap/shared';
 import { describe, expect, it } from 'vitest';
 
-import type { ResumeExtraction } from '../ai/prompts/resume-extraction.v1';
+import type { ResumeExtraction } from '../ai/prompts/resume-extraction.v2';
 import { toResumeSuggestions } from './resume-suggestions';
 
 const extraction = (overrides: Partial<ResumeExtraction> = {}): ResumeExtraction => ({

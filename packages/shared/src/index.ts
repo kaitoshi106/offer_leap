@@ -4,3 +4,4 @@ export * from './errors';
 export * from './validation';
 export * from './profile';
 export * from './resume';
+export * from './analysis';
