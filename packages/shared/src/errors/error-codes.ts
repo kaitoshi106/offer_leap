@@ -45,6 +45,12 @@ export const ErrorCode = {
   AI_UNAVAILABLE: 'AI_UNAVAILABLE',
   /** The AI answered, but not with something usable. */
   AI_FAILED: 'AI_FAILED',
+  /** The user used up their AI calls for the current window. */
+  AI_QUOTA_EXCEEDED: 'AI_QUOTA_EXCEEDED',
+
+  // Taxonomies (admin)
+  TAXONOMY_CODE_TAKEN: 'TAXONOMY_CODE_TAKEN',
+  TAXONOMY_IN_USE: 'TAXONOMY_IN_USE',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -80,6 +86,9 @@ export const ERROR_HTTP_STATUS = {
   INTERVIEW_ALREADY_COMPLETED: 409,
   AI_UNAVAILABLE: 503,
   AI_FAILED: 502,
+  AI_QUOTA_EXCEEDED: 429,
+  TAXONOMY_CODE_TAKEN: 409,
+  TAXONOMY_IN_USE: 409,
 } as const satisfies Record<ErrorCode, number>;
 
 const ERROR_CODE_SET: ReadonlySet<string> = new Set(Object.values(ErrorCode));

@@ -5,7 +5,7 @@ import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
 import { hashPassword } from '../../src/common/security/hashing';
-import { AI_PROVIDER, type AiProvider } from '../../src/modules/ai/ai.types';
+import { AI_VENDOR, type AiProvider } from '../../src/modules/ai/ai.types';
 import { MailService } from '../../src/modules/mail/mail.service';
 import type { MailJob } from '../../src/modules/mail/mail.types';
 import { PrismaService } from '../../src/prisma/prisma.service';
@@ -49,7 +49,7 @@ export async function createTestApp(options: { ai?: AiProvider } = {}): Promise<
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MailService)
     .useValue(mail);
-  if (options.ai) builder = builder.overrideProvider(AI_PROVIDER).useValue(options.ai);
+  if (options.ai) builder = builder.overrideProvider(AI_VENDOR).useValue(options.ai);
   const moduleRef = await builder.compile();
 
   const app = moduleRef.createNestApplication();
@@ -65,7 +65,7 @@ export async function createTestApp(options: { ai?: AiProvider } = {}): Promise<
  */
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "admin_invitations", "interview_questions", "interview_sessions", "resumes", "job_applications", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
+    'TRUNCATE TABLE "ai_usage_logs", "admin_invitations", "interview_questions", "interview_sessions", "resumes", "job_applications", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
   );
 }
 

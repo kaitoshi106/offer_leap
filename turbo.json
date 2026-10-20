@@ -18,6 +18,7 @@
     "ROOT_ADMIN_*",
     "STORAGE_DIR",
     "AI_PROVIDER",
+    "AI_DAILY_QUOTA",
     "GEMINI_*"
   ],
   "globalEnv": ["NEXT_PUBLIC_*"],

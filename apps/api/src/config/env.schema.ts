@@ -38,6 +38,8 @@ export const envSchema = z
           .map((model) => model.trim())
           .filter(Boolean),
       ),
+    /** Successful AI calls a user may make per rolling 24 hours (admins can override per user). */
+    AI_DAILY_QUOTA: z.coerce.number().int().min(0).default(50),
   })
   .refine((env) => env.AI_PROVIDER !== 'gemini' || Boolean(env.GEMINI_API_KEY), {
     message: 'is required when AI_PROVIDER=gemini',

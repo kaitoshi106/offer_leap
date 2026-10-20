@@ -3,7 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { isApiErrorResponse } from './api-error';
 import { ERROR_HTTP_STATUS, ErrorCode, isErrorCode } from './error-codes';
 
-const KNOWN_DOMAINS = ['COMMON', 'AUTH', 'ADMIN', 'ONBOARDING', 'RESUME', 'ANALYSIS', 'INTERVIEW', 'AI'];
+const KNOWN_DOMAINS = [
+  'COMMON',
+  'AUTH',
+  'ADMIN',
+  'ONBOARDING',
+  'RESUME',
+  'ANALYSIS',
+  'INTERVIEW',
+  'AI',
+  'TAXONOMY',
+];
 
 describe('ErrorCode registry', () => {
   it.each(Object.entries(ErrorCode))('%s has a key equal to its value', (key, value) => {

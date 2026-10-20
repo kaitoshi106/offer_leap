@@ -120,7 +120,8 @@ function Header({ application }: { application: ApplicationDetail }) {
               position: positionBetween(undefined, application.position),
             })
           }
-          className="h-9 w-40"
+          className="h-9"
+          wrapperClassName="w-40"
         >
           {APPLICATION_STATUSES.map((status) => (
             <option key={status} value={status}>

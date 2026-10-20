@@ -186,6 +186,25 @@ POST /interviews/:id/complete                       → AI summary, overall 0–
 - Web: admin pages live under `/admin/*` with an `AdminShell` (admin-only gate + section tabs); list filters are kept
   in the URL so they survive reloads and can be shared.
 
+## AI usage & quotas
+
+```
+feature service ──AI_PROVIDER──► TrackedAiProvider ──AI_VENDOR──► GeminiProvider | MockAiProvider
+                                  │ 1. AiQuotaService.assertAvailable(userId)   (429 AI_QUOTA_EXCEEDED)
+                                  │ 2. call the vendor (streams: when the stream ends)
+                                  └ 3. ai_usage_logs row: task, model, tokens, latency, success, errorType
+```
+
+- Decorator pattern: features only pass `userId`; tests replace `AI_VENDOR`, so tracking itself stays under test.
+- Quota = successful calls in a rolling 24 h window (no time-zone edge cases) against `AI_DAILY_QUOTA` or the
+  user's `aiDailyQuota` override; admins are unlimited; failed calls don't count. Two calls racing at the limit may
+  both pass — acceptable for a cost guard. Background jobs fail with `AI_QUOTA_EXCEEDED` instead of retrying.
+- `GET /ai/quota` (user, shown on the dashboard), `GET /admin/ai-usage?days=` (totals, per prompt, per Vietnam day
+  via SQL `date_trunc`, top users), `PATCH /admin/users/:id/ai-quota`.
+- Logging never fails the user's request: a failed insert is only reported.
+- Industries (`/admin/industries`): codes are permanent slugs (profiles and prompts use them), names editable,
+  delete refused while profiles use it (`TAXONOMY_IN_USE`). The public taxonomy is cached for an hour.
+
 ## Theming & i18n
 
 - Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user

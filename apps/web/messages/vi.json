@@ -70,7 +70,10 @@
     "INTERVIEW_ALREADY_COMPLETED": "Buổi phỏng vấn đã kết thúc.",
     "AI_FAILED": "AI trả về kết quả không dùng được. Vui lòng thử lại.",
     "ADMIN_ACTION_NOT_ALLOWED": "Bạn không có quyền thực hiện thao tác này với tài khoản đó.",
-    "ADMIN_INVITATION_PENDING": "Email này đã có lời mời đang chờ. Hãy dùng \"Gửi lại\"."
+    "ADMIN_INVITATION_PENDING": "Email này đã có lời mời đang chờ. Hãy dùng \"Gửi lại\".",
+    "AI_QUOTA_EXCEEDED": "Bạn đã dùng hết lượt AI trong 24 giờ qua. Vui lòng thử lại sau.",
+    "TAXONOMY_CODE_TAKEN": "Mã ngành này đã tồn tại.",
+    "TAXONOMY_IN_USE": "Ngành này đang được hồ sơ sử dụng nên không thể xoá."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -180,7 +183,11 @@
     "ctaBody": "Dán mô tả công việc (JD), AI sẽ chấm mức độ phù hợp, chỉ ra kỹ năng còn thiếu và gợi ý cách sửa CV.",
     "ctaAction": "Phân tích ngay",
     "recent": "Phân tích gần đây",
-    "viewAll": "Xem tất cả"
+    "viewAll": "Xem tất cả",
+    "quota": "Lượt AI trong 24 giờ qua",
+    "quotaValue": "{used}/{limit}",
+    "quotaUnlimited": "Không giới hạn",
+    "quotaHint": "Đọc CV, phân tích, cover letter và phỏng vấn đều tính lượt."
   },
   "analyses": {
     "metaTitle": "Phân tích CV",
@@ -387,7 +394,9 @@
     "forbidden": "Trang này chỉ dành cho quản trị viên.",
     "tabs": {
       "label": "Mục quản trị",
+      "overview": "Tổng quan",
       "users": "Người dùng",
+      "industries": "Ngành nghề",
       "admins": "Quản trị viên"
     },
     "roles": {
@@ -478,6 +487,72 @@
     "languages": {
       "vi": "Tiếng Việt",
       "en": "English"
+    },
+    "usage": {
+      "title": "Lượng dùng AI",
+      "period": "Khoảng thời gian",
+      "days": "{days} ngày qua",
+      "cards": {
+        "calls": "Lượt gọi AI",
+        "failureRate": "Tỉ lệ lỗi",
+        "tokens": "Token đã dùng",
+        "latency": "Độ trễ trung bình"
+      },
+      "tokensDetail": "{input} vào · {output} ra",
+      "latencyValue": "{seconds} giây",
+      "chart": "Lượt gọi AI theo ngày",
+      "chartSummary": "{total} lượt trong {days} ngày, cao nhất {max} lượt vào {date}.",
+      "chartFailures": "lỗi",
+      "byTask": "Theo tính năng",
+      "task": "Tính năng",
+      "calls": "Lượt",
+      "failures": "Lỗi",
+      "tokens": "Token",
+      "latency": "Độ trễ",
+      "topUsers": "Dùng nhiều nhất",
+      "noData": "Chưa có lượt gọi AI nào trong khoảng này.",
+      "defaultQuota": "Giới hạn mặc định: {quota} lượt / 24 giờ mỗi người.",
+      "tasks": {
+        "resume": "Đọc CV",
+        "match": "Phân tích CV–JD",
+        "letter": "Cover letter",
+        "questions": "Soạn câu hỏi phỏng vấn",
+        "feedback": "Nhận xét câu trả lời",
+        "summary": "Tổng kết phỏng vấn"
+      }
+    },
+    "industries": {
+      "title": "Ngành nghề",
+      "description": "Mã ngành dùng trong hồ sơ và prompt AI nên không đổi được; tên có thể sửa. Thay đổi hiển thị với người dùng trong vòng 1 giờ.",
+      "add": "Thêm ngành",
+      "code": "Mã",
+      "codeHint": "Chữ thường không dấu, nối bằng \"-\". VD: game-dev",
+      "nameVi": "Tên tiếng Việt",
+      "nameEn": "Tên tiếng Anh",
+      "profiles": "Hồ sơ",
+      "edit": "Sửa",
+      "delete": "Xoá",
+      "save": "Lưu",
+      "cancel": "Huỷ",
+      "added": "Đã thêm ngành",
+      "saved": "Đã lưu",
+      "deleted": "Đã xoá ngành",
+      "inUse": "Đang được {count} hồ sơ dùng nên không thể xoá.",
+      "editTitle": "Sửa ngành {code}",
+      "deleteTitle": "Xoá ngành {name}?",
+      "deleteBody": "Ngành chưa được hồ sơ nào dùng."
+    },
+    "quota": {
+      "title": "Giới hạn AI",
+      "used": "{used}/{limit} lượt trong 24 giờ qua",
+      "usedUnlimited": "{used} lượt trong 24 giờ qua · không giới hạn (quản trị viên)",
+      "override": "Giới hạn riêng (lượt / 24 giờ)",
+      "overrideHint": "Để trống để dùng mặc định ({default}).",
+      "save": "Lưu giới hạn",
+      "saved": "Đã lưu giới hạn",
+      "useDefault": "Dùng mặc định",
+      "isDefault": "Đang dùng mặc định",
+      "isOverride": "Giới hạn riêng"
     }
   },
   "settings": {

@@ -66,6 +66,7 @@ export class InterviewsService {
     const context = await this.context(userId, { ...input, jobDescription });
     const answer = await callAi(() =>
       this.ai.generateJson({
+        userId,
         task: INTERVIEW_QUESTIONS_TASK,
         system: interviewQuestionsSystem(context, input.questionCount),
         parts: buildInterviewQuestionsParts(context),
@@ -129,6 +130,7 @@ export class InterviewsService {
     const context = await this.context(userId, session);
     const result = await callAi(() =>
       this.ai.generateJson({
+        userId,
         task: INTERVIEW_FEEDBACK_TASK,
         system: interviewFeedbackSystem(context),
         parts: buildInterviewFeedbackParts(context, {
@@ -175,6 +177,7 @@ export class InterviewsService {
     const context = await this.context(userId, session);
     const result = await callAi(() =>
       this.ai.generateJson({
+        userId,
         task: INTERVIEW_SUMMARY_TASK,
         system: interviewSummarySystem(context),
         parts: buildInterviewSummaryParts(context, session.questions),

@@ -33,6 +33,7 @@ const detail = (overrides: Partial<AdminUserDetail> = {}): AdminUserDetail => ({
     industryCode: 'software',
   },
   activity: { resumes: 2, analyses: 3, applications: 4, interviews: 1 },
+  ai: { callsInWindow: 3, limit: 50, override: null },
   manageable: true,
   ...overrides,
 });
@@ -80,5 +81,26 @@ describe('AdminUserView', () => {
     renderWithProviders(<AdminUserView id="u1" />);
     expect(await screen.findByText('Bạn không có quyền thay đổi tài khoản này.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /khoá/i })).not.toBeInTheDocument();
+  });
+
+  it('shows AI usage and sets an own limit', async () => {
+    const user = userEvent.setup();
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(200, detail()))
+      .mockResolvedValueOnce(
+        jsonResponse(200, detail({ ai: { callsInWindow: 3, limit: 10, override: 10 } })),
+      );
+    renderWithProviders(<AdminUserView id="u1" />);
+
+    expect(await screen.findByText('3/50 lượt trong 24 giờ qua')).toBeInTheDocument();
+    expect(screen.getByText('Đang dùng mặc định')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Giới hạn riêng (lượt / 24 giờ)'), '10');
+    await user.click(screen.getByRole('button', { name: 'Lưu giới hạn' }));
+
+    expect(await screen.findByText('3/10 lượt trong 24 giờ qua')).toBeInTheDocument();
+    expect(screen.getByText('Giới hạn riêng')).toBeInTheDocument();
+    const [url, init] = fetchMock.mock.calls[1]!;
+    expect(String(url)).toMatch(/\/admin\/users\/u1\/ai-quota$/);
+    expect(JSON.parse(String(init?.body))).toEqual({ aiDailyQuota: 10 });
   });
 });

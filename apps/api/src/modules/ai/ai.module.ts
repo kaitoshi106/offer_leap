@@ -3,19 +3,25 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import type { Env } from '../../config/env.schema';
-import { AI_PROVIDER, type AiProvider } from './ai.types';
+import { AiController } from './ai.controller';
+import { AiQuotaService } from './ai-quota.service';
+import { AI_PROVIDER, AI_VENDOR, type AiProvider } from './ai.types';
 import { GeminiProvider } from './providers/gemini.provider';
 import { MockAiProvider } from './providers/mock.provider';
+import { TrackedAiProvider } from './providers/tracked.provider';
 
 /**
- * Provides the `AiProvider` chosen by `AI_PROVIDER`. Feature modules inject `AI_PROVIDER` and never import a
- * vendor SDK, so switching vendor is a config change plus one provider class.
+ * Provides `AI_PROVIDER`: the vendor chosen by `AI_PROVIDER` env (`AI_VENDOR`) wrapped in `TrackedAiProvider`
+ * (quotas + usage log). Feature modules inject `AI_PROVIDER` and never import a vendor SDK, so switching vendor is
+ * a config change plus one provider class.
  */
 @Global()
 @Module({
+  controllers: [AiController],
   providers: [
+    AiQuotaService,
     {
-      provide: AI_PROVIDER,
+      provide: AI_VENDOR,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>): AiProvider => {
         if (config.get('AI_PROVIDER', { infer: true }) === 'mock') return new MockAiProvider();
@@ -28,7 +34,8 @@ import { MockAiProvider } from './providers/mock.provider';
         });
       },
     },
+    { provide: AI_PROVIDER, useClass: TrackedAiProvider },
   ],
-  exports: [AI_PROVIDER],
+  exports: [AI_PROVIDER, AiQuotaService],
 })
 export class AiModule {}

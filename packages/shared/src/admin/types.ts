@@ -33,6 +33,14 @@ export interface AdminUserDetail extends AdminUserListItem {
     industryCode: string | null;
   } | null;
   activity: { resumes: number; analyses: number; applications: number; interviews: number };
+  ai: {
+    /** Successful AI calls in the last 24 hours. */
+    callsInWindow: number;
+    /** Limit that applies (override or default); null for admins, who have no limit. */
+    limit: number | null;
+    /** Per-user override set by an admin; null = default. */
+    override: number | null;
+  };
   /** Whether the viewing admin may disable/enable this account (see `canManageAccount`). */
   manageable: boolean;
 }

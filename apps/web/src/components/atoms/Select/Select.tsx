@@ -9,6 +9,8 @@ export interface SelectProps extends Omit<ComponentPropsWithRef<'select'>, 'size
   invalid?: boolean;
   /** Text of the empty first option (e.g. "Choose a level"). Omit to start on the first real option. */
   placeholder?: string;
+  /** Layout classes (width, margins) for the wrapper that also holds the chevron. `className` styles the select. */
+  wrapperClassName?: string;
 }
 
 /**
@@ -16,9 +18,16 @@ export interface SelectProps extends Omit<ComponentPropsWithRef<'select'>, 'size
  * support; use `Combobox` when the list is long enough to need search.
  * @param props - {@link SelectProps}
  */
-export function Select({ invalid = false, placeholder, className, children, ...rest }: SelectProps) {
+export function Select({
+  invalid = false,
+  placeholder,
+  className,
+  wrapperClassName,
+  children,
+  ...rest
+}: SelectProps) {
   return (
-    <span className="relative block w-full">
+    <span className={cn('relative block w-full', wrapperClassName)}>
       <select
         aria-invalid={invalid || undefined}
         className={cn(fieldClasses, 'h-10 cursor-pointer appearance-none px-3 pr-10 text-sm', className)}

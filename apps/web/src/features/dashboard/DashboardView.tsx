@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { buttonClasses, Heading, Icon, Skeleton, Text } from '@/components/atoms';
 import { AnalysisHistory } from '@/features/analyses/components/AnalysisHistory';
+import { useAiQuota } from '@/features/ai/api/use-ai-quota';
 import { AppShell } from '@/features/app-shell/AppShell';
 import { useCurrentUser } from '@/features/auth/api/use-auth';
 import { Link } from '@/i18n/navigation';
@@ -12,6 +13,7 @@ import { Link } from '@/i18n/navigation';
 export function DashboardView() {
   const t = useTranslations('dashboard');
   const { data: user } = useCurrentUser();
+  const { data: quota } = useAiQuota();
 
   return (
     <AppShell>
@@ -26,6 +28,18 @@ export function DashboardView() {
           )}
           <Text tone="muted">{t('subtitle')}</Text>
         </div>
+
+        {quota && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
+            <span className="font-medium text-fg">{t('quota')}</span>
+            <span className="font-semibold text-primary-text tabular-nums">
+              {quota.limit === null
+                ? t('quotaUnlimited')
+                : t('quotaValue', { used: quota.used, limit: quota.limit })}
+            </span>
+            <span className="text-xs text-fg-muted">{t('quotaHint')}</span>
+          </div>
+        )}
 
         <section className="flex flex-col gap-4 rounded-xl border border-border bg-linear-to-br from-primary-soft to-ai-soft p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">

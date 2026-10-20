@@ -29,7 +29,8 @@ test.describe('admin console', () => {
       .first()
       .getByRole('link', { name: 'Quản trị' })
       .click();
-    await expect(page).toHaveURL(/\/vi\/admin\/users$/);
+    // The admin home is the AI usage overview.
+    await expect(page).toHaveURL(/\/vi\/admin$/);
     await page
       .getByRole('navigation', { name: 'Mục quản trị' })
       .getByRole('link', { name: 'Quản trị viên' })
@@ -74,6 +75,66 @@ test.describe('admin console', () => {
     await page.reload();
     await expect(page.getByRole('listitem').filter({ hasText: adminEmail })).toContainText('Đã chấp nhận');
     await inviteeContext.close();
+    await userContext.close();
+  });
+});
+
+test.describe('admin insights', () => {
+  test.skip(!ROOT_EMAIL || !ROOT_PASSWORD, 'Set E2E_ROOT_EMAIL / E2E_ROOT_PASSWORD (test database root)');
+
+  test('limits a user to no AI calls, shows usage and manages industries', async ({ page, browser }) => {
+    // A user who has made one AI call.
+    const userContext = await browser.newContext({ locale: 'vi-VN' });
+    const userPage = await userContext.newPage();
+    const userEmail = await registerAndVerify(userPage, 'Minh Quota');
+    await completeOnboarding(userPage);
+    await expect(userPage.getByText('Lượt AI trong 24 giờ qua')).toBeVisible();
+    await userPage.goto('/vi/interviews');
+    await userPage.getByLabel(/^Vị trí ứng tuyển/).fill('Frontend Engineer');
+    await userPage.getByLabel('Số câu hỏi').selectOption('3');
+    await userPage.getByRole('button', { name: 'Bắt đầu phỏng vấn' }).click();
+    await expect(userPage).toHaveURL(/\/vi\/interviews\/[a-z0-9]+$/);
+
+    // Root: the overview counts it; then the user's limit goes to 0.
+    await signIn(page, ROOT_EMAIL!, ROOT_PASSWORD!);
+    await expect(page).toHaveURL(/\/vi\/dashboard$/);
+    await page.goto('/vi/admin');
+    await expect(page.getByRole('heading', { name: 'Lượng dùng AI' })).toBeVisible();
+    await expect(page.getByRole('img', { name: /Lượt gọi AI theo ngày/ })).toBeVisible();
+    await expect(page.getByRole('rowheader', { name: 'Soạn câu hỏi phỏng vấn (v1)' })).toBeVisible();
+
+    await page.goto('/vi/admin/users');
+    await page.getByLabel('Tìm theo email hoặc tên').fill(userEmail);
+    await expect(page.getByText('1 tài khoản')).toBeVisible();
+    await page.getByRole('link', { name: 'Minh Quota' }).click();
+    await expect(page.getByText('1/50 lượt trong 24 giờ qua')).toBeVisible();
+    await page.getByLabel('Giới hạn riêng (lượt / 24 giờ)').fill('0');
+    await page.getByRole('button', { name: 'Lưu giới hạn' }).click();
+    await expect(page.getByText('1/0 lượt trong 24 giờ qua')).toBeVisible();
+
+    // The user is now refused.
+    await userPage.goto('/vi/interviews');
+    await userPage.getByLabel(/^Vị trí ứng tuyển/).fill('Frontend Engineer');
+    await userPage.getByRole('button', { name: 'Bắt đầu phỏng vấn' }).click();
+    await expect(userPage.getByRole('region', { name: 'Buổi phỏng vấn mới' }).getByRole('alert')).toHaveText(
+      'Bạn đã dùng hết lượt AI trong 24 giờ qua. Vui lòng thử lại sau.',
+    );
+
+    // Industries: add, then delete (unused).
+    const code = `e2e-${Date.now()}`;
+    await page.goto('/vi/admin/industries');
+    await page.getByLabel(/^Mã/).fill(code);
+    await page.getByLabel(/^Tên tiếng Việt/).fill('Ngành thử nghiệm');
+    await page.getByLabel(/^Tên tiếng Anh/).fill('Test industry');
+    await page.getByRole('button', { name: 'Thêm ngành' }).click();
+    await expect(page.getByText(code)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Xoá Công nghệ thông tin / Phần mềm' })).toBeDisabled();
+    await page
+      .getByRole('row', { name: new RegExp(code) })
+      .getByRole('button', { name: /^Xoá/ })
+      .click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Xoá' }).click();
+    await expect(page.getByText(code)).toHaveCount(0);
     await userContext.close();
   });
 });

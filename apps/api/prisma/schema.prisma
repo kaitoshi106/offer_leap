@@ -50,6 +50,8 @@ model User {
   onboardingCompletedAt DateTime?
   passwordChangedAt     DateTime?
   lastLoginAt           DateTime?
+  /// Per-user override of AI_DAILY_QUOTA (successful AI calls per rolling 24 h); null = default.
+  aiDailyQuota          Int?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   refreshTokens         RefreshToken[]
@@ -60,6 +62,7 @@ model User {
   applications          JobApplication[]
   interviews            InterviewSession[]
   sentInvitations       AdminInvitation[]
+  aiUsage               AiUsageLog[]
 
   @@map("users")
 }
@@ -349,4 +352,27 @@ model AdminInvitation {
 
   @@index([email])
   @@map("admin_invitations")
+}
+
+/// One AI call (success or failure), written by the tracking provider. Feeds the usage dashboard and quotas.
+model AiUsageLog {
+  id           String   @id @default(cuid())
+  /// Kept when the user is deleted (set to null) so totals stay correct.
+  userId       String?
+  /// Prompt id + version, e.g. `job-match.v1`.
+  task         String
+  /// Model that answered; null when no model could.
+  model        String?
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  latencyMs    Int
+  success      Boolean
+  /// Error class name for failures (AiUnavailableError, AiInvalidOutputError…).
+  errorType    String?
+  createdAt    DateTime @default(now())
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("ai_usage_logs")
 }

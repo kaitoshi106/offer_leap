@@ -11,6 +11,7 @@ import { Link } from '@/i18n/navigation';
 import { useErrorText } from '@/lib/api/use-error-text';
 
 import { useAdminUser, useSetUserStatus } from '../api/use-admin';
+import { AiQuotaCard } from './AiQuotaCard';
 import { roleKey, STATUS_TONE } from './labels';
 
 /**
@@ -99,6 +100,8 @@ function UserDetail({ user }: { user: AdminUserDetail }) {
           )}
         </Card>
       </div>
+
+      <AiQuotaCard key={`${user.id}-${user.ai.override}`} user={user} />
 
       <Card title={t('user.activity')}>
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">

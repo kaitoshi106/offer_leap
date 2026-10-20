@@ -10,6 +10,6 @@
 - [x] Application kanban & AI cover letter (streamed)
 - [x] Mock interview (AI questions, feedback per answer, summary, voice input)
 - [x] Admin console: admin invitations, users, settings
-- [ ] Admin console: AI usage, per-user quotas, taxonomies
+- [x] Admin console: AI usage, per-user quotas, taxonomies
 - [ ] E2E tests, AI eval, deployment
 - [ ] RAG over personal documents

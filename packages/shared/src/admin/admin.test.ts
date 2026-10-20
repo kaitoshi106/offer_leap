@@ -44,3 +44,29 @@ describe('acceptInvitationSchema', () => {
     ).toBe(false);
   });
 });
+
+describe('createIndustrySchema', () => {
+  it('accepts a lowercase slug code', async () => {
+    const { createIndustrySchema } = await import('./industries');
+    expect(
+      createIndustrySchema.parse({
+        code: ' Game-Dev ',
+        nameVi: 'Phát triển game',
+        nameEn: 'Game development',
+      }).code,
+    ).toBe('game-dev');
+    for (const code of ['game dev', 'game--dev', '-game', 'game_dev']) {
+      expect(createIndustrySchema.safeParse({ code, nameVi: 'x', nameEn: 'x' }).success).toBe(false);
+    }
+  });
+});
+
+describe('updateAiQuotaSchema', () => {
+  it('takes a whole number within range, or null for the default', async () => {
+    const { updateAiQuotaSchema } = await import('./usage');
+    expect(updateAiQuotaSchema.parse({ aiDailyQuota: null })).toEqual({ aiDailyQuota: null });
+    expect(updateAiQuotaSchema.parse({ aiDailyQuota: 0 })).toEqual({ aiDailyQuota: 0 });
+    expect(updateAiQuotaSchema.safeParse({ aiDailyQuota: 1.5 }).success).toBe(false);
+    expect(updateAiQuotaSchema.safeParse({ aiDailyQuota: 5000 }).success).toBe(false);
+  });
+});

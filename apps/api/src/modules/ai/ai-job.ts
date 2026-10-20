@@ -2,13 +2,13 @@ import type { Logger } from '@nestjs/common';
 import { ErrorCode } from '@offerleap/shared';
 import type { Job } from 'bullmq';
 
-import { AiUnavailableError } from './ai.errors';
+import { AiQuotaExceededError, AiUnavailableError } from './ai.errors';
 
 /**
  * @description Runs the work of a queued AI job with one failure policy for every AI feature: a busy provider is
  * retried with backoff (rethrowing makes BullMQ re-run the job) while attempts remain; anything else — unreadable
  * input, unusable answer — or the last attempt marks the record failed, since trying again would give the same
- * result.
+ * result. A used-up quota fails with `AI_QUOTA_EXCEEDED` (retrying before the window moves is pointless).
  * @param job - BullMQ job (for its attempt counters).
  * @param logger - Processor logger.
  * @param work - The job's work.
@@ -32,7 +32,8 @@ export async function runAiJob(
     logger.warn(
       `Job ${job.name} ${job.id} failed: ${error instanceof Error ? error.message : String(error)}`,
     );
-    await failure.markFailed(retryable ? ErrorCode.AI_UNAVAILABLE : failure.code);
+    if (error instanceof AiQuotaExceededError) await failure.markFailed(ErrorCode.AI_QUOTA_EXCEEDED);
+    else await failure.markFailed(retryable ? ErrorCode.AI_UNAVAILABLE : failure.code);
   }
 }
 

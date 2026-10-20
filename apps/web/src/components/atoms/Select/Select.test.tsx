@@ -23,3 +23,16 @@ describe('Select', () => {
     expect(select).toHaveValue('SENIOR');
   });
 });
+
+describe('Select layout', () => {
+  it('puts layout classes on the wrapper so the chevron follows the width', () => {
+    render(
+      <Select aria-label="Period" wrapperClassName="w-44" className="h-9">
+        <option>7</option>
+      </Select>,
+    );
+    const select = screen.getByRole('combobox', { name: 'Period' });
+    expect(select.parentElement).toHaveClass('w-44');
+    expect(select).toHaveClass('h-9');
+  });
+});

@@ -13,6 +13,7 @@ import { AppException } from '../../common/errors/app.exception';
 import type { AccessTokenPayload } from '../../common/http/request';
 import type { Prisma, User } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AiQuotaService } from '../ai/ai-quota.service';
 import { TokenService } from '../auth/token.service';
 
 function toListItem(user: User): AdminUserListItem {
@@ -42,6 +43,7 @@ export class AdminUsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokens: TokenService,
+    private readonly quota: AiQuotaService,
   ) {}
 
   /** One page of accounts matching the filters, newest first. `q` searches email and name, ignoring case. */
@@ -78,6 +80,7 @@ export class AdminUsersService {
       },
     });
     if (!user) throw new AppException(ErrorCode.COMMON_NOT_FOUND, { message: 'User not found' });
+    const quota = await this.quota.status(user.id);
 
     return {
       ...toListItem(user),
@@ -89,6 +92,7 @@ export class AdminUsersService {
         industryCode: user.profile.industryCode,
       },
       activity: user._count,
+      ai: { callsInWindow: quota.used, limit: quota.limit, override: user.aiDailyQuota },
       manageable: canManageAccount(actorIdentity(actor), user),
     };
   }
@@ -108,6 +112,24 @@ export class AdminUsersService {
 
     await this.prisma.user.update({ where: { id }, data: { status } });
     if (status === 'DISABLED') await this.tokens.revokeAllForUser(id);
+    return this.detail(actor, id);
+  }
+
+  /**
+   * @description Sets a user's own AI limit (`null` = back to AI_DAILY_QUOTA). Same permission rule as status.
+   * @throws AppException COMMON_NOT_FOUND / ADMIN_ACTION_NOT_ALLOWED.
+   */
+  async setAiQuota(
+    actor: AccessTokenPayload,
+    id: string,
+    aiDailyQuota: number | null,
+  ): Promise<AdminUserDetail> {
+    const target = await this.prisma.user.findUnique({ where: { id } });
+    if (!target) throw new AppException(ErrorCode.COMMON_NOT_FOUND, { message: 'User not found' });
+    if (!canManageAccount(actorIdentity(actor), target)) {
+      throw new AppException(ErrorCode.ADMIN_ACTION_NOT_ALLOWED);
+    }
+    await this.prisma.user.update({ where: { id }, data: { aiDailyQuota } });
     return this.detail(actor, id);
   }
 }

@@ -87,6 +87,13 @@ const STORY_COPY = {
       signOut: 'Đăng xuất',
     },
     visuallyHidden: { profile: 'Hồ sơ', newTab: '(mở trong tab mới)' },
+    barChart: {
+      title: 'Lượt gọi AI theo ngày',
+      summary: '312 lượt trong 30 ngày.',
+      day: 'Ngày',
+      calls: 'Lượt',
+      failed: 'Lỗi',
+    },
     pagination: {
       nav: 'Phân trang',
       previous: 'Trang trước',
@@ -187,6 +194,13 @@ const STORY_COPY = {
       signOut: 'Sign out',
     },
     visuallyHidden: { profile: 'Profile', newTab: '(opens in a new tab)' },
+    barChart: {
+      title: 'AI calls per day',
+      summary: '312 calls in 30 days.',
+      day: 'Day',
+      calls: 'Calls',
+      failed: 'Failed',
+    },
     pagination: {
       nav: 'Pagination',
       previous: 'Previous page',

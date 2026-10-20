@@ -70,7 +70,10 @@
     "INTERVIEW_ALREADY_COMPLETED": "This interview has ended.",
     "AI_FAILED": "The AI returned something unusable. Please try again.",
     "ADMIN_ACTION_NOT_ALLOWED": "You aren't allowed to do this to that account.",
-    "ADMIN_INVITATION_PENDING": "This email already has a pending invitation. Use \"Resend\"."
+    "ADMIN_INVITATION_PENDING": "This email already has a pending invitation. Use \"Resend\".",
+    "AI_QUOTA_EXCEEDED": "You've used all your AI calls for the last 24 hours. Please try again later.",
+    "TAXONOMY_CODE_TAKEN": "This industry code already exists.",
+    "TAXONOMY_IN_USE": "This industry is used by profiles, so it can't be deleted."
   },
   "validation": {
     "required": "This field is required.",
@@ -180,7 +183,11 @@
     "ctaBody": "Paste a job description and AI will score the fit, list missing skills and suggest how to improve your CV.",
     "ctaAction": "Analyse now",
     "recent": "Recent analyses",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "quota": "AI calls in the last 24 hours",
+    "quotaValue": "{used}/{limit}",
+    "quotaUnlimited": "Unlimited",
+    "quotaHint": "CV parsing, analyses, cover letters and interviews all count."
   },
   "analyses": {
     "metaTitle": "CV analysis",
@@ -387,7 +394,9 @@
     "forbidden": "This page is for admins only.",
     "tabs": {
       "label": "Admin sections",
+      "overview": "Overview",
       "users": "Users",
+      "industries": "Industries",
       "admins": "Admins"
     },
     "roles": {
@@ -478,6 +487,72 @@
     "languages": {
       "vi": "Tiếng Việt",
       "en": "English"
+    },
+    "usage": {
+      "title": "AI usage",
+      "period": "Period",
+      "days": "Last {days} days",
+      "cards": {
+        "calls": "AI calls",
+        "failureRate": "Failure rate",
+        "tokens": "Tokens used",
+        "latency": "Average latency"
+      },
+      "tokensDetail": "{input} in · {output} out",
+      "latencyValue": "{seconds} s",
+      "chart": "AI calls per day",
+      "chartSummary": "{total} calls in {days} days, peak {max} on {date}.",
+      "chartFailures": "failed",
+      "byTask": "By feature",
+      "task": "Feature",
+      "calls": "Calls",
+      "failures": "Failed",
+      "tokens": "Tokens",
+      "latency": "Latency",
+      "topUsers": "Heaviest users",
+      "noData": "No AI calls in this period.",
+      "defaultQuota": "Default limit: {quota} calls per user per 24 hours.",
+      "tasks": {
+        "resume": "CV parsing",
+        "match": "CV ↔ job analysis",
+        "letter": "Cover letter",
+        "questions": "Interview questions",
+        "feedback": "Answer feedback",
+        "summary": "Interview summary"
+      }
+    },
+    "industries": {
+      "title": "Industries",
+      "description": "Codes are used by profiles and AI prompts, so they can't change; names can. Users see changes within an hour.",
+      "add": "Add industry",
+      "code": "Code",
+      "codeHint": "Lowercase, no accents, words joined by \"-\". E.g. game-dev",
+      "nameVi": "Vietnamese name",
+      "nameEn": "English name",
+      "profiles": "Profiles",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Industry added",
+      "saved": "Saved",
+      "deleted": "Industry deleted",
+      "inUse": "Used by {count} profiles, so it can't be deleted.",
+      "editTitle": "Edit industry {code}",
+      "deleteTitle": "Delete {name}?",
+      "deleteBody": "No profile uses this industry."
+    },
+    "quota": {
+      "title": "AI limit",
+      "used": "{used}/{limit} calls in the last 24 hours",
+      "usedUnlimited": "{used} calls in the last 24 hours · no limit (admin)",
+      "override": "Own limit (calls / 24 hours)",
+      "overrideHint": "Leave empty to use the default ({default}).",
+      "save": "Save limit",
+      "saved": "Limit saved",
+      "useDefault": "Use default",
+      "isDefault": "Using the default",
+      "isOverride": "Own limit"
     }
   },
   "settings": {

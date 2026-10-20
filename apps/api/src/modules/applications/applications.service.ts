@@ -152,6 +152,7 @@ export class ApplicationsService {
       resume: resume && (await this.resumes.loadDocument(resume).catch(() => null)),
     };
     return this.ai.streamText({
+      userId,
       task: COVER_LETTER_TASK,
       system: coverLetterSystem(context),
       parts: buildCoverLetterParts(context),

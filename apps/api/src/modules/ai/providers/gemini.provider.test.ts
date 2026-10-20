@@ -7,6 +7,7 @@ import type { AiJsonRequest } from '../ai.types';
 import { GeminiProvider } from './gemini.provider';
 
 const request: AiJsonRequest<{ name: string }> = {
+  userId: 'u1',
   task: 'test.v1',
   system: 'Extract the name.',
   parts: [
@@ -98,6 +99,7 @@ describe('GeminiProvider', () => {
 
 describe('GeminiProvider.streamText', () => {
   const textRequest = {
+    userId: 'u1',
     task: 'letter.v1',
     system: 'Write a letter.',
     parts: [{ type: 'text' as const, text: 'Hi' }],

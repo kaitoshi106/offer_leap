@@ -22,8 +22,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { data: user, isPending } = useCurrentUser();
 
   const tabs = [
+    { href: '/admin', label: t('tabs.overview'), exact: true },
     { href: '/admin/users', label: t('tabs.users') },
-    ...(user && canInviteAdmins(user) ? [{ href: '/admin/admins', label: t('tabs.admins') }] : []),
+    { href: '/admin/industries', label: t('tabs.industries') },
+    ...(user && canInviteAdmins(user)
+      ? [{ href: '/admin/admins', label: t('tabs.admins'), exact: false }]
+      : []),
   ];
 
   return (
@@ -40,8 +44,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </Heading>
             <nav aria-label={t('tabs.label')}>
               <ul className="flex gap-1">
-                {tabs.map(({ href, label }) => {
-                  const active = pathname === href || pathname.startsWith(`${href}/`);
+                {tabs.map(({ href, label, exact }) => {
+                  const active = pathname === href || (!exact && pathname.startsWith(`${href}/`));
                   return (
                     <li key={href}>
                       <Link

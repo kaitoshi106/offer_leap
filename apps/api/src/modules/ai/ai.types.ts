@@ -4,6 +4,8 @@ import type { z } from 'zod';
 export type AiContentPart = { type: 'text'; text: string } | { type: 'file'; mimeType: string; data: Buffer };
 
 export interface AiJsonRequest<T> {
+  /** Who the call is for: counted against their quota and logged. */
+  userId: string;
   /** Prompt id + version, e.g. `resume-extraction.v2`. Logged, and used by the mock provider to pick an answer. */
   task: string;
   /** Fixed instructions. Untrusted content goes in `parts`, never here. */
@@ -28,6 +30,7 @@ export interface AiJsonResult<T> {
 }
 
 export interface AiTextRequest {
+  userId: string;
   task: string;
   system: string;
   parts: AiContentPart[];
@@ -62,5 +65,11 @@ export interface AiProvider {
   streamText(request: AiTextRequest): Promise<AiTextStream>;
 }
 
-/** Nest injection token for the configured `AiProvider`. */
+/**
+ * Nest injection token for the provider feature modules use: the vendor wrapped with quota checks and usage
+ * logging (`TrackedAiProvider`).
+ */
 export const AI_PROVIDER = Symbol('AI_PROVIDER');
+
+/** The raw vendor provider (Gemini or mock). Tests replace this one, so tracking stays under test. */
+export const AI_VENDOR = Symbol('AI_VENDOR');

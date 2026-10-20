@@ -109,6 +109,7 @@ export class AnalysesService {
 
     const document = await this.resumes.loadDocument(analysis.resume);
     const answer = await this.ai.generateJson({
+      userId: analysis.userId,
       task: JOB_MATCH_TASK,
       system: jobMatchSystem(analysis.locale, new Date()),
       parts: buildJobMatchParts(document, analysis.jobDescription),

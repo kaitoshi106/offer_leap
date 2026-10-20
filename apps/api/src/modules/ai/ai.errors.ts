@@ -7,3 +7,8 @@ export class AiUnavailableError extends Error {
 export class AiInvalidOutputError extends Error {
   override readonly name = 'AiInvalidOutputError';
 }
+
+/** The user used up their AI calls for the current window. Not retried: waiting for the window is the fix. */
+export class AiQuotaExceededError extends Error {
+  override readonly name = 'AiQuotaExceededError';
+}

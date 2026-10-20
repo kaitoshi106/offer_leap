@@ -18,5 +18,6 @@
 - **Locale**: every task receives `locale` and must answer in it.
 - **Eval**: `apps/api/eval/<task>/` holds inputs + expected outputs; the runner reports field accuracy, failure rate,
   p95 latency, tokens and estimated cost per call.
-- **Cost control**: prompt caching for stable system prompts, per-user daily quotas, usage logged per call
-  (`ai_usage_logs`) and surfaced in the admin console.
+- **Cost control**: every call goes through `TrackedAiProvider` — per-user quota (rolling 24 h, `AI_DAILY_QUOTA`,
+  per-user override) and a usage row in `ai_usage_logs` (task, model, tokens, latency, success), shown on the admin
+  overview. Extraction prompts use MINIMAL thinking to keep latency and free-tier usage down.

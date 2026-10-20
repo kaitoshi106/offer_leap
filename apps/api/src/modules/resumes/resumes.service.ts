@@ -124,6 +124,7 @@ export class ResumesService {
     const context = { industries, provinces };
 
     const result = await this.ai.generateJson({
+      userId: resume.userId,
       task: RESUME_EXTRACTION_TASK,
       system: resumeExtractionSystem(new Date()),
       parts: buildResumeExtractionParts(document, context),

@@ -1,6 +1,6 @@
 'use client';
 
-import type { AdminUsersQueryInput, Locale, UserStatus } from '@offerleap/shared';
+import type { AdminUsersQueryInput, Locale, UpdateIndustryInput, UserStatus } from '@offerleap/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { adminApi } from './admin-api';
@@ -24,16 +24,58 @@ export function useAdminUser(id: string) {
   });
 }
 
-export function useSetUserStatus(id: string) {
+/** Changes one user (status, AI quota): the detail is replaced and lists refreshed. */
+function useUserUpdate<TVariables>(
+  id: string,
+  update: (variables: TVariables) => ReturnType<typeof adminApi.user>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (status: UserStatus) => adminApi.setStatus(id, status),
+    mutationFn: update,
     onSuccess: (user) => {
       queryClient.setQueryData([...usersKey, 'detail', id], user);
       void queryClient.invalidateQueries({ queryKey: usersKey });
     },
   });
 }
+
+export const useSetUserStatus = (id: string) =>
+  useUserUpdate(id, (status: UserStatus) => adminApi.setStatus(id, status));
+export const useSetAiQuota = (id: string) =>
+  useUserUpdate(id, (quota: number | null) => adminApi.setAiQuota(id, quota));
+
+export function useAiUsage(days: number) {
+  return useQuery({
+    queryKey: ['admin', 'ai-usage', days],
+    queryFn: ({ signal }) => adminApi.aiUsage(days, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+const industriesKey = ['admin', 'industries'] as const;
+
+export function useAdminIndustries() {
+  return useQuery({ queryKey: industriesKey, queryFn: ({ signal }) => adminApi.industries(signal) });
+}
+
+/** Every change refreshes the list and the public taxonomy used by the forms. */
+function useIndustryAction<TVariables, TResult>(action: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: action,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: industriesKey });
+      void queryClient.invalidateQueries({ queryKey: ['taxonomies'] });
+    },
+  });
+}
+
+export const useCreateIndustry = () => useIndustryAction(adminApi.createIndustry);
+export const useUpdateIndustry = () =>
+  useIndustryAction(({ code, ...body }: UpdateIndustryInput & { code: string }) =>
+    adminApi.updateIndustry(code, body),
+  );
+export const useRemoveIndustry = () => useIndustryAction(adminApi.removeIndustry);
 
 export function useInvitations() {
   return useQuery({ queryKey: invitationsKey, queryFn: ({ signal }) => adminApi.invitations(signal) });

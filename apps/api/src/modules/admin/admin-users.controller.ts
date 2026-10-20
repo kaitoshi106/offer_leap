@@ -8,6 +8,8 @@ import {
   ErrorCode,
   type Paginated,
   Role,
+  type UpdateAiQuotaInput,
+  updateAiQuotaSchema,
   type UpdateUserStatusInput,
   updateUserStatusSchema,
 } from '@offerleap/shared';
@@ -60,5 +62,21 @@ export class AdminUsersController {
     @Body(new ZodValidationPipe(updateUserStatusSchema)) body: UpdateUserStatusInput,
   ): Promise<AdminUserDetail> {
     return this.users.setStatus(actor, id, body.status);
+  }
+
+  @ApiOperation({ summary: "Set a user's AI limit per 24 hours (null = default)" })
+  @ApiZodBody(updateAiQuotaSchema)
+  @ApiErrors(
+    ErrorCode.COMMON_VALIDATION_FAILED,
+    ErrorCode.COMMON_NOT_FOUND,
+    ErrorCode.ADMIN_ACTION_NOT_ALLOWED,
+  )
+  @Patch(':id/ai-quota')
+  setAiQuota(
+    @CurrentUser() actor: AccessTokenPayload,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateAiQuotaSchema)) body: UpdateAiQuotaInput,
+  ): Promise<AdminUserDetail> {
+    return this.users.setAiQuota(actor, id, body.aiDailyQuota);
   }
 }
