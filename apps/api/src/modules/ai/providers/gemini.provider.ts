@@ -162,7 +162,9 @@ export class GeminiProvider implements AiProvider {
   /** Busy/rate-limited models, timeouts and network failures are worth another try; bad requests are not. */
   private isRetryable(error: unknown): boolean {
     if (error instanceof ApiError) return RETRYABLE_STATUSES.has(error.status);
-    return error instanceof Error && (error.name === 'TimeoutError' || error.name === 'TypeError');
+    // Our per-request timeout surfaces as TimeoutError or, through the SDK, as AbortError (found by the eval: a slow
+    // fallback model timed out and the last model was never tried). TypeError = network failure in fetch.
+    return error instanceof Error && ['TimeoutError', 'AbortError', 'TypeError'].includes(error.name);
   }
 
   private describe(error: unknown): string {

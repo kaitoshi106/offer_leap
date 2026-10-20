@@ -31,7 +31,7 @@ export const envSchema = z
     /** Comma-separated models tried in order when the main one is overloaded or rate-limited. */
     GEMINI_FALLBACK_MODELS: z
       .string()
-      .default('gemini-3.8-flash,gemini-3.1-flash-lite')
+      .default('gemini-3.1-flash-lite,gemini-3.8-flash')
       .transform((value) =>
         value
           .split(',')

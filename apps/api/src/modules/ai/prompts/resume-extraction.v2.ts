@@ -18,8 +18,8 @@ export interface TaxonomyOption {
 }
 
 export interface ResumeExtractionContext {
-  industries: TaxonomyOption[];
-  provinces: TaxonomyOption[];
+  industries: readonly TaxonomyOption[];
+  provinces: readonly TaxonomyOption[];
 }
 
 /** The CV, either as a file the model reads natively (PDF, image) or as extracted text (DOCX). */
@@ -43,7 +43,8 @@ const SUGGESTION_FIELDS = [
  * @param context - Current taxonomies.
  */
 export function resumeExtractionSchema(context: ResumeExtractionContext) {
-  const codes = (options: TaxonomyOption[]) => options.map((option) => option.code) as [string, ...string[]];
+  const codes = (options: readonly TaxonomyOption[]) =>
+    options.map((option) => option.code) as [string, ...string[]];
   return z.object({
     fullName: z.string().nullable().describe("Candidate's full name as written, or null."),
     phone: z.string().nullable().describe('Main phone number as written, or null.'),
@@ -113,7 +114,7 @@ export function buildResumeExtractionParts(
   document: ResumeDocument,
   context: ResumeExtractionContext,
 ): AiContentPart[] {
-  const list = (options: TaxonomyOption[]) =>
+  const list = (options: readonly TaxonomyOption[]) =>
     options.map((option) => `${option.code}: ${option.nameVi} / ${option.nameEn}`).join('\n');
   const reference = `Industry codes:\n${list(context.industries)}\n\nProvince codes:\n${list(context.provinces)}`;
 

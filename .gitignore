@@ -39,3 +39,6 @@ apps/api/.e2e-dist/
 
 # Uploaded files (local storage)
 apps/api/storage/
+
+# AI eval reports (local runs)
+apps/api/eval/reports/

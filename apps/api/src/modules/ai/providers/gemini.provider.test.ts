@@ -73,6 +73,12 @@ describe('GeminiProvider', () => {
     expect(generateContent).toHaveBeenCalledTimes(2);
   });
 
+  it('moves on when a model times out', async () => {
+    const timeout = Object.assign(new Error('This operation was aborted'), { name: 'AbortError' });
+    const { provider } = setup(timeout, answer('{"name":"An"}'));
+    expect((await provider.generateJson(request)).model).toBe('fallback-model');
+  });
+
   it('reports the provider as unavailable when every model is busy', async () => {
     const { provider } = setup(
       new ApiError({ message: 'overloaded', status: 503 }),

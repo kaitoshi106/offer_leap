@@ -11,5 +11,6 @@
 - [x] Mock interview (AI questions, feedback per answer, summary, voice input)
 - [x] Admin console: admin invitations, users, settings
 - [x] Admin console: AI usage, per-user quotas, taxonomies
-- [ ] E2E tests, AI eval, deployment
+- [x] AI eval runner with baseline datasets
+- [ ] Deployment, README with screenshots
 - [ ] RAG over personal documents
