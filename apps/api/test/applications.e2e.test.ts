@@ -15,7 +15,13 @@ import {
 const JOB = `Acme Tech is hiring a Senior Frontend Engineer.
 Requirements: 5+ years with React and TypeScript, GraphQL, testing with Playwright. Nice to have: Next.js.`;
 
-const ai = { name: 'test', generateJson: vi.fn(), streamText: vi.fn() } satisfies AiProvider;
+const ai = {
+  name: 'test',
+  similarityFloor: 0.2,
+  generateJson: vi.fn(),
+  streamText: vi.fn(),
+  embed: vi.fn(),
+} satisfies AiProvider;
 const mock = new MockAiProvider();
 
 let ctx: TestContext;
@@ -148,7 +154,7 @@ describe('applications', () => {
 
     expect(response.body).toMatch(/^Dear Hiring Team,[\s\S]*Nguyễn Văn An$/);
     const request = ai.streamText.mock.calls[0]![0];
-    expect(request.task).toBe('cover-letter.v1');
+    expect(request.task).toBe('cover-letter.v2');
     expect(request.system).toContain('Write in English');
     expect(request.parts[0].text).toContain('Name: Trần Minh');
     expect(request.parts[1].text).toContain('Company: Acme Tech');

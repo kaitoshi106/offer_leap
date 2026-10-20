@@ -13,4 +13,4 @@
 - [x] Admin console: AI usage, per-user quotas, taxonomies
 - [x] AI eval runner with baseline datasets
 - [x] Docker deployment, README with screenshots
-- [ ] RAG over personal documents
+- [x] RAG over personal documents (pgvector, Gemini embeddings, sources in analyses)

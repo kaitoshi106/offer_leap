@@ -9,3 +9,4 @@ ADR's decision — supersede it with a new one.
 | 0002 | Shared error codes, translations on the web   | Accepted |
 | 0003 | Root admin and invitation-only general admins | Accepted |
 | 0004 | AI behind a provider interface, Gemini first  | Accepted |
+| 0005 | RAG with pgvector and exact per-user search   | Accepted |

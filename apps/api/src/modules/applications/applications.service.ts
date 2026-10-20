@@ -14,7 +14,8 @@ import {
 import { AppException } from '../../common/errors/app.exception';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AI_PROVIDER, type AiProvider, type AiTextStream } from '../ai/ai.types';
-import { buildCoverLetterParts, COVER_LETTER_TASK, coverLetterSystem } from '../ai/prompts/cover-letter.v1';
+import { buildCoverLetterParts, COVER_LETTER_TASK, coverLetterSystem } from '../ai/prompts/cover-letter.v2';
+import { KnowledgeService } from '../knowledge/knowledge.service';
 import { ResumesService } from '../resumes/resumes.service';
 import { APPLICATION_INCLUDE, toApplicationDetail, toApplicationSummary } from './application.mapper';
 
@@ -24,6 +25,7 @@ export class ApplicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly resumes: ResumesService,
+    private readonly knowledge: KnowledgeService,
     @Inject(AI_PROVIDER) private readonly ai: AiProvider,
   ) {}
 
@@ -150,6 +152,11 @@ export class ApplicationsService {
         jobDescription: application.jobDescription!,
       },
       resume: resume && (await this.resumes.loadDocument(resume).catch(() => null)),
+      // RAG: the user's own passages closest to this job, for concrete achievements.
+      notes: await this.knowledge.search(userId, application.jobDescription!, {
+        limit: 4,
+        relevantOnly: true,
+      }),
     };
     return this.ai.streamText({
       userId,

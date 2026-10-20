@@ -205,6 +205,28 @@ feature service ──AI_PROVIDER──► TrackedAiProvider ──AI_VENDOR─�
 - Industries (`/admin/industries`): codes are permanent slugs (profiles and prompts use them), names editable,
   delete refused while profiles use it (`TAXONOMY_IN_USE`). The public taxonomy is cached for an hour.
 
+## Personal documents (RAG)
+
+```
+/documents: upload (PDF/DOCX/TXT/MD) or paste text → KnowledgeDocument (PENDING) → BullMQ `knowledge` job
+worker: extract text locally (unpdf / mammoth) → normalise → overlapping chunks (~900 chars, 150 overlap)
+      → AiProvider.embed(purpose: document) → knowledge_chunks.embedding vector(768) (pgvector)
+analysis / cover letter: embed the job description (purpose: query)
+      → SELECT … ORDER BY embedding <=> query LIMIT 4 (user's chunks only) → keep score ≥ similarityFloor
+      → passages go into the prompt as <notes> (untrusted data) → analysis lists them as sources
+```
+
+- **Exact search, no ANN index.** Every search is scoped to one user (≤ 20 documents, a few hundred chunks), where a
+  sequential cosine scan is fast and never misses; an HNSW index would filter by user after picking candidates.
+- **Calibrated threshold.** Query↔document similarities with `gemini-embedding-001` are lower than document↔document
+  ones: related 0.65–0.76, unrelated 0.50–0.60, so the floor is 0.62 (`similarityFloor` per provider; the mock's
+  bag-of-words vectors use 0.2). `pnpm --filter @offerleap/api eval retrieval` checks ranking and the floor.
+- Embedding calls are logged (`embed-document`, `embed-query`) but don't count against the AI quota; no documents →
+  no embedding call at all. Vectors from different models aren't comparable, so the embedding model has no fallback
+  and is stored per document.
+- `GET /knowledge/search` returns passages with their score and `relevant` flag so users can see exactly what the
+  AI would be given.
+
 ## Theming & i18n
 
 - Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user

@@ -8,3 +8,4 @@ export * from './analysis';
 export * from './application';
 export * from './interview';
 export * from './admin';
+export * from './knowledge';

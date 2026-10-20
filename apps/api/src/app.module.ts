@@ -17,6 +17,7 @@ import { AnalysesModule } from './modules/analyses/analyses.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
+import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ResumesModule } from './modules/resumes/resumes.module';
@@ -77,6 +78,7 @@ function redisConnection(url: string) {
     ApplicationsModule,
     InterviewsModule,
     AdminModule,
+    KnowledgeModule,
   ],
   providers: [
     // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.

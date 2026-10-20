@@ -19,7 +19,8 @@ import {
   JOB_MATCH_TASK,
   jobMatchSchema,
   jobMatchSystem,
-} from '../ai/prompts/job-match.v1';
+} from '../ai/prompts/job-match.v2';
+import { KnowledgeService } from '../knowledge/knowledge.service';
 import { ResumesService } from '../resumes/resumes.service';
 import { ANALYSIS_INCLUDE, toAnalysisDetail, toAnalysisResult, toAnalysisSummary } from './analysis.mapper';
 import { ANALYSIS_QUEUE, type AnalysisJob } from './analyses.types';
@@ -33,6 +34,7 @@ export class AnalysesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly resumes: ResumesService,
+    private readonly knowledge: KnowledgeService,
     @Inject(AI_PROVIDER) private readonly ai: AiProvider,
     @InjectQueue(ANALYSIS_QUEUE) private readonly queue: Queue<AnalysisJob>,
   ) {}
@@ -108,14 +110,19 @@ export class AnalysesService {
     await this.prisma.jobAnalysis.update({ where: { id: analysisId }, data: { status: 'PROCESSING' } });
 
     const document = await this.resumes.loadDocument(analysis.resume);
+    // RAG: passages from the user's own documents closest to this job (none if they have no documents).
+    const notes = await this.knowledge.search(analysis.userId, analysis.jobDescription, {
+      limit: 4,
+      relevantOnly: true,
+    });
     const answer = await this.ai.generateJson({
       userId: analysis.userId,
       task: JOB_MATCH_TASK,
       system: jobMatchSystem(analysis.locale, new Date()),
-      parts: buildJobMatchParts(document, analysis.jobDescription),
+      parts: buildJobMatchParts(document, analysis.jobDescription, notes),
       schema: jobMatchSchema,
     });
-    const { jobTitle, company, result } = toAnalysisResult(answer.data);
+    const { jobTitle, company, result } = toAnalysisResult(answer.data, notes);
 
     // updateMany: the user may have deleted the analysis while the AI was working.
     await this.prisma.jobAnalysis.updateMany({

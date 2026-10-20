@@ -32,7 +32,13 @@ export class AiQuotaService {
     const [user, used] = await Promise.all([
       this.prisma.user.findUnique({ where: { id: userId }, select: { role: true, aiDailyQuota: true } }),
       this.prisma.aiUsageLog.count({
-        where: { userId, success: true, createdAt: { gte: new Date(Date.now() - WINDOW_MS) } },
+        // Embedding calls (`embed-*`) are logged but free: they run on every search.
+        where: {
+          userId,
+          success: true,
+          createdAt: { gte: new Date(Date.now() - WINDOW_MS) },
+          NOT: { task: { startsWith: 'embed' } },
+        },
       }),
     ]);
     const limit = user?.role === 'ADMIN' ? null : (user?.aiDailyQuota ?? this.defaultQuota);

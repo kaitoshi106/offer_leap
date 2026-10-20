@@ -11,6 +11,7 @@ const KNOWN_DOMAINS = [
   'RESUME',
   'ANALYSIS',
   'INTERVIEW',
+  'KNOWLEDGE',
   'AI',
   'TAXONOMY',
 ];

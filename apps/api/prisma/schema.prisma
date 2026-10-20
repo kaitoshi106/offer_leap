@@ -63,6 +63,7 @@ model User {
   interviews            InterviewSession[]
   sentInvitations       AdminInvitation[]
   aiUsage               AiUsageLog[]
+  documents             KnowledgeDocument[]
 
   @@map("users")
 }
@@ -375,4 +376,53 @@ model AiUsageLog {
   @@index([userId, createdAt])
   @@index([createdAt])
   @@map("ai_usage_logs")
+}
+
+enum KnowledgeSource {
+  UPLOAD
+  TEXT
+}
+
+/// A personal document (project notes, certificates…) split into chunks with embeddings for retrieval (RAG).
+/// Processed in the background like CVs, so it shares their statuses.
+model KnowledgeDocument {
+  id             String           @id @default(cuid())
+  userId         String
+  title          String
+  source         KnowledgeSource
+  fileName       String?
+  mimeType       String?
+  /// Uploaded file inside STORAGE_DIR (pasted text has none).
+  storageKey     String?          @unique
+  status         ResumeStatus     @default(PENDING)
+  errorCode      String?
+  chunkCount     Int              @default(0)
+  charCount      Int              @default(0)
+  /// Model the chunks were embedded with: a query must use the same one to be comparable.
+  embeddingModel String?
+  processedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks         KnowledgeChunk[]
+
+  @@index([userId, createdAt])
+  @@map("knowledge_documents")
+}
+
+/// One passage of a document and its embedding (pgvector). `userId` is copied here so a similarity search can
+/// filter by owner without a join. No ANN (HNSW) index on purpose: searches are always per user (a few hundred
+/// chunks at most), where an exact scan is fast and never misses — an ANN index filters by user only afterwards.
+model KnowledgeChunk {
+  id         String                       @id @default(cuid())
+  documentId String
+  userId     String
+  index      Int
+  content    String
+  embedding  Unsupported("vector(768)")?
+  document   KnowledgeDocument            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+  @@map("knowledge_chunks")
 }

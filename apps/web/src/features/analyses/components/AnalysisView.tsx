@@ -188,6 +188,25 @@ function Result({ result }: { result: AnalysisResult }) {
         </Card>
       </div>
 
+      {result.sources && result.sources.length > 0 && (
+        <Card title={t('sources')} icon="sparkles">
+          <Text size="sm" tone="muted">
+            {t('sourcesDescription')}
+          </Text>
+          <ul className="flex flex-col gap-2">
+            {result.sources.map((source, index) => (
+              <li
+                key={`${source.documentId}-${index}`}
+                className="rounded-lg bg-surface-muted/60 p-3 text-sm"
+              >
+                <span className="font-medium text-fg">{source.title}</span>
+                <p className="mt-1 leading-relaxed text-fg-muted">{source.excerpt}</p>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <Card title={t('suggestions')} icon="sparkles">
         {result.suggestions.length === 0 ? (
           <Text tone="muted">{t('none')}</Text>

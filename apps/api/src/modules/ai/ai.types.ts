@@ -48,6 +48,25 @@ export interface AiTextStream {
   usage: () => AiUsage;
 }
 
+/** Length of every embedding vector (matches the `vector(768)` column). */
+export const EMBEDDING_DIMENSIONS = 768;
+
+export interface AiEmbedRequest {
+  userId: string;
+  /** For the usage log: `embed-document` or `embed-query`. */
+  task: string;
+  texts: string[];
+  /** Embedding models encode stored passages and search queries slightly differently. */
+  purpose: 'document' | 'query';
+}
+
+export interface AiEmbedResult {
+  /** One unit-length vector per text, in order. */
+  vectors: number[][];
+  model: string;
+  usage: AiUsage;
+}
+
 /** One implementation per vendor (Strategy pattern); the rest of the app only sees this interface. */
 export interface AiProvider {
   readonly name: string;
@@ -63,6 +82,13 @@ export interface AiProvider {
    * @throws AiUnavailableError when no model could start answering.
    */
   streamText(request: AiTextRequest): Promise<AiTextStream>;
+  /**
+   * @description Embeds texts for semantic search. Vectors are normalised, so cosine similarity = dot product.
+   * @throws AiUnavailableError when the embedding model can't be reached.
+   */
+  embed(request: AiEmbedRequest): Promise<AiEmbedResult>;
+  /** Lowest cosine similarity that still means "related" for this provider's embedding model. */
+  readonly similarityFloor: number;
 }
 
 /**

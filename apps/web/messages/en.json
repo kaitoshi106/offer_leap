@@ -73,7 +73,9 @@
     "ADMIN_INVITATION_PENDING": "This email already has a pending invitation. Use \"Resend\".",
     "AI_QUOTA_EXCEEDED": "You've used all your AI calls for the last 24 hours. Please try again later.",
     "TAXONOMY_CODE_TAKEN": "This industry code already exists.",
-    "TAXONOMY_IN_USE": "This industry is used by profiles, so it can't be deleted."
+    "TAXONOMY_IN_USE": "This industry is used by profiles, so it can't be deleted.",
+    "KNOWLEDGE_LIMIT_REACHED": "You already have the maximum of 20 documents. Delete one to add another.",
+    "KNOWLEDGE_PROCESSING_FAILED": "This document's text couldn't be read (it may be a scanned image). Try another file or paste the content."
   },
   "validation": {
     "required": "This field is required.",
@@ -171,6 +173,7 @@
     "analyses": "CV analysis",
     "applications": "Applications",
     "interviews": "Interviews",
+    "documents": "Documents",
     "admin": "Admin",
     "settings": "Account settings",
     "signOut": "Sign out"
@@ -248,7 +251,9 @@
       "deleteBody": "The result will be deleted permanently.",
       "cancel": "Cancel",
       "deleted": "Analysis deleted",
-      "saveToBoard": "Save to applications"
+      "saveToBoard": "Save to applications",
+      "sources": "Documents used",
+      "sourcesDescription": "AI also relied on these passages from your documents."
     }
   },
   "applications": {
@@ -386,6 +391,47 @@
       "stop": "Stop recording",
       "listening": "Listening… press again to stop.",
       "error": "The microphone isn't available. Check the browser's microphone permission."
+    }
+  },
+  "documents": {
+    "metaTitle": "Documents",
+    "title": "Your documents",
+    "description": "Add project descriptions, certificates or achievements. AI finds the relevant passages to analyse your CV and write cover letters that reflect your real experience.",
+    "add": "Add a document",
+    "dropTitle": "Drag a document here or click to choose a file",
+    "dropHint": "PDF, DOCX, TXT or MD · up to 5 MB",
+    "orPaste": "or paste the content",
+    "titleLabel": "Title",
+    "titlePlaceholder": "E.g. Payments platform project",
+    "content": "Content",
+    "contentPlaceholder": "Describe the project, your role, the technology and the results…",
+    "save": "Save document",
+    "added": "Document added, processing…",
+    "list": "Documents",
+    "empty": "No documents yet.",
+    "limit": "{count}/{max} documents",
+    "statuses": {
+      "PENDING": "Waiting",
+      "PROCESSING": "Processing",
+      "COMPLETED": "Ready",
+      "FAILED": "Failed"
+    },
+    "meta": "{chunks, plural, =0 {No passages yet} one {# passage} other {# passages}} · {chars} characters",
+    "pasted": "Pasted text",
+    "delete": "Delete",
+    "deleteTitle": "Delete \"{title}\"?",
+    "deleteBody": "AI will stop using this document.",
+    "cancel": "Cancel",
+    "deleted": "Document deleted",
+    "search": {
+      "title": "Try a search",
+      "description": "See which passages AI would find for a job description or any question.",
+      "label": "Search text",
+      "placeholder": "E.g. GraphQL and testing experience",
+      "submit": "Search",
+      "empty": "No matching passages.",
+      "score": "Similarity {score}",
+      "belowFloor": "Below the threshold — not used"
     }
   },
   "admin": {

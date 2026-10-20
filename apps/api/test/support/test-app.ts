@@ -65,7 +65,7 @@ export async function createTestApp(options: { ai?: AiProvider } = {}): Promise<
  */
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "ai_usage_logs", "admin_invitations", "interview_questions", "interview_sessions", "resumes", "job_applications", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
+    'TRUNCATE TABLE "knowledge_chunks", "knowledge_documents", "ai_usage_logs", "admin_invitations", "interview_questions", "interview_sessions", "resumes", "job_applications", "job_analyses", "profiles", "refresh_tokens", "user_tokens", "users" CASCADE',
   );
 }
 

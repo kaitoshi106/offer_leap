@@ -1,7 +1,13 @@
-import type { AnalysisDetail, AnalysisResult, AnalysisSummary, ErrorCode } from '@offerleap/shared';
+import type {
+  AnalysisDetail,
+  AnalysisResult,
+  AnalysisSummary,
+  ErrorCode,
+  KnowledgeMatch,
+} from '@offerleap/shared';
 
 import type { JobAnalysis, Resume } from '../../generated/prisma/client';
-import type { JobMatch } from '../ai/prompts/job-match.v1';
+import type { JobMatch } from '../ai/prompts/job-match.v2';
 
 type AnalysisRow = JobAnalysis & { resume: Pick<Resume, 'fileName'> };
 
@@ -36,8 +42,12 @@ export function toAnalysisDetail(analysis: AnalysisRow): AnalysisDetail {
  * @description Splits the model's answer into the stored result and the columns lists need. Lists are trimmed
  * and de-duplicated (models sometimes repeat an item), and a skill can't be both matched and missing.
  * @param match - Schema-checked answer.
+ * @param notes - Passages the model was given, listed as sources (with a short excerpt).
  */
-export function toAnalysisResult(match: JobMatch): {
+export function toAnalysisResult(
+  match: JobMatch,
+  notes: KnowledgeMatch[] = [],
+): {
   jobTitle: string;
   company: string | null;
   result: AnalysisResult;
@@ -75,6 +85,11 @@ export function toAnalysisResult(match: JobMatch): {
       strengths: clean(match.strengths),
       gaps: clean(match.gaps),
       suggestions: clean(match.suggestions),
+      sources: notes.map((note) => ({
+        documentId: note.documentId,
+        title: note.title,
+        excerpt: note.content.length > 240 ? `${note.content.slice(0, 240).trimEnd()}…` : note.content,
+      })),
     },
   };
 }

@@ -1,6 +1,15 @@
-import type { AiJsonRequest, AiJsonResult, AiProvider, AiTextRequest, AiTextStream } from '../ai.types';
+import type {
+  AiEmbedRequest,
+  AiEmbedResult,
+  AiJsonRequest,
+  AiJsonResult,
+  AiProvider,
+  AiTextRequest,
+  AiTextStream,
+} from '../ai.types';
 import { AiInvalidOutputError } from '../ai.errors';
 import { parseJsonOutput } from './json-output';
+import { hashEmbedding } from './vectors';
 
 /** Canned answers per task, shaped like what a real model returns. */
 const MOCK_ANSWERS: Record<string, unknown> = {
@@ -15,7 +24,7 @@ const MOCK_ANSWERS: Record<string, unknown> = {
     skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS', 'Node.js'],
     uncertainFields: ['phone'],
   },
-  'job-match.v1': {
+  'job-match.v2': {
     jobTitle: 'Senior Frontend Engineer',
     company: 'Acme Tech',
     score: 72,
@@ -79,7 +88,7 @@ function mockQuestions(schema: { safeParse: (value: unknown) => { success: boole
 
 /** Canned free-text answers per task (streamed word by word). */
 const MOCK_TEXTS: Record<string, string> = {
-  'cover-letter.v1': `Dear Hiring Team,
+  'cover-letter.v2': `Dear Hiring Team,
 
 I am excited to apply for this role. Over the past six years I have built fast, accessible web applications with React, TypeScript and Next.js.
 
@@ -95,6 +104,8 @@ Nguyễn Văn An`,
  */
 export class MockAiProvider implements AiProvider {
   readonly name = 'mock';
+  /** Bag-of-words vectors: one accidental shared word scores ~0.14, real topical overlap 0.3+. */
+  readonly similarityFloor = 0.2;
 
   async generateJson<T>(request: AiJsonRequest<T>): Promise<AiJsonResult<T>> {
     const answer =
@@ -115,5 +126,13 @@ export class MockAiProvider implements AiProvider {
       for (const piece of text!.split(/(?<=\s)/)) yield piece;
     }
     return { model: 'mock', chunks: chunks(), usage: () => ({ inputTokens: 0, outputTokens: 0 }) };
+  }
+
+  async embed(request: AiEmbedRequest): Promise<AiEmbedResult> {
+    return {
+      vectors: request.texts.map(hashEmbedding),
+      model: 'mock-embedding',
+      usage: { inputTokens: 0, outputTokens: 0 },
+    };
   }
 }

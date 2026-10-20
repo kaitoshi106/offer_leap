@@ -73,7 +73,9 @@
     "ADMIN_INVITATION_PENDING": "Email này đã có lời mời đang chờ. Hãy dùng \"Gửi lại\".",
     "AI_QUOTA_EXCEEDED": "Bạn đã dùng hết lượt AI trong 24 giờ qua. Vui lòng thử lại sau.",
     "TAXONOMY_CODE_TAKEN": "Mã ngành này đã tồn tại.",
-    "TAXONOMY_IN_USE": "Ngành này đang được hồ sơ sử dụng nên không thể xoá."
+    "TAXONOMY_IN_USE": "Ngành này đang được hồ sơ sử dụng nên không thể xoá.",
+    "KNOWLEDGE_LIMIT_REACHED": "Bạn đã có tối đa 20 tài liệu. Hãy xoá bớt để thêm mới.",
+    "KNOWLEDGE_PROCESSING_FAILED": "Không đọc được nội dung tài liệu này (có thể là file ảnh scan). Hãy thử file khác hoặc dán nội dung."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -171,6 +173,7 @@
     "analyses": "Phân tích CV",
     "applications": "Ứng tuyển",
     "interviews": "Phỏng vấn",
+    "documents": "Tài liệu",
     "admin": "Quản trị",
     "settings": "Cài đặt tài khoản",
     "signOut": "Đăng xuất"
@@ -248,7 +251,9 @@
       "deleteBody": "Kết quả sẽ bị xoá vĩnh viễn.",
       "cancel": "Huỷ",
       "deleted": "Đã xoá phân tích",
-      "saveToBoard": "Lưu vào bảng ứng tuyển"
+      "saveToBoard": "Lưu vào bảng ứng tuyển",
+      "sources": "Tài liệu đã dùng",
+      "sourcesDescription": "AI dựa thêm vào các đoạn này từ tài liệu của bạn."
     }
   },
   "applications": {
@@ -386,6 +391,47 @@
       "stop": "Dừng ghi âm",
       "listening": "Đang nghe… bấm lại để dừng.",
       "error": "Không dùng được micro. Hãy kiểm tra quyền truy cập micro của trình duyệt."
+    }
+  },
+  "documents": {
+    "metaTitle": "Tài liệu",
+    "title": "Tài liệu của bạn",
+    "description": "Thêm mô tả dự án, chứng chỉ hay thành tích. AI tìm những đoạn liên quan để phân tích CV và viết cover letter sát với kinh nghiệm thật của bạn.",
+    "add": "Thêm tài liệu",
+    "dropTitle": "Kéo thả tài liệu vào đây hoặc bấm để chọn file",
+    "dropHint": "PDF, DOCX, TXT hoặc MD · tối đa 5 MB",
+    "orPaste": "hoặc dán nội dung",
+    "titleLabel": "Tiêu đề",
+    "titlePlaceholder": "VD: Dự án hệ thống thanh toán",
+    "content": "Nội dung",
+    "contentPlaceholder": "Mô tả dự án, vai trò của bạn, công nghệ, kết quả đạt được…",
+    "save": "Lưu tài liệu",
+    "added": "Đã thêm tài liệu, đang xử lý…",
+    "list": "Danh sách",
+    "empty": "Chưa có tài liệu nào.",
+    "limit": "{count}/{max} tài liệu",
+    "statuses": {
+      "PENDING": "Đang chờ",
+      "PROCESSING": "Đang xử lý",
+      "COMPLETED": "Sẵn sàng",
+      "FAILED": "Lỗi"
+    },
+    "meta": "{chunks, plural, =0 {Chưa có đoạn nào} other {# đoạn}} · {chars} ký tự",
+    "pasted": "Nội dung dán",
+    "delete": "Xoá",
+    "deleteTitle": "Xoá \"{title}\"?",
+    "deleteBody": "AI sẽ không dùng tài liệu này nữa.",
+    "cancel": "Huỷ",
+    "deleted": "Đã xoá tài liệu",
+    "search": {
+      "title": "Thử tìm kiếm",
+      "description": "Xem AI sẽ tìm được đoạn nào cho một mô tả công việc hoặc câu hỏi bất kỳ.",
+      "label": "Nội dung tìm kiếm",
+      "placeholder": "VD: kinh nghiệm GraphQL và kiểm thử",
+      "submit": "Tìm",
+      "empty": "Không có đoạn nào phù hợp.",
+      "score": "Độ tương đồng {score}",
+      "belowFloor": "Dưới ngưỡng, AI không dùng"
     }
   },
   "admin": {

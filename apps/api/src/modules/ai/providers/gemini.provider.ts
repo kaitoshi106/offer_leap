@@ -4,6 +4,8 @@ import { Logger } from '@nestjs/common';
 import { AiUnavailableError } from '../ai.errors';
 import type {
   AiContentPart,
+  AiEmbedRequest,
+  AiEmbedResult,
   AiJsonRequest,
   AiJsonResult,
   AiProvider,
@@ -11,7 +13,9 @@ import type {
   AiTextStream,
   AiUsage,
 } from '../ai.types';
+import { EMBEDDING_DIMENSIONS } from '../ai.types';
 import { parseJsonOutput, toResponseJsonSchema } from './json-output';
+import { normalize } from './vectors';
 
 /** Statuses meaning "this model can't take the request right now" → try the next model. */
 const RETRYABLE_STATUSES = new Set([429, 500, 503, 504]);
@@ -34,7 +38,13 @@ export interface GeminiProviderOptions {
   client: Pick<GoogleGenAI, 'models'>;
   /** Main model first, then fallbacks. */
   models: string[];
+  /** Embedding model. No fallback: vectors from different models aren't comparable. */
+  embeddingModel?: string;
 }
+
+/** Texts per embedding request (API limit is 100). */
+const EMBED_BATCH = 50;
+const EMBED_ATTEMPTS = 3;
 
 /**
  * @description Converts our content parts to Gemini's: files are sent inline (base64), which Gemini reads
@@ -52,6 +62,12 @@ function toGeminiParts(parts: AiContentPart[]): Part[] {
 /** Google Gemini via `@google/genai`, with structured JSON output and model fallback. */
 export class GeminiProvider implements AiProvider {
   readonly name = 'gemini';
+  /**
+   * Measured with gemini-embedding-001 (768-d), query vs document embeddings: related pairs 0.65–0.76 (e.g. an
+   * English GraphQL job vs a Vietnamese GraphQL project note 0.65), unrelated 0.50–0.60 (a hobby note ≤ 0.55).
+   * Same-type pairs score much higher (≈ 0.93), so the floor must be calibrated on query↔document pairs.
+   */
+  readonly similarityFloor = 0.62;
   private readonly logger = new Logger(GeminiProvider.name);
   /** Models found not to support the MINIMAL thinking level. */
   private readonly lowThinkingModels = new Set<string>();
@@ -116,6 +132,46 @@ export class GeminiProvider implements AiProvider {
       }
       return { model, chunks: chunks(), usage: () => usage };
     });
+  }
+
+  async embed(request: AiEmbedRequest): Promise<AiEmbedResult> {
+    const model = this.options.embeddingModel ?? 'gemini-embedding-001';
+    const vectors: number[][] = [];
+    for (let start = 0; start < request.texts.length; start += EMBED_BATCH) {
+      const batch = request.texts.slice(start, start + EMBED_BATCH);
+      const response = await this.withRetry(request.task, () =>
+        this.options.client.models.embedContent({
+          model,
+          contents: batch,
+          config: {
+            taskType: request.purpose === 'query' ? 'RETRIEVAL_QUERY' : 'RETRIEVAL_DOCUMENT',
+            outputDimensionality: EMBEDDING_DIMENSIONS,
+            abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+          },
+        }),
+      );
+      // Shortened (768-d) embeddings aren't unit length; normalising makes cosine similarity comparable.
+      vectors.push(...(response.embeddings ?? []).map((embedding) => normalize(embedding.values ?? [])));
+    }
+    if (vectors.length !== request.texts.length)
+      throw new AiUnavailableError('Incomplete embedding response');
+    // The embedding API reports no token usage.
+    return { vectors, model, usage: { inputTokens: 0, outputTokens: 0 } };
+  }
+
+  /** Same model, a few tries with a short pause: there is no other model whose vectors would be compatible. */
+  private async withRetry<T>(task: string, call: () => Promise<T>): Promise<T> {
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        return await call();
+      } catch (error) {
+        if (!this.isRetryable(error)) throw error;
+        if (attempt >= EMBED_ATTEMPTS)
+          throw new AiUnavailableError(`Embedding model unavailable for ${task}`);
+        this.logger.warn(`${task}: embedding model busy (${this.describe(error)}), retrying`);
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1_000));
+      }
+    }
   }
 
   /**

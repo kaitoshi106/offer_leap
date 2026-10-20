@@ -4,6 +4,7 @@
  *
  *   pnpm --filter @offerleap/api eval resume-extraction [--repeat 2] [--provider mock]
  *   pnpm --filter @offerleap/api eval job-match
+ *   pnpm --filter @offerleap/api eval retrieval          # RAG: ranking + similarity floor
  *
  * Uses GEMINI_* from the repo .env. Every run costs real (free-tier) calls: keep datasets small.
  */
@@ -22,7 +23,7 @@ import {
   JOB_MATCH_TASK,
   jobMatchSchema,
   jobMatchSystem,
-} from '../src/modules/ai/prompts/job-match.v1';
+} from '../src/modules/ai/prompts/job-match.v2';
 import {
   buildResumeExtractionParts,
   RESUME_EXTRACTION_TASK,
@@ -31,10 +32,12 @@ import {
 } from '../src/modules/ai/prompts/resume-extraction.v2';
 import { GeminiProvider } from '../src/modules/ai/providers/gemini.provider';
 import { MockAiProvider } from '../src/modules/ai/providers/mock.provider';
+import { cosine } from '../src/modules/ai/providers/vectors';
 import { toAnalysisResult } from '../src/modules/analyses/analysis.mapper';
 import { toResumeSuggestions } from '../src/modules/resumes/resume-suggestions';
 import { JOB_MATCH_CASES } from './datasets/job-match';
 import { RESUME_CASES } from './datasets/resume-extraction';
+import { RETRIEVAL_CASES, RETRIEVAL_DOCUMENTS } from './datasets/retrieval';
 import { type FieldResult, looksVietnamese, percentile, scoreFields } from './scorers';
 
 config({ path: ['.env', '../../.env'], quiet: true });
@@ -62,6 +65,22 @@ interface EvalTask {
 }
 
 const context = { industries: INDUSTRIES, provinces: PROVINCES };
+
+/** Document vectors are embedded once per run and reused by every retrieval case. */
+let documentVectors: Promise<Map<string, number[]>> | undefined;
+function embedDocuments(provider: AiProvider) {
+  documentVectors ??= provider
+    .embed({
+      userId: 'eval',
+      task: 'embed-document',
+      texts: Object.values(RETRIEVAL_DOCUMENTS),
+      purpose: 'document',
+    })
+    .then(
+      ({ vectors }) => new Map(Object.keys(RETRIEVAL_DOCUMENTS).map((key, index) => [key, vectors[index]!])),
+    );
+  return documentVectors;
+}
 const EVAL_USER = 'eval';
 
 const TASKS: Record<string, EvalTask> = {
@@ -84,6 +103,48 @@ const TASKS: Record<string, EvalTask> = {
         model: answer.model,
         tokens: [answer.usage.inputTokens, answer.usage.outputTokens],
       };
+    },
+  },
+  retrieval: {
+    task: 'embed-query',
+    cases: RETRIEVAL_CASES,
+    run: async (provider, index) => {
+      const item = RETRIEVAL_CASES[index]!;
+      const documents = await embedDocuments(provider);
+      const {
+        vectors: [query],
+        model,
+      } = await provider.embed({
+        userId: EVAL_USER,
+        task: 'embed-query',
+        texts: [item.query],
+        purpose: 'query',
+      });
+      const ranked = [...documents]
+        .map(([key, vector]) => ({ key, score: cosine(query!, vector) }))
+        .sort((a, b) => b.score - a.score);
+      const scores = Object.fromEntries(ranked.map(({ key, score }) => [key, Number(score.toFixed(3))]));
+      const fields: FieldResult[] = [
+        {
+          field: 'top1',
+          pass: ranked[0]!.key === item.expected,
+          expected: item.expected,
+          actual: ranked[0]!.key,
+        },
+        {
+          field: 'aboveFloor',
+          pass: (scores[item.expected] ?? 0) >= provider.similarityFloor,
+          expected: `≥ ${provider.similarityFloor}`,
+          actual: scores[item.expected],
+        },
+        ...item.irrelevant.map((key) => ({
+          field: 'irrelevantFiltered',
+          pass: (scores[key] ?? 0) < provider.similarityFloor,
+          expected: `${key} < ${provider.similarityFloor}`,
+          actual: scores[key],
+        })),
+      ];
+      return { fields, model, tokens: [0, 0] as [number, number] };
     },
   },
   'job-match': {

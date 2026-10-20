@@ -12,7 +12,13 @@ import {
   type TestContext,
 } from './support/test-app';
 
-const ai = { name: 'test', generateJson: vi.fn(), streamText: vi.fn() } satisfies AiProvider;
+const ai = {
+  name: 'test',
+  similarityFloor: 0.2,
+  generateJson: vi.fn(),
+  streamText: vi.fn(),
+  embed: vi.fn(),
+} satisfies AiProvider;
 const mock = new MockAiProvider();
 
 let ctx: TestContext;

@@ -65,6 +65,26 @@ describe('AnalysisView', () => {
     expect(screen.getByText('Thêm dự án GraphQL')).toBeInTheDocument();
     // Empty sections say so instead of disappearing.
     expect(screen.getByText('Không có mục nào.')).toBeInTheDocument();
+    // No documents were used: no sources section.
+    expect(screen.queryByText('Tài liệu đã dùng')).not.toBeInTheDocument();
+  });
+
+  it('lists the passages from personal documents the AI relied on', async () => {
+    const base = analysis();
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, {
+        ...base,
+        result: {
+          ...base.result,
+          sources: [{ documentId: 'd1', title: 'Dự án GraphQL', excerpt: 'API GraphQL với Apollo…' }],
+        },
+      }),
+    );
+    renderWithProviders(<AnalysisView id="a1" />);
+
+    expect(await screen.findByRole('heading', { name: 'Tài liệu đã dùng' })).toBeInTheDocument();
+    expect(screen.getByText('Dự án GraphQL')).toBeInTheDocument();
+    expect(screen.getByText('API GraphQL với Apollo…')).toBeInTheDocument();
   });
 
   it('polls while the AI is working', async () => {

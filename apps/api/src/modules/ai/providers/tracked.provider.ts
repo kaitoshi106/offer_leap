@@ -4,6 +4,8 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { AiQuotaService } from '../ai-quota.service';
 import {
   AI_VENDOR,
+  type AiEmbedRequest,
+  type AiEmbedResult,
   type AiJsonRequest,
   type AiJsonResult,
   type AiProvider,
@@ -38,6 +40,23 @@ export class TrackedAiProvider implements AiProvider {
 
   get name(): string {
     return this.vendor.name;
+  }
+
+  get similarityFloor(): number {
+    return this.vendor.similarityFloor;
+  }
+
+  /** Embeddings are logged but don't count against the quota: they are cheap and run on every search. */
+  async embed(request: AiEmbedRequest): Promise<AiEmbedResult> {
+    const startedAt = Date.now();
+    try {
+      const result = await this.vendor.embed(request);
+      await this.record({ ...request, model: result.model, usage: result.usage, startedAt });
+      return result;
+    } catch (error) {
+      await this.record({ ...request, model: null, usage: NO_USAGE, startedAt, error });
+      throw error;
+    }
   }
 
   async generateJson<T>(request: AiJsonRequest<T>): Promise<AiJsonResult<T>> {

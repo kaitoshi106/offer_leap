@@ -38,6 +38,8 @@ export const envSchema = z
           .map((model) => model.trim())
           .filter(Boolean),
       ),
+    /** Embedding model for personal documents (RAG). Changing it requires re-processing the documents. */
+    GEMINI_EMBEDDING_MODEL: z.string().default('gemini-embedding-001'),
     /** Successful AI calls a user may make per rolling 24 hours (admins can override per user). */
     AI_DAILY_QUOTA: z.coerce.number().int().min(0).default(50),
   })

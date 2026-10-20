@@ -19,7 +19,13 @@ const JOB = `Acme Tech is hiring a Senior Frontend Engineer.
 Requirements: 5+ years with React and TypeScript, GraphQL, testing with Playwright.
 Nice to have: Next.js, design systems.`;
 
-const ai = { name: 'test', generateJson: vi.fn(), streamText: vi.fn() } satisfies AiProvider;
+const ai = {
+  name: 'test',
+  similarityFloor: 0.2,
+  generateJson: vi.fn(),
+  streamText: vi.fn(),
+  embed: vi.fn(),
+} satisfies AiProvider;
 const mock = new MockAiProvider();
 
 let ctx: TestContext;
@@ -86,7 +92,7 @@ describe('analyses', () => {
 
     // The job description and the CV file go to the model, and it is told to answer in English.
     const request = ai.generateJson.mock.calls[0]![0];
-    expect(request.task).toBe('job-match.v1');
+    expect(request.task).toBe('job-match.v2');
     expect(request.system).toContain('in English');
     expect(request.parts[0].text).toBe(`<job>\n${JOB}\n</job>`);
     expect(request.parts[2]).toMatchObject({ type: 'file', mimeType: 'application/pdf' });

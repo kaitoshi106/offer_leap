@@ -31,6 +31,7 @@ import { TrackedAiProvider } from './providers/tracked.provider';
             config.get('GEMINI_MODEL', { infer: true }),
             ...config.get('GEMINI_FALLBACK_MODELS', { infer: true }),
           ],
+          embeddingModel: config.get('GEMINI_EMBEDDING_MODEL', { infer: true }),
         });
       },
     },

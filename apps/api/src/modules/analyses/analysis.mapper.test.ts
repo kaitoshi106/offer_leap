@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { JobMatch } from '../ai/prompts/job-match.v1';
+import type { JobMatch } from '../ai/prompts/job-match.v2';
 import { toAnalysisResult } from './analysis.mapper';
 
 const match = (overrides: Partial<JobMatch> = {}): JobMatch => ({
@@ -38,6 +38,7 @@ describe('toAnalysisResult', () => {
       strengths: ['A'],
       gaps: [],
       suggestions: ['Do X'],
+      sources: [],
     });
   });
 });

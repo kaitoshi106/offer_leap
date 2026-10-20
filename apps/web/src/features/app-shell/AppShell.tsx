@@ -11,7 +11,7 @@ import { useAuthRedirect } from '@/lib/auth-redirect';
 
 type NavItem = {
   href: string;
-  key: 'dashboard' | 'analyses' | 'applications' | 'interviews' | 'admin';
+  key: 'dashboard' | 'analyses' | 'applications' | 'interviews' | 'documents' | 'admin';
   icon: IconName;
 };
 
@@ -20,6 +20,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/analyses', key: 'analyses', icon: 'target' },
   { href: '/applications', key: 'applications', icon: 'file-text' },
   { href: '/interviews', key: 'interviews', icon: 'message-square' },
+  { href: '/documents', key: 'documents', icon: 'book' },
 ];
 const ADMIN_ITEM: NavItem = { href: '/admin', key: 'admin', icon: 'shield' };
 
