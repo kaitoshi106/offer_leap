@@ -1,0 +1,95 @@
+# Production-like stack: everything in containers, nothing published except web and API.
+#
+#   cp .env.example .env.production   # then set real secrets
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up --build
+#
+# Locally the defaults serve the web app on :3200 and the API on :4200, next to `pnpm dev` (:3000/:4000).
+name: offerleap-prod
+
+x-api-env: &api-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://${POSTGRES_USER:-offerleap}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-offerleap}
+  REDIS_URL: redis://redis:6379
+  WEB_ORIGIN: ${PUBLIC_WEB_URL:-http://localhost:3200}
+  JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET}
+  SMTP_HOST: ${SMTP_HOST:-mailpit}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  MAIL_FROM: ${MAIL_FROM:-OfferLeap <no-reply@offerleap.local>}
+  AI_PROVIDER: ${AI_PROVIDER:-mock}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+  GEMINI_FALLBACK_MODELS: ${GEMINI_FALLBACK_MODELS:-gemini-3.1-flash-lite,gemini-3.8-flash}
+  AI_DAILY_QUOTA: ${AI_DAILY_QUOTA:-50}
+  ROOT_ADMIN_EMAIL: ${ROOT_ADMIN_EMAIL:?set ROOT_ADMIN_EMAIL}
+  ROOT_ADMIN_PASSWORD: ${ROOT_ADMIN_PASSWORD:?set ROOT_ADMIN_PASSWORD}
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-offerleap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-offerleap}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-offerleap}']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+
+  # Demo inbox; point SMTP_* at a real provider in production and remove this service.
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - '${MAILPIT_UI_PORT_PROD:-8125}:8025'
+
+  # Applies migrations and seeds taxonomies + the root admin, then exits. The API waits for it.
+  migrate:
+    build: { context: ., target: migrate }
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: { context: ., target: api }
+    restart: unless-stopped
+    environment: *api-env
+    ports:
+      - '${API_PORT_PROD:-4200}:4000'
+    volumes:
+      - uploads:/repo/apps/api/storage
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:4200}/api/v1
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT_PROD:-3200}:3000'
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  postgres-data:
+  redis-data:
+  uploads:

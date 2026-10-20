@@ -12,5 +12,5 @@
 - [x] Admin console: admin invitations, users, settings
 - [x] Admin console: AI usage, per-user quotas, taxonomies
 - [x] AI eval runner with baseline datasets
-- [ ] Deployment, README with screenshots
+- [x] Docker deployment, README with screenshots
 - [ ] RAG over personal documents

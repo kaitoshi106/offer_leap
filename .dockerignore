@@ -1,0 +1,17 @@
+**/node_modules
+**/.next
+**/dist
+**/.e2e-dist
+**/.turbo
+**/coverage
+**/storybook-static
+**/playwright-report
+**/test-results
+# Uploaded files (not the src/storage module)
+apps/api/storage
+apps/api/src/generated
+apps/api/eval/reports
+.env
+.env.*
+!.env.example
+.git
