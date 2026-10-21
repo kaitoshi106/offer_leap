@@ -11,6 +11,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
+import { AccountModule } from './modules/account/account.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AnalysesModule } from './modules/analyses/analyses.module';
@@ -73,6 +74,7 @@ function redisConnection(url: string) {
     TaxonomiesModule,
     OnboardingModule,
     ProfileModule,
+    AccountModule,
     ResumesModule,
     AnalysesModule,
     ApplicationsModule,

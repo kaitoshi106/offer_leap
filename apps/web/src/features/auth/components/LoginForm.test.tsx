@@ -118,4 +118,11 @@ describe('LoginForm', () => {
     expect(await screen.findByText(/Email chưa được xác thực/)).toHaveTextContent('minh@example.com');
     expect(screen.getByRole('button', { name: 'Gửi lại email' })).toBeEnabled();
   });
+
+  it('confirms a deleted account after the redirect', () => {
+    searchParams = new URLSearchParams('deleted=1');
+    renderWithProviders(<LoginForm />);
+    expect(screen.getByText(/Tài khoản của bạn đã được xoá/)).toBeInTheDocument();
+    searchParams = new URLSearchParams();
+  });
 });

@@ -39,6 +39,15 @@ export function canManageOwnPassword(account: AccountIdentity): boolean {
 }
 
 /**
+ * @description Whether the account may delete itself from the app. Root is provisioned by config and must always
+ * exist, so it can't.
+ * @param account - Role and admin level of the account.
+ */
+export function canDeleteOwnAccount(account: AccountIdentity): boolean {
+  return !isRootAdmin(account);
+}
+
+/**
  * @description Whether the account may invite or revoke general admins.
  * @param account - Role and admin level of the account.
  * @returns `true` only for the root admin.

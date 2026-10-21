@@ -99,6 +99,15 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
   also lists CVs (`GET /resumes` with `analysisCount`) and deletes them (`DELETE /resumes/:id`: its analyses go
   with it, applications keep their data and lose the link). Deleting a CV never changes the profile.
 
+## Account data (export, deletion)
+
+- `GET /account/export` returns one JSON file (`AccountExport`, versioned) built with the same mappers as the
+  feature endpoints, so internal fields (password hash, tokens, storage keys, embeddings) can't leak through it.
+- `DELETE /account` needs the current password, is refused for root (`canDeleteOwnAccount`), deletes the user (every
+  owned row goes by `onDelete: Cascade`), then the uploaded files, and clears the session cookies. AI usage logs
+  stay for cost statistics without the user (`SetNull`). Both routes work before onboarding and are rate limited.
+- Web: `/settings` has both; deletion is confirmed in a dialog and ends on `/login?deleted=1` via a full page load.
+
 ## Resume parsing pipeline
 
 ```

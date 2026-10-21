@@ -9,3 +9,4 @@ export * from './application';
 export * from './interview';
 export * from './admin';
 export * from './knowledge';
+export * from './account';

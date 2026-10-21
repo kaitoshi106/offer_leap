@@ -75,7 +75,8 @@
     "TAXONOMY_CODE_TAKEN": "This industry code already exists.",
     "TAXONOMY_IN_USE": "This industry is used by profiles, so it can't be deleted.",
     "KNOWLEDGE_LIMIT_REACHED": "You already have the maximum of 20 documents. Delete one to add another.",
-    "KNOWLEDGE_PROCESSING_FAILED": "This document's text couldn't be read (it may be a scanned image). Try another file or paste the content."
+    "KNOWLEDGE_PROCESSING_FAILED": "This document's text couldn't be read (it may be a scanned image). Try another file or paste the content.",
+    "AUTH_ACCOUNT_DELETE_NOT_ALLOWED": "The root admin account can’t delete itself."
   },
   "validation": {
     "required": "This field is required.",
@@ -129,7 +130,8 @@
       "noAccount": "No account yet?",
       "signUp": "Sign up",
       "notVerified": "Your email isn't verified yet. Send the verification email to {email} again?",
-      "success": "Signed in"
+      "success": "Signed in",
+      "accountDeleted": "Your account has been deleted. Thanks for using OfferLeap."
     },
     "verify": {
       "title": "Verify email",
@@ -641,7 +643,23 @@
     "currentPassword": "Current password",
     "submit": "Change password",
     "changed": "Password changed",
-    "rootPassword": "The root admin's password can only be changed through server configuration."
+    "rootPassword": "The root admin's password can only be changed through server configuration.",
+    "data": {
+      "title": "Your data",
+      "description": "Download one JSON file with your profile, CVs (what the AI read), analyses, applications, cover letters, interviews and documents.",
+      "export": "Download my data (JSON)",
+      "exported": "Data downloaded"
+    },
+    "delete": {
+      "sectionTitle": "Delete account",
+      "description": "Permanently delete your account with all its data and uploaded files. This can’t be undone.",
+      "open": "Delete account",
+      "title": "Delete your account permanently?",
+      "body": "Your profile, CVs, analyses, applications, interviews and documents will be deleted right away. You can download your data first. Enter your password to confirm.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently",
+      "wrongPassword": "Incorrect password."
+    }
   },
   "onboarding": {
     "metaTitle": "Complete your profile",

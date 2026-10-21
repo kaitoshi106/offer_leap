@@ -67,7 +67,8 @@ More: [architecture](docs/ai/architecture.md) · [decisions (ADRs)](docs/adr) ·
 
 - **Security** — argon2id passwords, short-lived JWT access cookie + rotating opaque refresh tokens with reuse
   detection, rate limits, magic-byte file checks, owner-scoped queries (404 for other users' data), prompts that
-  treat CVs and job descriptions as untrusted data, hashed single-use admin invitation tokens.
+  treat CVs and job descriptions as untrusted data, hashed single-use admin invitation tokens, a JSON
+  export of your data and password-confirmed account deletion.
 - **Accessibility** — native elements first (`<dialog>`, `<select>`, file input in a label), WAI-ARIA combobox,
   focus management between steps, live regions for async results, keyboard alternative to drag and drop.
 - **AI quality is measured** — `pnpm --filter @offerleap/api eval <task>` runs a dataset of hard cases (abbreviations,

@@ -75,7 +75,8 @@
     "TAXONOMY_CODE_TAKEN": "Mã ngành này đã tồn tại.",
     "TAXONOMY_IN_USE": "Ngành này đang được hồ sơ sử dụng nên không thể xoá.",
     "KNOWLEDGE_LIMIT_REACHED": "Bạn đã có tối đa 20 tài liệu. Hãy xoá bớt để thêm mới.",
-    "KNOWLEDGE_PROCESSING_FAILED": "Không đọc được nội dung tài liệu này (có thể là file ảnh scan). Hãy thử file khác hoặc dán nội dung."
+    "KNOWLEDGE_PROCESSING_FAILED": "Không đọc được nội dung tài liệu này (có thể là file ảnh scan). Hãy thử file khác hoặc dán nội dung.",
+    "AUTH_ACCOUNT_DELETE_NOT_ALLOWED": "Tài khoản quản trị viên gốc không thể tự xoá."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -129,7 +130,8 @@
       "noAccount": "Chưa có tài khoản?",
       "signUp": "Đăng ký",
       "notVerified": "Email chưa được xác thực. Gửi lại email xác thực tới {email}?",
-      "success": "Đăng nhập thành công"
+      "success": "Đăng nhập thành công",
+      "accountDeleted": "Tài khoản của bạn đã được xoá. Cảm ơn bạn đã dùng OfferLeap."
     },
     "verify": {
       "title": "Xác thực email",
@@ -641,7 +643,23 @@
     "currentPassword": "Mật khẩu hiện tại",
     "submit": "Đổi mật khẩu",
     "changed": "Đã đổi mật khẩu",
-    "rootPassword": "Mật khẩu của quản trị viên gốc chỉ thay đổi được qua cấu hình máy chủ."
+    "rootPassword": "Mật khẩu của quản trị viên gốc chỉ thay đổi được qua cấu hình máy chủ.",
+    "data": {
+      "title": "Dữ liệu của bạn",
+      "description": "Tải về một file JSON gồm hồ sơ, CV (thông tin AI đọc được), kết quả phân tích, đơn ứng tuyển, cover letter, buổi phỏng vấn và tài liệu.",
+      "export": "Tải dữ liệu (JSON)",
+      "exported": "Đã tải dữ liệu"
+    },
+    "delete": {
+      "sectionTitle": "Xoá tài khoản",
+      "description": "Xoá vĩnh viễn tài khoản cùng toàn bộ dữ liệu và file đã tải lên. Không thể khôi phục.",
+      "open": "Xoá tài khoản",
+      "title": "Xoá tài khoản vĩnh viễn?",
+      "body": "Hồ sơ, CV, kết quả phân tích, đơn ứng tuyển, buổi phỏng vấn và tài liệu sẽ bị xoá ngay. Bạn có thể tải dữ liệu về trước. Nhập mật khẩu để xác nhận.",
+      "cancel": "Huỷ",
+      "confirm": "Xoá vĩnh viễn",
+      "wrongPassword": "Mật khẩu không đúng."
+    }
   },
   "onboarding": {
     "metaTitle": "Hoàn thiện hồ sơ",

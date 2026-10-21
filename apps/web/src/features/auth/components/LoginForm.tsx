@@ -58,8 +58,10 @@ export function LoginForm() {
           <Alert tone="warning">{t('auth.login.notVerified', { email: login.variables?.email ?? '' })}</Alert>
           <ResendVerificationButton email={login.variables?.email ?? ''} />
         </div>
+      ) : login.error ? (
+        <Alert tone="danger">{errorText(login.error)}</Alert>
       ) : (
-        login.error && <Alert tone="danger">{errorText(login.error)}</Alert>
+        searchParams.get('deleted') === '1' && <Alert tone="success">{t('auth.login.accountDeleted')}</Alert>
       )}
 
       <FormField label={t('auth.fields.email')} error={fieldError(errors.email)} required>

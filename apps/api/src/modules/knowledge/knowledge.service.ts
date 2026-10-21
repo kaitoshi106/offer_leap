@@ -14,7 +14,6 @@ import {
 import type { Queue } from 'bullmq';
 
 import { AppException } from '../../common/errors/app.exception';
-import type { KnowledgeDocument as DocumentRow } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
 import { AI_JOB_OPTIONS } from '../ai/ai-job';
@@ -22,22 +21,9 @@ import { AiInvalidOutputError } from '../ai/ai.errors';
 import { AI_PROVIDER, type AiProvider } from '../ai/ai.types';
 import { toVectorLiteral } from '../ai/providers/vectors';
 import { chunkText, normalizeText } from './chunker';
+import { toKnowledgeDocument } from './knowledge.mapper';
 import { KNOWLEDGE_QUEUE, type KnowledgeJob } from './knowledge.types';
 import { detectKnowledgeType, extractDocumentText } from './text-extraction';
-
-function toDocument(row: DocumentRow): KnowledgeDocument {
-  return {
-    id: row.id,
-    title: row.title,
-    source: row.source,
-    fileName: row.fileName,
-    status: row.status,
-    errorCode: (row.errorCode as ErrorCode | null) ?? null,
-    chunkCount: row.chunkCount,
-    charCount: row.charCount,
-    createdAt: row.createdAt.toISOString(),
-  };
-}
 
 /**
  * Personal documents for retrieval-augmented generation (RAG): stored, split into chunks, embedded in the
@@ -57,7 +43,7 @@ export class KnowledgeService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
-    return documents.map(toDocument);
+    return documents.map(toKnowledgeDocument);
   }
 
   /**
@@ -217,6 +203,6 @@ export class KnowledgeService {
   }): Promise<KnowledgeDocument> {
     const document = await this.prisma.knowledgeDocument.create({ data });
     await this.queue.add('process', { documentId: document.id }, { jobId: document.id, ...AI_JOB_OPTIONS });
-    return toDocument(document);
+    return toKnowledgeDocument(document);
   }
 }

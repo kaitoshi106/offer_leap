@@ -1,6 +1,11 @@
 'use client';
 
-import { canManageOwnPassword, type ChangePasswordInput, changePasswordSchema } from '@offerleap/shared';
+import {
+  canDeleteOwnAccount,
+  canManageOwnPassword,
+  type ChangePasswordInput,
+  changePasswordSchema,
+} from '@offerleap/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
@@ -16,7 +21,12 @@ import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
 
-/** `/settings`: account details and password change (not for root — its password is managed by config). */
+import { DeleteAccount, ExportDataButton } from './AccountDataSections';
+
+/**
+ * `/settings`: account details, password change, data export and account deletion (root can neither change its
+ * password nor delete itself — both are managed by config).
+ */
 export function SettingsView() {
   const t = useTranslations('settings');
   const tAdmin = useTranslations('admin');
@@ -45,6 +55,14 @@ export function SettingsView() {
       <Section title={t('password')} description={t('passwordDescription')}>
         {canManageOwnPassword(user) ? <ChangePasswordForm /> : <Alert tone="info">{t('rootPassword')}</Alert>}
       </Section>
+      <Section title={t('data.title')} description={t('data.description')}>
+        <ExportDataButton />
+      </Section>
+      {canDeleteOwnAccount(user) && (
+        <Section title={t('delete.sectionTitle')} description={t('delete.description')}>
+          <DeleteAccount />
+        </Section>
+      )}
     </div>
   );
 }
