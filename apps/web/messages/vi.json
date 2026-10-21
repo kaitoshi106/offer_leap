@@ -507,7 +507,8 @@
         "role": "Vai trò",
         "status": "Trạng thái",
         "onboarding": "Hồ sơ",
-        "createdAt": "Ngày tạo"
+        "createdAt": "Ngày tạo",
+        "signIn": "Đăng nhập bằng"
       },
       "onboardingDone": "Đã hoàn tất",
       "onboardingPending": "Chưa xong",
@@ -640,6 +641,10 @@
       "useDefault": "Dùng mặc định",
       "isDefault": "Đang dùng mặc định",
       "isOverride": "Giới hạn riêng"
+    },
+    "signInMethods": {
+      "PASSWORD": "Mật khẩu",
+      "GOOGLE": "Google"
     }
   },
   "settings": {

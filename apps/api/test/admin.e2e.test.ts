@@ -147,7 +147,11 @@ describe('admin users', () => {
     // Case-insensitive, on email or name.
     const search = await admin.get('/api/v1/admin/users').query({ q: 'MINH@', role: 'USER' }).expect(200);
     expect(search.body.items.map((user: { email: string }) => user.email)).toEqual(['minh@example.com']);
-    expect(search.body.items[0]).toMatchObject({ onboardingCompleted: true, status: 'ACTIVE' });
+    expect(search.body.items[0]).toMatchObject({
+      onboardingCompleted: true,
+      status: 'ACTIVE',
+      signInMethods: ['PASSWORD'],
+    });
 
     await admin.get('/api/v1/admin/users').query({ pageSize: 500 }).expect(422);
     await admin.get('/api/v1/admin/users').query({ pageSize: 2 }).expect(422);

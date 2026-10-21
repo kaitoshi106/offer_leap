@@ -18,6 +18,7 @@ import { useErrorText } from '@/lib/api/use-error-text';
 
 import { useAdminUsers } from '../api/use-admin';
 import { roleKey, STATUS_TONE } from './labels';
+import { SignInMethods } from './SignInMethods';
 
 const SEARCH_DELAY_MS = 300;
 
@@ -124,7 +125,7 @@ export function AdminUsersView() {
               <Text tone="muted">{t('users.empty')}</Text>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-border bg-surface shadow-card">
-                <table aria-busy={isPlaceholderData} className="w-full min-w-[40rem] text-left text-sm">
+                <table aria-busy={isPlaceholderData} className="w-full min-w-[48rem] text-left text-sm">
                   <thead className="border-b border-border bg-surface-muted/60 text-xs text-fg-muted uppercase">
                     <tr>
                       <th scope="col" className="px-4 py-3 font-medium">
@@ -138,6 +139,9 @@ export function AdminUsersView() {
                       </th>
                       <th scope="col" className="px-4 py-3 font-medium">
                         {t('users.columns.onboarding')}
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-medium">
+                        {t('users.columns.signIn')}
                       </th>
                       <th scope="col" className="px-4 py-3 font-medium">
                         {t('users.columns.createdAt')}
@@ -175,6 +179,9 @@ export function AdminUsersView() {
                                     : 'users.onboardingPending',
                                 )
                               : '—'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <SignInMethods methods={user.signInMethods} />
                         </td>
                         <td className="px-4 py-3 text-fg-muted">
                           {format.dateTime(new Date(user.createdAt), { dateStyle: 'medium' })}

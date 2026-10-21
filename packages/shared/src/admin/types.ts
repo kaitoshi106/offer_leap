@@ -1,3 +1,4 @@
+import type { SignInMethod } from '../auth/oauth';
 import type { AdminLevel, Role } from '../auth/roles';
 import type { CareerLevel } from '../profile/constants';
 import type { InvitationStatus, UserStatus } from './constants';
@@ -19,6 +20,8 @@ export interface AdminUserListItem {
   status: UserStatus;
   emailVerified: boolean;
   onboardingCompleted: boolean;
+  /** Password and/or linked providers (Google); empty only for an account that can't sign in yet. */
+  signInMethods: SignInMethod[];
   lastLoginAt: string | null;
   createdAt: string;
 }

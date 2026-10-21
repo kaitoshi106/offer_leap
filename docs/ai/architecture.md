@@ -198,7 +198,7 @@ POST /interviews/:id/complete                       → AI summary, overall 0–
   `POST /auth/accept-invitation`, which creates a verified ADMIN/GENERAL account and signs it in. Acceptance is a
   conditional update in a transaction, so a link can't be used twice.
 - **Users** (`/admin/users`, any admin): paginated search (`q` on email/name, role, status; `pageSize` is one of
-  the shared `PAGE_SIZES` 10/50/100, picked in the UI and kept in the URL), detail with career
+  the shared `PAGE_SIZES` 10/50/100, picked in the UI and kept in the URL), a sign-in method column (password, Google), detail with career
   summary and activity counts (never documents), disable/enable. Disabling revokes every refresh token, so the
   account is signed out within one access-token lifetime (≤ 15 min) and login answers `AUTH_ACCOUNT_LOCKED`.
 - **Who may change whom** is one shared rule, `canManageAccount`: nobody changes themselves or root; general admins

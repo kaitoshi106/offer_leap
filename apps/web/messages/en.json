@@ -507,7 +507,8 @@
         "role": "Role",
         "status": "Status",
         "onboarding": "Profile",
-        "createdAt": "Created"
+        "createdAt": "Created",
+        "signIn": "Signs in with"
       },
       "onboardingDone": "Complete",
       "onboardingPending": "In progress",
@@ -640,6 +641,10 @@
       "useDefault": "Use default",
       "isDefault": "Using the default",
       "isOverride": "Own limit"
+    },
+    "signInMethods": {
+      "PASSWORD": "Password",
+      "GOOGLE": "Google"
     }
   },
   "settings": {

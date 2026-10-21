@@ -11,6 +11,9 @@ export type IdentityProvider = (typeof IdentityProvider)[keyof typeof IdentityPr
 export const OAUTH_INTENTS = ['login', 'link', 'delete'] as const;
 export type OAuthIntent = (typeof OAUTH_INTENTS)[number];
 
+/** Ways an account can sign in: its password, or a linked provider. */
+export type SignInMethod = 'PASSWORD' | IdentityProvider;
+
 /** `GET /auth/providers`: which sign-in providers the API has credentials for (the web app hides the others). */
 export interface AuthProviders {
   google: boolean;

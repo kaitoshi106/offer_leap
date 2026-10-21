@@ -23,6 +23,7 @@ const detail = (overrides: Partial<AdminUserDetail> = {}): AdminUserDetail => ({
   status: 'ACTIVE',
   emailVerified: true,
   onboardingCompleted: true,
+  signInMethods: ['PASSWORD'],
   lastLoginAt: null,
   createdAt: '2026-10-20T00:00:00.000Z',
   profile: {

@@ -12,6 +12,7 @@ import { useErrorText } from '@/lib/api/use-error-text';
 
 import { useAdminUser, useSetUserStatus } from '../api/use-admin';
 import { AiQuotaCard } from './AiQuotaCard';
+import { SignInMethods } from './SignInMethods';
 import { roleKey, STATUS_TONE } from './labels';
 
 /**
@@ -78,6 +79,7 @@ function UserDetail({ user }: { user: AdminUserDetail }) {
                 t('users.columns.onboarding'),
                 user.onboardingCompleted ? t('users.onboardingDone') : t('users.onboardingPending'),
               ],
+              [t('users.columns.signIn'), <SignInMethods key="sign-in" methods={user.signInMethods} />],
             ]}
           />
         </Card>
@@ -128,7 +130,7 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Facts({ items }: { items: [string, string][] }) {
+function Facts({ items }: { items: [string, ReactNode][] }) {
   return (
     <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
       {items.map(([label, value]) => (

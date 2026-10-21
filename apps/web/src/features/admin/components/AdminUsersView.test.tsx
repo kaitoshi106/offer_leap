@@ -28,6 +28,7 @@ const account = (id: string, overrides: Partial<AdminUserListItem> = {}): AdminU
   status: 'ACTIVE',
   emailVerified: true,
   onboardingCompleted: true,
+  signInMethods: ['PASSWORD'],
   lastLoginAt: null,
   createdAt: '2026-10-20T00:00:00.000Z',
   ...overrides,
@@ -49,6 +50,7 @@ describe('AdminUsersView', () => {
         items: [
           account('a', { status: 'DISABLED' }),
           account('b', { role: 'ADMIN', adminLevel: 'ROOT', onboardingCompleted: false }),
+          account('c', { signInMethods: ['PASSWORD', 'GOOGLE'] }),
         ],
         total: 22,
         page: 2,
@@ -61,6 +63,8 @@ describe('AdminUsersView', () => {
     expect(within(rows[1]!).getByRole('link', { name: 'User a' })).toHaveAttribute('href', '/admin/users/a');
     expect(within(rows[1]!).getByText('Đã khoá')).toBeInTheDocument();
     expect(within(rows[2]!).getByText('Quản trị gốc')).toBeInTheDocument();
+    expect(within(rows[1]!).getByText('Mật khẩu')).toBeInTheDocument();
+    expect(within(rows[3]!).getByText('Google')).toBeInTheDocument();
     expect(screen.getByText('22 tài khoản')).toBeInTheDocument();
     expect(screen.getByText('Trang 2/3')).toBeInTheDocument();
     expect(String(fetchMock.mock.calls[0]![0])).toMatch(

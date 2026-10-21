@@ -11,12 +11,17 @@ import {
 
 import { AppException } from '../../common/errors/app.exception';
 import type { AccessTokenPayload } from '../../common/http/request';
-import type { Prisma, User } from '../../generated/prisma/client';
+import type { IdentityProvider, Prisma, User } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiQuotaService } from '../ai/ai-quota.service';
 import { TokenService } from '../auth/token.service';
 
-function toListItem(user: User): AdminUserListItem {
+type UserRow = User & { identities: { provider: IdentityProvider }[] };
+
+/** Loads what {@link toListItem} needs besides the user row. */
+const LIST_INCLUDE = { identities: { select: { provider: true } } } as const;
+
+function toListItem(user: UserRow): AdminUserListItem {
   return {
     id: user.id,
     email: user.email,
@@ -26,6 +31,10 @@ function toListItem(user: User): AdminUserListItem {
     status: user.status,
     emailVerified: user.emailVerifiedAt !== null,
     onboardingCompleted: user.onboardingCompletedAt !== null,
+    signInMethods: [
+      ...(user.passwordHash !== null ? (['PASSWORD'] as const) : []),
+      ...user.identities.map((identity) => identity.provider),
+    ],
     lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
     createdAt: user.createdAt.toISOString(),
   };
@@ -62,6 +71,7 @@ export class AdminUsersService {
       this.prisma.user.count({ where }),
       this.prisma.user.findMany({
         where,
+        include: LIST_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
@@ -75,6 +85,7 @@ export class AdminUsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
+        ...LIST_INCLUDE,
         profile: true,
         _count: { select: { resumes: true, analyses: true, applications: true, interviews: true } },
       },

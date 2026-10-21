@@ -67,7 +67,8 @@
   --border-strong: oklch(0.42 0.025 275);
 
   --primary: oklch(0.56 0.19 277);
-  --primary-hover: oklch(0.62 0.18 277);
+  /* Darker on hover, not lighter: the text on it is white (lighter fell to 3.7:1, below WCAG AA 4.5:1). */
+  --primary-hover: oklch(0.5 0.19 277);
   --primary-fg: oklch(0.99 0 0);
   --primary-soft: oklch(0.3 0.08 277);
   --primary-soft-fg: oklch(0.86 0.08 277);

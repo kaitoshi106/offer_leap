@@ -95,6 +95,10 @@ describe('sign in with Google', () => {
 
     const user = await userByEmail('minh@example.com');
     expect(user!.identities).toHaveLength(1);
+    // Admins see both ways in.
+    const admin = await signInAdmin(ctx, 'GENERAL');
+    const { body: detail } = await admin.get(`/api/v1/admin/users/${user!.id}`).expect(200);
+    expect(detail.signInMethods).toEqual(['PASSWORD', 'GOOGLE']);
     expect(user!.passwordHash).not.toBeNull();
     expect(ctx.mail.sent.findLast((mail) => mail.template === 'google-linked')).toMatchObject({
       to: 'minh@example.com',

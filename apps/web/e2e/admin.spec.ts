@@ -152,6 +152,8 @@ test.describe('account settings', () => {
     await expect(page.getByText('Đã đổi mật khẩu')).toBeVisible();
 
     await page.getByRole('button', { name: 'Đăng xuất' }).click();
+    // Sign-out reloads on /login; navigating before that lands races with it.
+    await expect(page).toHaveURL(/\/vi\/login$/);
     await signIn(page, email, 'leap2027');
     await expect(page).toHaveURL(/\/vi\/dashboard$/);
   });
