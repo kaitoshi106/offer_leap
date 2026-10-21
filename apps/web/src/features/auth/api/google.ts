@@ -7,8 +7,8 @@ import { API_URL } from '@/lib/api/client';
 
 import { authApi } from './auth-api';
 
-export const authProvidersKey = ['auth', 'providers'] as const;
-export const signInMethodsKey = ['auth', 'sign-in-methods'] as const;
+const authProvidersKey = ['auth', 'providers'] as const;
+const signInMethodsKey = ['auth', 'sign-in-methods'] as const;
 
 /** Which sign-in providers the API is configured for. Changes only with a redeploy. */
 export function useAuthProviders() {

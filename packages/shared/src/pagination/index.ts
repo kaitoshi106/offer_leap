@@ -19,5 +19,4 @@ export const pageQuerySchema = z.object({
   pageSize: z.coerce.number().pipe(z.literal(PAGE_SIZES)).default(DEFAULT_PAGE_SIZE),
 });
 
-export type PageQueryInput = z.input<typeof pageQuerySchema>;
 export type PageQuery = z.output<typeof pageQuerySchema>;

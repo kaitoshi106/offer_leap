@@ -52,7 +52,7 @@ export class JwtAuthGuard implements CanActivate {
  * @param request - Incoming request (cookies parsed by `cookie-parser`).
  * @returns The raw JWT or `undefined`.
  */
-export function extractAccessToken(request: AppRequest): string | undefined {
+function extractAccessToken(request: AppRequest): string | undefined {
   const fromCookie: unknown = request.cookies?.[ACCESS_TOKEN_COOKIE];
   if (typeof fromCookie === 'string' && fromCookie) return fromCookie;
 

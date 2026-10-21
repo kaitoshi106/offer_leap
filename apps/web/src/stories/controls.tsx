@@ -2,7 +2,7 @@ import type { ArgTypes } from '@storybook/nextjs-vite';
 
 import { Icon, ICON_NAMES, type IconName, type IconProps } from '@/components/atoms';
 
-export const ICON_OPTIONS = ['none', ...ICON_NAMES] as const;
+const ICON_OPTIONS = ['none', ...ICON_NAMES] as const;
 export type IconOption = (typeof ICON_OPTIONS)[number];
 
 /**

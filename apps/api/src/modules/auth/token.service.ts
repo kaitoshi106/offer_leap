@@ -18,7 +18,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * Two tabs refreshing at the same moment both send the same refresh cookie; one wins, the other sees a token
  * revoked a moment ago. Within this window that is treated as a race, not theft.
  */
-export const REUSE_GRACE_MS = 15_000;
+const REUSE_GRACE_MS = 15_000;
 
 /**
  * Issues short-lived access tokens (JWT, stateless) and long-lived refresh tokens (opaque, stored hashed,

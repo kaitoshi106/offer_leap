@@ -25,6 +25,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await resetDatabase(ctx.prisma);
+  ctx.mail.sent.length = 0;
 });
 
 type Agent = ReturnType<typeof request.agent>;
@@ -65,6 +66,9 @@ describe('sign in with Google', () => {
     const agent = newAgent();
     const landing = await googleFlow(agent, 'lan.nguyen@gmail.com');
     expect(landing.toString()).toBe(`${WEB}/vi/onboarding`);
+    expect(
+      ctx.mail.sent.filter((mail) => mail.to === 'lan.nguyen@gmail.com').map((mail) => mail.template),
+    ).toEqual(['welcome']);
 
     const { body: me } = await agent.get('/api/v1/auth/me').expect(200);
     expect(me).toMatchObject({
@@ -100,6 +104,10 @@ describe('sign in with Google', () => {
     const { body: detail } = await admin.get(`/api/v1/admin/users/${user!.id}`).expect(200);
     expect(detail.signInMethods).toEqual(['PASSWORD', 'GOOGLE']);
     expect(user!.passwordHash).not.toBeNull();
+    // An existing account is told about the link, not welcomed again.
+    expect(
+      ctx.mail.sent.filter((mail) => mail.to === 'minh@example.com').map((mail) => mail.template),
+    ).toEqual(['verify-email', 'welcome', 'google-linked']);
     expect(ctx.mail.sent.findLast((mail) => mail.template === 'google-linked')).toMatchObject({
       to: 'minh@example.com',
       link: `${WEB}/vi/settings`,

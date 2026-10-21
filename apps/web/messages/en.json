@@ -3,10 +3,8 @@
     "description": "AI job application assistant: reads your CV, scores it against job descriptions, runs mock interviews and writes cover letters."
   },
   "common": {
-    "loading": "Loading…",
     "required": "required",
     "skipToContent": "Skip to main content",
-    "clear": "Clear",
     "close": "Close",
     "dismiss": "Dismiss notification",
     "backToHome": "Back to home",
@@ -284,7 +282,6 @@
     "description": "Drag cards between columns to update your progress. Open a card to take notes or let AI write a cover letter.",
     "add": "Add application",
     "empty": "Nothing here",
-    "board": "Application board",
     "statuses": {
       "SAVED": "Saved",
       "APPLIED": "Applied",
@@ -386,7 +383,6 @@
       "progress": "{answered}/{total} answered",
       "questionLabel": "Question {n}/{total}",
       "you": "You",
-      "interviewer": "Interviewer",
       "skipped": "You skipped this question.",
       "score": "{score}/10",
       "betterAnswer": "A stronger answer",

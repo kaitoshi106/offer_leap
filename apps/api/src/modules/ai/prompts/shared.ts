@@ -4,7 +4,7 @@ import type { Locale } from '@offerleap/shared';
 export const LANGUAGE: Record<Locale, string> = { vi: 'Vietnamese', en: 'English' };
 
 /** `2026-10-20` — the date part of an ISO timestamp. */
-export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 /**
  * @description Line every prompt includes: without it the model treats its training cutoff as "now" and gets

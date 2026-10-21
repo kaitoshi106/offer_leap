@@ -53,6 +53,22 @@ const COPY = {
       ignore: "If you weren't expecting this invitation, you can ignore this email.",
     },
   },
+  welcome: {
+    vi: {
+      subject: `Chào mừng bạn đến với ${APP_NAME}`,
+      greeting: (name: string) => `Chào ${name},`,
+      body: 'Tài khoản của bạn đã sẵn sàng. Hoàn thiện hồ sơ trong vài phút — hoặc tải CV lên để AI điền giúp — rồi bắt đầu phân tích CV với từng tin tuyển dụng, luyện phỏng vấn và viết cover letter.',
+      action: 'Hoàn thiện hồ sơ',
+      ignore: 'Nếu bạn không tạo tài khoản này, hãy trả lời email này để chúng tôi hỗ trợ.',
+    },
+    en: {
+      subject: `Welcome to ${APP_NAME}`,
+      greeting: (name: string) => `Hi ${name},`,
+      body: 'Your account is ready. Complete your profile in a few minutes — or upload your CV and let the AI fill it in — then start matching your CV to job posts, practising interviews and writing cover letters.',
+      action: 'Complete your profile',
+      ignore: "If you didn't create this account, reply to this email and we'll help.",
+    },
+  },
   'google-linked': {
     vi: {
       subject: `Đã liên kết tài khoản Google – ${APP_NAME}`,

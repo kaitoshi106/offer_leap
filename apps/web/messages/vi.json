@@ -3,10 +3,8 @@
     "description": "Trợ lý ứng tuyển dùng AI: đọc CV, chấm độ phù hợp với JD, luyện phỏng vấn và viết cover letter."
   },
   "common": {
-    "loading": "Đang tải…",
     "required": "bắt buộc",
     "skipToContent": "Bỏ qua, tới nội dung chính",
-    "clear": "Xoá nội dung",
     "close": "Đóng",
     "dismiss": "Ẩn thông báo",
     "backToHome": "Về trang chủ",
@@ -284,7 +282,6 @@
     "description": "Kéo thả thẻ giữa các cột để cập nhật tiến độ. Mở một thẻ để ghi chú hoặc nhờ AI viết cover letter.",
     "add": "Thêm ứng tuyển",
     "empty": "Chưa có",
-    "board": "Bảng ứng tuyển",
     "statuses": {
       "SAVED": "Đã lưu",
       "APPLIED": "Đã nộp",
@@ -386,7 +383,6 @@
       "progress": "Đã trả lời {answered}/{total} câu",
       "questionLabel": "Câu {n}/{total}",
       "you": "Bạn",
-      "interviewer": "Người phỏng vấn",
       "skipped": "Đã bỏ qua câu này.",
       "score": "{score}/10 điểm",
       "betterAnswer": "Gợi ý câu trả lời tốt hơn",

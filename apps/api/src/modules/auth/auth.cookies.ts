@@ -7,9 +7,9 @@ export const REFRESH_TOKEN_COOKIE = 'ol_rt';
  * app's proxy can't see it; this flag lets it redirect signed-out visitors before rendering protected pages.
  * The API never trusts it.
  */
-export const SESSION_FLAG_COOKIE = 'ol_session';
+const SESSION_FLAG_COOKIE = 'ol_session';
 /** The refresh cookie is only sent to auth endpoints, never with ordinary API calls. */
-export const REFRESH_COOKIE_PATH = '/api/v1/auth';
+const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
 export interface SessionTokens {
   accessToken: string;

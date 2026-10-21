@@ -6,7 +6,7 @@ import { generateOpaqueToken, hashToken } from '../../common/security/hashing';
 import type { UserTokenType } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export const USER_TOKEN_TTL_MS: Record<UserTokenType, number> = {
+const USER_TOKEN_TTL_MS: Record<UserTokenType, number> = {
   EMAIL_VERIFICATION: 24 * 60 * 60 * 1000,
   PASSWORD_RESET: 30 * 60 * 1000,
 };

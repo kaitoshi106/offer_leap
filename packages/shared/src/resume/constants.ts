@@ -10,7 +10,6 @@ export const RESUME_FILE_TYPES = {
   'image/webp': '.webp',
 } as const;
 export type ResumeMimeType = keyof typeof RESUME_FILE_TYPES;
-export const RESUME_MIME_TYPES = Object.keys(RESUME_FILE_TYPES) as ResumeMimeType[];
 
 export const ResumeStatus = {
   PENDING: 'PENDING',

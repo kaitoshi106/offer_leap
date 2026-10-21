@@ -110,6 +110,11 @@ describe('register & verify email', () => {
     expect(cookie(verified, 'ol_rt')).toMatch(/Path=\/api\/v1\/auth;.*HttpOnly/);
     expect(cookie(verified, 'ol_session')).toMatch(/^ol_session=1; Path=\/;/);
     await agent.get('/api/v1/auth/me').expect(200);
+    // The account is ready: a welcome email points to onboarding.
+    expect(ctx.mail.sent.findLast((mail) => mail.to === 'a@b.co')).toMatchObject({
+      template: 'welcome',
+      link: 'http://localhost:3000/vi/onboarding',
+    });
   });
 
   it('does not accept a verification token twice', async () => {
@@ -121,6 +126,8 @@ describe('register & verify email', () => {
 
     const again = await http().post('/api/v1/auth/verify-email').send({ token }).expect(400);
     expect(again.body.code).toBe(ErrorCode.AUTH_TOKEN_INVALID);
+    const welcomes = ctx.mail.sent.filter((mail) => mail.to === 'a@b.co' && mail.template === 'welcome');
+    expect(welcomes).toHaveLength(1);
   });
 });
 

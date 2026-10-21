@@ -8,7 +8,7 @@ import { analysesApi } from './analyses-api';
 /** How often to ask whether the AI has finished. */
 const POLL_INTERVAL_MS = 2_000;
 
-export const analysesKey = ['analyses'] as const;
+const analysesKey = ['analyses'] as const;
 /** Every page of the history; invalidated whenever an analysis is added, finished or deleted. */
 const analysesListKey = [...analysesKey, 'list'] as const;
 const analysisKey = (id: string) => [...analysesKey, id] as const;

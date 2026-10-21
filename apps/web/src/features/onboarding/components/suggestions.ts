@@ -1,6 +1,6 @@
 import type { ProfileValues, ResumeSuggestions, ResumeSummary } from '@offerleap/shared';
 
-export type SuggestedField = Exclude<keyof ResumeSuggestions, 'uncertainFields'>;
+type SuggestedField = Exclude<keyof ResumeSuggestions, 'uncertainFields'>;
 /** `check` = the AI marked the value as a guess. */
 export type SuggestionState = 'suggested' | 'check';
 export type SuggestedFields = Partial<Record<SuggestedField, SuggestionState>>;

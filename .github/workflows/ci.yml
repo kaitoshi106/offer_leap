@@ -55,6 +55,80 @@ jobs:
       - run: pnpm test:e2e
       - run: pnpm build
 
+  # Full user flows in a real browser against production builds, including the axe accessibility scan of every
+  # page. Mock AI and mock Google sign-in (NODE_ENV=test); emails are read from Mailpit.
+  browser:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: offerleap
+          POSTGRES_PASSWORD: offerleap
+          POSTGRES_DB: offerleap_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U offerleap -d offerleap_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+      mailpit:
+        image: axllent/mailpit:latest
+        ports: ['1025:1025', '8025:8025']
+
+    env:
+      DATABASE_URL: postgresql://offerleap:offerleap@localhost:5432/offerleap_test
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-only-secret-that-is-long-enough-for-hs256
+      ROOT_ADMIN_EMAIL: root@offerleap.test
+      ROOT_ADMIN_PASSWORD: ci-root-password-2026
+      E2E_ROOT_EMAIL: root@offerleap.test
+      E2E_ROOT_PASSWORD: ci-root-password-2026
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @offerleap/api exec prisma migrate deploy
+      - run: pnpm --filter @offerleap/api exec tsx prisma/seed.ts
+      - run: pnpm --filter @offerleap/web exec playwright install --with-deps chromium
+
+      - name: Start the API and the web app
+        run: |
+          NODE_ENV=test AI_PROVIDER=mock nohup pnpm --filter @offerleap/api start > api.log 2>&1 &
+          nohup pnpm --filter @offerleap/web start > web.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:4000/api/v1/health > /dev/null && curl -sf http://localhost:3000/vi > /dev/null && exit 0
+            sleep 2
+          done
+          cat api.log web.log
+          exit 1
+
+      - run: pnpm --filter @offerleap/web test:browser
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            apps/web/test-results
+            api.log
+            web.log
+          retention-days: 7
+
   # Builds the production images (not pushed) so packaging problems show up on the pull request.
   docker:
     runs-on: ubuntu-latest

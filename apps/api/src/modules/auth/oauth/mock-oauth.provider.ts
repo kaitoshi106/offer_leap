@@ -1,7 +1,7 @@
 import { type OAuthChecks, OAuthFailedError, type OAuthIdentity, type OAuthProvider } from './oauth.types';
 
 /** Fake account used when the flow starts without a `loginHint`. */
-export const MOCK_OAUTH_DEFAULT_EMAIL = 'google.user@example.com';
+const MOCK_OAUTH_DEFAULT_EMAIL = 'google.user@example.com';
 
 interface MockCode {
   email: string;

@@ -7,7 +7,7 @@ import { currentUserKey } from '@/features/auth/api/use-auth';
 
 import { profileApi } from './profile-api';
 
-export const profileKey = ['profile'] as const;
+const profileKey = ['profile'] as const;
 
 export function useProfile() {
   return useQuery({ queryKey: profileKey, queryFn: ({ signal }) => profileApi.get(signal) });

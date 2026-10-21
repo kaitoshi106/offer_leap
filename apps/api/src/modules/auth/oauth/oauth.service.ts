@@ -201,6 +201,7 @@ export class OAuthService {
           identities: { create: this.identityRow(identity) },
         },
       });
+      await this.auth.sendWelcomeEmail(user);
     } else if (!linked) {
       user = await this.linkByEmail(user, identity);
     }

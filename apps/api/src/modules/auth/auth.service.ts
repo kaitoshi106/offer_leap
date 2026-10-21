@@ -84,6 +84,8 @@ export class AuthService {
       where: { id: userId },
       data: { emailVerifiedAt: new Date() },
     });
+    // The link is single-use, so this runs once per account.
+    await this.sendWelcomeEmail(user);
     return this.startSession(user, client);
   }
 
@@ -226,6 +228,21 @@ export class AuthService {
     return this.prisma.user.update({
       where: { id: userId },
       data: { passwordHash: await hashPassword(password), passwordChangedAt: new Date() },
+    });
+  }
+
+  /**
+   * @description Welcomes a new user once the account is ready: after email verification, or right after signing
+   * up with Google (whose email is already verified). Points to onboarding.
+   * @param user - The new account.
+   */
+  async sendWelcomeEmail(user: User): Promise<void> {
+    await this.mail.send({
+      template: 'welcome',
+      to: user.email,
+      locale: user.locale,
+      fullName: user.fullName,
+      link: new URL(`/${user.locale}/onboarding`, this.webOrigin).toString(),
     });
   }
 

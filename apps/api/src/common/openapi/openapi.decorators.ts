@@ -10,7 +10,7 @@ import { z } from 'zod';
  * @param io - `input` for request bodies (before transforms), `output` for responses.
  * @returns OpenAPI schema object.
  */
-export function toOpenApiSchema(schema: z.ZodType, io: 'input' | 'output'): SchemaObject {
+function toOpenApiSchema(schema: z.ZodType, io: 'input' | 'output'): SchemaObject {
   return z.toJSONSchema(schema, { target: 'openapi-3.0', io, unrepresentable: 'any' }) as SchemaObject;
 }
 

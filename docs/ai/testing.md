@@ -11,7 +11,9 @@
 - Tests live next to the code: `x.ts` → `x.test.ts`.
 - Test behaviour, not implementation; no snapshot tests for logic.
 - Every bug fix starts with a failing test.
-- CI runs lint, typecheck, unit/component tests and build on every push.
+- CI runs format check, lint, typecheck, unit/component tests, API e2e and build on every push; a `browser` job
+  starts production builds of both apps (Postgres, Redis and Mailpit as services, mock AI and mock Google sign-in)
+  and runs the whole Playwright suite, axe scan included; on failure the traces and server logs are uploaded.
 
 ## Browser tests next to your own `pnpm dev`
 

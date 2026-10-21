@@ -71,6 +71,8 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
   redirect signed-out visitors; the API never trusts it.
 - **Cookies**: `SameSite=Lax` (CSRF), `Secure` in production. Web and API must be same-site (e.g. `app.` / `api.`
   subdomains) in production.
+- **Welcome email**: sent once the account is ready — after the email is verified (the link is single-use), or
+  right after a Google sign-up. Linking Google to an existing account sends a security notice instead.
 - **Email tokens** (`user_tokens`): single-use, hashed, 24 h (verification) / 30 min (reset); a new one invalidates
   older ones of the same type.
 - **No enumeration**: login returns the same error for unknown email and wrong password (with equal timing);

@@ -5,7 +5,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { interviewsApi } from './interviews-api';
 
-export const interviewsKey = ['interviews'] as const;
+const interviewsKey = ['interviews'] as const;
 /** Every page of the history. */
 const interviewsListKey = [...interviewsKey, 'list'] as const;
 const interviewKey = (id: string) => [...interviewsKey, id] as const;

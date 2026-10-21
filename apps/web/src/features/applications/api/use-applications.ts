@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { applicationsApi } from './applications-api';
 
-export const applicationsKey = ['applications'] as const;
+const applicationsKey = ['applications'] as const;
 const applicationKey = (id: string) => [...applicationsKey, id] as const;
 
 export function useApplications() {

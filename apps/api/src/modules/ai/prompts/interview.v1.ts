@@ -96,7 +96,6 @@ export const interviewFeedbackSchema = z.object({
       'A concise model answer (80–150 words) in the first person, built on what the candidate said. Do not invent specific employers or numbers; use neutral placeholders like "in a previous project" instead.',
     ),
 });
-export type InterviewFeedback = z.infer<typeof interviewFeedbackSchema>;
 
 export function interviewFeedbackSystem(context: InterviewContext): string {
   return `You are a supportive but honest interview coach. ${todayLine(context.today)}
@@ -136,7 +135,6 @@ export const interviewSummarySchema = z.object({
   strengths: z.array(z.string()).max(4).describe('Up to 4 concrete strengths shown in the answers.'),
   improvements: z.array(z.string()).max(4).describe('Up to 4 concrete, actionable things to practise next.'),
 });
-export type InterviewSummaryAnswer = z.infer<typeof interviewSummarySchema>;
 
 export function interviewSummarySystem(context: InterviewContext): string {
   return `You are an interview coach wrapping up a mock interview. ${todayLine(context.today)}

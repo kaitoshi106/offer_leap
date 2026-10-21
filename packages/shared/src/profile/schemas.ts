@@ -117,4 +117,3 @@ export type SaveOnboardingStepInput = z.input<typeof saveOnboardingStepSchema>;
 export type SaveOnboardingStep = z.output<typeof saveOnboardingStepSchema>;
 export type UpdateProfileSectionInput = z.input<typeof updateProfileSectionSchema>;
 export type UpdateProfileSection = z.output<typeof updateProfileSectionSchema>;
-export type ProfileSection = UpdateProfileSection['section'];

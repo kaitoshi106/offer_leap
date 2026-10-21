@@ -12,7 +12,7 @@ const POLL_INTERVAL_MS = 1_500;
 
 export const isResumeFinal = (resume: ResumeSummary) => RESUME_FINAL_STATUSES.includes(resume.status);
 
-export const resumesKey = ['resumes'] as const;
+const resumesKey = ['resumes'] as const;
 
 /** The user's CVs, newest first. Refreshes itself while the AI is still reading one. */
 export function useResumes() {
