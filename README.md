@@ -65,7 +65,8 @@ More: [architecture](docs/ai/architecture.md) · [decisions (ADRs)](docs/adr) ·
 
 ## Engineering highlights
 
-- **Security** — argon2id passwords, short-lived JWT access cookie + rotating opaque refresh tokens with reuse
+- **Security** — sign in with Google (OpenID Connect + PKCE, accounts matched by Google id, admins excluded),
+  argon2id passwords, short-lived JWT access cookie + rotating opaque refresh tokens with reuse
   detection, rate limits, magic-byte file checks, owner-scoped queries (404 for other users' data), prompts that
   treat CVs and job descriptions as untrusted data, hashed single-use admin invitation tokens, a JSON
   export of your data and password-confirmed account deletion.
@@ -105,6 +106,8 @@ pnpm dev                      # web http://localhost:3000 · API http://localhos
 - Sign-up and password emails land in Mailpit: http://localhost:8025
 - API docs (Swagger, dev only): http://localhost:4000/api/docs
 - Real AI: get a free key at https://aistudio.google.com/apikey, then set `AI_PROVIDER=gemini` and `GEMINI_API_KEY`.
+- Sign in with Google (optional): create an OAuth client (Web application) in Google Cloud with the redirect URI
+  `http://localhost:4000/api/v1/auth/google/callback`, then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
 ## Testing
 

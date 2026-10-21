@@ -1,4 +1,4 @@
-import type { AuthUser } from '@offerleap/shared';
+import type { AuthUser, SignInMethods } from '@offerleap/shared';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,6 +10,22 @@ import { SettingsView } from './SettingsView';
 const fetchMock = vi.fn<typeof fetch>();
 const redirect = vi.fn();
 vi.mock('@/lib/auth-redirect', () => ({ useAuthRedirect: () => redirect }));
+let searchParams = new URLSearchParams();
+const replace = vi.fn();
+vi.mock('next/navigation', () => ({ useSearchParams: () => searchParams }));
+vi.mock('@/i18n/navigation', () => ({ usePathname: () => '/settings', useRouter: () => ({ replace }) }));
+
+// Google is mocked at the hook level so the fetch queue below only holds the requests each test is about.
+let providers = { google: false };
+let methods: SignInMethods = { hasPassword: true, identities: [] };
+const startGoogleAccountFlow = vi.fn(async () => {});
+const unlinkGoogle = vi.fn();
+vi.mock('@/features/auth/api/google', () => ({
+  useAuthProviders: () => ({ data: providers }),
+  useSignInMethods: () => ({ data: methods }),
+  useUnlinkGoogle: () => ({ mutate: unlinkGoogle, isPending: false }),
+  startGoogleAccountFlow: (...args: unknown[]) => startGoogleAccountFlow(...(args as [])),
+}));
 
 const me = (overrides: Partial<AuthUser> = {}): AuthUser => ({
   id: 'u1',
@@ -28,6 +44,11 @@ describe('SettingsView', () => {
   afterEach(() => {
     fetchMock.mockReset();
     redirect.mockReset();
+    replace.mockReset();
+    startGoogleAccountFlow.mockClear();
+    searchParams = new URLSearchParams();
+    providers = { google: false };
+    methods = { hasPassword: true, identities: [] };
     vi.unstubAllGlobals();
   });
 
@@ -122,5 +143,76 @@ describe('SettingsView', () => {
     expect(createObjectURL).toHaveBeenCalledOnce();
     expect(click.mock.contexts[0]).toHaveProperty('download', 'offerleap-export-2026-10-21.json');
     click.mockRestore();
+  });
+
+  describe('with Google', () => {
+    beforeEach(() => {
+      providers = { google: true };
+    });
+
+    it('links Google, and reports the result of the flow from the URL', async () => {
+      const user = userEvent.setup();
+      searchParams = new URLSearchParams('linked=google');
+      fetchMock.mockResolvedValueOnce(jsonResponse(200, me()));
+      renderWithProviders(<SettingsView />);
+
+      expect(await screen.findByText('Đã liên kết Google')).toBeInTheDocument();
+      expect(replace).toHaveBeenCalledWith('/settings');
+      await user.click(await screen.findByRole('button', { name: 'Liên kết Google' }));
+      expect(startGoogleAccountFlow).toHaveBeenCalledWith('link', 'vi');
+    });
+
+    it('shows a failed flow', async () => {
+      searchParams = new URLSearchParams('error=AUTH_OAUTH_ALREADY_LINKED');
+      fetchMock.mockResolvedValueOnce(jsonResponse(200, me()));
+      renderWithProviders(<SettingsView />);
+      expect(await screen.findByText(/đã được liên kết với một tài khoản khác/)).toBeInTheDocument();
+    });
+
+    it('gives a Google-only account a way to set a password and confirms deletion with Google', async () => {
+      const user = userEvent.setup();
+      methods = {
+        hasPassword: false,
+        identities: [{ provider: 'GOOGLE', email: 'minh@gmail.com', createdAt: '2026-10-21T00:00:00.000Z' }],
+      };
+      fetchMock
+        .mockResolvedValueOnce(jsonResponse(200, me()))
+        .mockResolvedValueOnce(new Response(null, { status: 204 }));
+      renderWithProviders(<SettingsView />);
+
+      expect(await screen.findByText('Đã liên kết với minh@gmail.com')).toBeInTheDocument();
+      // Unlinking would lock the user out.
+      expect(screen.queryByRole('button', { name: 'Gỡ liên kết' })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/^Mật khẩu hiện tại/)).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Gửi email đặt mật khẩu' }));
+      expect(await screen.findByText('Đã gửi email tới minh@example.com')).toBeInTheDocument();
+      expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body))).toEqual({ email: 'minh@example.com' });
+
+      await user.click(screen.getByRole('button', { name: 'Xoá tài khoản' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Xoá tài khoản vĩnh viễn?' });
+      expect(within(dialog).queryByLabelText(/^Mật khẩu hiện tại/)).not.toBeInTheDocument();
+      await user.click(within(dialog).getByRole('button', { name: 'Xác nhận bằng Google' }));
+      expect(startGoogleAccountFlow).toHaveBeenCalledWith('delete', 'vi');
+    });
+
+    it('unlinks when a password is set', async () => {
+      const user = userEvent.setup();
+      methods = {
+        hasPassword: true,
+        identities: [{ provider: 'GOOGLE', email: 'minh@gmail.com', createdAt: '2026-10-21T00:00:00.000Z' }],
+      };
+      fetchMock.mockResolvedValueOnce(jsonResponse(200, me()));
+      renderWithProviders(<SettingsView />);
+      await user.click(await screen.findByRole('button', { name: 'Gỡ liên kết' }));
+      expect(unlinkGoogle).toHaveBeenCalledOnce();
+    });
+
+    it('is not offered to admins', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse(200, me({ role: 'ADMIN', adminLevel: 'GENERAL' })));
+      renderWithProviders(<SettingsView />);
+      expect(await screen.findByText('Quản trị viên')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Đăng nhập bằng Google' })).not.toBeInTheDocument();
+    });
   });
 });

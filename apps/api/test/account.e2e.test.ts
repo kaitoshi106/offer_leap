@@ -55,6 +55,7 @@ describe('data export', () => {
     expect(response.body).toMatchObject({
       version: 1,
       account: { email: 'minh@example.com', role: 'USER' },
+      signInMethods: { hasPassword: true, identities: [] },
       profile: { jobTitle: 'Frontend Developer', workTypes: ['REMOTE'] },
       resumes: [{ fileName: 'cv.pdf' }],
       applications: [{ company: 'Acme' }],

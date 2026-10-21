@@ -35,7 +35,10 @@ export class AccountService {
    * @throws AppException AUTH_UNAUTHENTICATED when the account no longer exists.
    */
   async export(userId: string): Promise<AccountExport> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true, identities: true },
+    });
     if (!user) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
     const newestFirst = { orderBy: { createdAt: 'desc' } } as const;
     const [resumes, analyses, applications, interviews, documents] = await Promise.all([
@@ -62,6 +65,14 @@ export class AccountService {
       version: ACCOUNT_EXPORT_VERSION,
       exportedAt: new Date().toISOString(),
       account: { ...toAuthUser(user), createdAt: user.createdAt.toISOString() },
+      signInMethods: {
+        hasPassword: user.passwordHash !== null,
+        identities: user.identities.map((identity) => ({
+          provider: identity.provider,
+          email: identity.email,
+          createdAt: identity.createdAt.toISOString(),
+        })),
+      },
       profile: user.role === 'USER' ? toProfileValues(user, user.profile) : null,
       resumes: resumes.map(toResumeSummary),
       analyses: analyses.map(toAnalysisDetail),
@@ -86,7 +97,15 @@ export class AccountService {
     if (!(await verifyPassword(user.passwordHash, input.password))) {
       throw new AppException(ErrorCode.AUTH_INVALID_CREDENTIALS);
     }
+    await this.purge(userId);
+  }
 
+  /**
+   * @description Deletes an account whose owner has already been confirmed (password above, or a fresh Google
+   * sign-in for accounts without a password).
+   * @param userId - Account to delete.
+   */
+  async purge(userId: string): Promise<void> {
     const [resumes, documents] = await Promise.all([
       this.prisma.resume.findMany({ where: { userId }, select: { storageKey: true } }),
       this.prisma.knowledgeDocument.findMany({ where: { userId }, select: { storageKey: true } }),

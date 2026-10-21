@@ -7,7 +7,9 @@ export type MailJob =
   | { template: 'verify-email'; to: string; locale: Locale; fullName: string; link: string }
   | { template: 'reset-password'; to: string; locale: Locale; fullName: string; link: string }
   /** `fullName` is the inviting admin. */
-  | { template: 'admin-invitation'; to: string; locale: Locale; fullName: string; link: string };
+  | { template: 'admin-invitation'; to: string; locale: Locale; fullName: string; link: string }
+  /** Security notice after a Google account was linked; `link` opens the settings page. */
+  | { template: 'google-linked'; to: string; locale: Locale; fullName: string; link: string };
 
 export interface RenderedMail {
   subject: string;

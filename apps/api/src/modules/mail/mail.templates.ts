@@ -53,6 +53,22 @@ const COPY = {
       ignore: "If you weren't expecting this invitation, you can ignore this email.",
     },
   },
+  'google-linked': {
+    vi: {
+      subject: `Đã liên kết tài khoản Google – ${APP_NAME}`,
+      greeting: (name: string) => `Chào ${name},`,
+      body: 'Một tài khoản Google vừa được liên kết với tài khoản OfferLeap của bạn. Từ giờ bạn có thể đăng nhập bằng Google.',
+      action: 'Xem cài đặt tài khoản',
+      ignore: 'Nếu không phải bạn, hãy đặt lại mật khẩu và gỡ liên kết Google trong cài đặt tài khoản.',
+    },
+    en: {
+      subject: `Google account linked – ${APP_NAME}`,
+      greeting: (name: string) => `Hi ${name},`,
+      body: 'A Google account was just linked to your OfferLeap account. You can now sign in with Google.',
+      action: 'Open account settings',
+      ignore: "If this wasn't you, reset your password and unlink Google in your account settings.",
+    },
+  },
 } satisfies Record<MailJob['template'], Record<Locale, unknown>>;
 
 /**

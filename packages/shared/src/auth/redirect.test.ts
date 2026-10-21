@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { safeRedirectPath } from './safe-redirect';
+import { safeRedirectPath } from './redirect';
 
 describe('safeRedirectPath', () => {
   it.each([

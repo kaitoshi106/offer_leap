@@ -17,6 +17,12 @@ vi.mock('@/i18n/navigation', () => ({
 vi.mock('next/navigation', () => ({ useSearchParams: () => searchParams }));
 
 const fetchMock = vi.fn<typeof fetch>();
+
+// Sign-in providers are covered in GoogleSignIn.test.tsx; here Google is switched off.
+vi.mock('@/features/auth/api/google', () => ({
+  useAuthProviders: () => ({ data: { google: false } }),
+  googleSignInUrl: () => '',
+}));
 const session = {
   user: {
     id: 'u1',
@@ -123,6 +129,13 @@ describe('LoginForm', () => {
     searchParams = new URLSearchParams('deleted=1');
     renderWithProviders(<LoginForm />);
     expect(screen.getByText(/Tài khoản của bạn đã được xoá/)).toBeInTheDocument();
+    searchParams = new URLSearchParams();
+  });
+
+  it('explains why a Google sign-in came back', () => {
+    searchParams = new URLSearchParams('error=AUTH_OAUTH_NOT_ALLOWED');
+    renderWithProviders(<LoginForm />);
+    expect(screen.getByText('Tài khoản quản trị chỉ đăng nhập bằng email và mật khẩu.')).toBeInTheDocument();
     searchParams = new URLSearchParams();
   });
 });

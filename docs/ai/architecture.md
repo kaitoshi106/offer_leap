@@ -76,6 +76,14 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 - **No enumeration**: login returns the same error for unknown email and wrong password (with equal timing);
   forgot-password / resend-verification always answer 202.
 - **Passwords**: argon2id (`@node-rs/argon2`); a reset or change revokes every refresh token of the user.
+- **Sign in with Google** ([ADR 0006](../adr/0006-sign-in-with-google.md)): `GET /auth/google` → Google →
+  `GET /auth/google/callback` → session cookies + redirect to the web app (`?error=<code>` on failure).
+  Authorization Code + PKCE via `openid-client`; state/nonce/verifier in a signed `ol_oauth` cookie; accounts
+  matched by Google `sub` in `user_identities`. Same-email accounts are linked only for Google-verified emails
+  (unverified local accounts lose their password); admins can't use Google. `POST /auth/google/link|delete` (form
+  POST, signed in) link Google or confirm deleting a Google-only account; `DELETE /auth/identities/google` unlinks
+  when a password exists; `GET /auth/providers` tells the web app whether to show the button. Tests use
+  `OAUTH_PROVIDER=mock`.
 - **Rate limits**: 120 req/min per IP globally, 5/min on login, register, forgot/reset, resend, change password.
 - **Docs**: Swagger UI at `/api/docs` (spec at `/api/docs/openapi.json`) outside production, generated from the
   shared Zod schemas. Calls from the UI share the API origin, so login cookies apply to later calls.

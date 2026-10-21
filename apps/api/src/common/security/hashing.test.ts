@@ -15,6 +15,10 @@ describe('password hashing', () => {
     expect(await hashPassword('same')).not.toBe(await hashPassword('same'));
   });
 
+  it('never matches an account without a password', async () => {
+    expect(await verifyPassword(null, '')).toBe(false);
+  });
+
   it('treats a malformed hash as a mismatch instead of throwing', async () => {
     expect(await verifyPassword('not-a-hash', 'x')).toBe(false);
   });

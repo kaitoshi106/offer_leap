@@ -76,7 +76,14 @@
     "TAXONOMY_IN_USE": "This industry is used by profiles, so it can't be deleted.",
     "KNOWLEDGE_LIMIT_REACHED": "You already have the maximum of 20 documents. Delete one to add another.",
     "KNOWLEDGE_PROCESSING_FAILED": "This document's text couldn't be read (it may be a scanned image). Try another file or paste the content.",
-    "AUTH_ACCOUNT_DELETE_NOT_ALLOWED": "The root admin account can’t delete itself."
+    "AUTH_ACCOUNT_DELETE_NOT_ALLOWED": "The root admin account can’t delete itself.",
+    "AUTH_OAUTH_FAILED": "Couldn't sign in with Google. Please try again.",
+    "AUTH_OAUTH_NOT_CONFIGURED": "Sign in with Google is not enabled.",
+    "AUTH_OAUTH_EMAIL_UNVERIFIED": "Google hasn't verified the email of this Google account.",
+    "AUTH_OAUTH_NOT_ALLOWED": "Admin accounts sign in with email and password only.",
+    "AUTH_OAUTH_ALREADY_LINKED": "This Google account is linked to another account, or you already linked a different Google account.",
+    "AUTH_OAUTH_ACCOUNT_MISMATCH": "Please confirm with the Google account that is linked.",
+    "AUTH_OAUTH_UNLINK_NOT_ALLOWED": "Set a password before unlinking Google, so you can still sign in."
   },
   "validation": {
     "required": "This field is required.",
@@ -167,6 +174,10 @@
       "submit": "Create account",
       "missingToken": "This invitation link is invalid.",
       "askRoot": "Ask the root admin to send a new invitation."
+    },
+    "google": {
+      "continue": "Continue with Google",
+      "or": "or"
     }
   },
   "nav": {
@@ -658,8 +669,24 @@
       "body": "Your profile, CVs, analyses, applications, interviews and documents will be deleted right away. You can download your data first. Enter your password to confirm.",
       "cancel": "Cancel",
       "confirm": "Delete permanently",
-      "wrongPassword": "Incorrect password."
-    }
+      "wrongPassword": "Incorrect password.",
+      "googleBody": "Your profile, CVs, analyses, applications, interviews and documents will be deleted right away. You can download your data first. To confirm, sign in again with your linked Google account.",
+      "confirmGoogle": "Confirm with Google"
+    },
+    "google": {
+      "title": "Sign in with Google",
+      "description": "Link a Google account to sign in without a password.",
+      "link": "Link Google",
+      "linkedAs": "Linked to {email}",
+      "unlink": "Unlink",
+      "unlinked": "Google unlinked",
+      "linked": "Google linked",
+      "onlyMethod": "Google is your only way to sign in. Set a password if you want to unlink it."
+    },
+    "noPassword": "You sign in with Google and have no password yet. We'll email you a link to set one.",
+    "setPassword": "Email me a link to set a password",
+    "setPasswordSent": "Email sent to {email}",
+    "setPasswordTitle": "Set a password"
   },
   "onboarding": {
     "metaTitle": "Complete your profile",

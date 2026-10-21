@@ -1,5 +1,7 @@
 import type {
   AcceptInvitationInput,
+  AuthProviders,
+  SignInMethods,
   InvitationPreview,
   AuthSession,
   AuthUser,
@@ -39,4 +41,7 @@ export const authApi = {
     apiRequest<AuthSession>('/auth/accept-invitation', { method: 'POST', body, ...PUBLIC }),
   changePassword: (body: ChangePasswordInput) =>
     apiRequest<AuthSession>('/auth/change-password', { method: 'POST', body }),
+  providers: (signal?: AbortSignal) => apiRequest<AuthProviders>('/auth/providers', { signal, ...PUBLIC }),
+  signInMethods: (signal?: AbortSignal) => apiRequest<SignInMethods>('/auth/sign-in-methods', { signal }),
+  unlinkGoogle: () => apiRequest<void>('/auth/identities/google', { method: 'DELETE' }),
 };

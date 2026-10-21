@@ -17,3 +17,4 @@
 - [x] Profile page (edit sections, manage CVs); page-size picker for paginated lists
 - [x] Data export (JSON) and account deletion
 - [x] Automated accessibility checks (axe on every page, light and dark)
+- [x] Sign in with Google (OpenID Connect, account linking)

@@ -8,6 +8,12 @@ import { RegisterForm } from './RegisterForm';
 
 const fetchMock = vi.fn<typeof fetch>();
 
+// Sign-in providers are covered in GoogleSignIn.test.tsx; here Google is switched off.
+vi.mock('@/features/auth/api/google', () => ({
+  useAuthProviders: () => ({ data: { google: false } }),
+  googleSignInUrl: () => '',
+}));
+
 /**
  * @description Fills and submits the registration form.
  */

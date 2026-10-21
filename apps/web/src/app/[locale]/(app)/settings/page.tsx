@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 
 import type { Locale } from '@offerleap/shared';
 
@@ -15,7 +16,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   setRequestLocale((await params).locale);
   return (
     <AppShell>
-      <SettingsView />
+      {/* Google flows report back in the URL (`?linked=`, `?error=`), which needs a Suspense boundary. */}
+      <Suspense>
+        <SettingsView />
+      </Suspense>
     </AppShell>
   );
 }

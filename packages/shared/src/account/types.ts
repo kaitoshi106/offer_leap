@@ -1,5 +1,6 @@
 import type { AnalysisDetail } from '../analysis/types';
 import type { ApplicationDetail } from '../application/types';
+import type { SignInMethods } from '../auth/oauth';
 import type { AuthUser } from '../auth/types';
 import type { InterviewDetail } from '../interview/types';
 import type { KnowledgeDocument } from '../knowledge/types';
@@ -17,6 +18,8 @@ export interface AccountExport {
   version: typeof ACCOUNT_EXPORT_VERSION;
   exportedAt: string;
   account: AuthUser & { createdAt: string };
+  /** Linked sign-in providers (Google) and whether a password is set. */
+  signInMethods: SignInMethods;
   /** `null` for admins (they have no career profile). */
   profile: ProfileValues | null;
   resumes: ResumeSummary[];

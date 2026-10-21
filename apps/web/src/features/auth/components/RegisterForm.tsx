@@ -12,6 +12,7 @@ import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
 
 import { authApi } from '../api/auth-api';
+import { GoogleSignIn } from './GoogleSignIn';
 import { ResendVerificationButton } from './ResendVerificationButton';
 
 /**
@@ -51,43 +52,52 @@ export function RegisterForm() {
     register.error && !(isApiError(register.error) && register.error.fieldErrors.length > 0);
 
   return (
-    <form
-      noValidate
-      onSubmit={form.handleSubmit((values) => register.mutate(values))}
-      className="flex flex-col gap-4"
-    >
-      {generalError && <Alert tone="danger">{errorText(register.error)}</Alert>}
-
-      <FormField label={t('auth.fields.fullName')} error={fieldError(errors.fullName)} required>
-        {(field) => <Input {...field} {...form.register('fullName')} autoComplete="name" />}
-      </FormField>
-
-      <FormField label={t('auth.fields.email')} error={fieldError(errors.email)} required>
-        {(field) => (
-          <Input {...field} {...form.register('email')} type="email" autoComplete="email" inputMode="email" />
-        )}
-      </FormField>
-
-      <FormField
-        label={t('auth.fields.password')}
-        hint={t('auth.fields.passwordHint')}
-        error={fieldError(errors.password)}
-        required
+    <div className="flex flex-col gap-4">
+      <GoogleSignIn />
+      <form
+        noValidate
+        onSubmit={form.handleSubmit((values) => register.mutate(values))}
+        className="flex flex-col gap-4"
       >
-        {(field) => (
-          <PasswordInput
-            {...field}
-            {...form.register('password')}
-            autoComplete="new-password"
-            showLabel={t('common.showPassword')}
-            hideLabel={t('common.hidePassword')}
-          />
-        )}
-      </FormField>
+        {generalError && <Alert tone="danger">{errorText(register.error)}</Alert>}
 
-      <Button type="submit" fullWidth size="lg" loading={register.isPending}>
-        {t('auth.register.submit')}
-      </Button>
-    </form>
+        <FormField label={t('auth.fields.fullName')} error={fieldError(errors.fullName)} required>
+          {(field) => <Input {...field} {...form.register('fullName')} autoComplete="name" />}
+        </FormField>
+
+        <FormField label={t('auth.fields.email')} error={fieldError(errors.email)} required>
+          {(field) => (
+            <Input
+              {...field}
+              {...form.register('email')}
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+            />
+          )}
+        </FormField>
+
+        <FormField
+          label={t('auth.fields.password')}
+          hint={t('auth.fields.passwordHint')}
+          error={fieldError(errors.password)}
+          required
+        >
+          {(field) => (
+            <PasswordInput
+              {...field}
+              {...form.register('password')}
+              autoComplete="new-password"
+              showLabel={t('common.showPassword')}
+              hideLabel={t('common.hidePassword')}
+            />
+          )}
+        </FormField>
+
+        <Button type="submit" fullWidth size="lg" loading={register.isPending}>
+          {t('auth.register.submit')}
+        </Button>
+      </form>
+    </div>
   );
 }

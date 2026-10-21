@@ -16,11 +16,12 @@ export function hashPassword(password: string): Promise<string> {
 
 /**
  * @description Checks a password against a stored argon2 hash in constant time.
- * @param passwordHash - Stored hash.
+ * @param passwordHash - Stored hash; `null` for accounts without a password (signed up with Google).
  * @param password - Candidate password.
- * @returns `true` when they match; `false` for a mismatch or a malformed hash.
+ * @returns `true` when they match; `false` for a mismatch, a malformed hash or no password at all.
  */
-export async function verifyPassword(passwordHash: string, password: string): Promise<boolean> {
+export async function verifyPassword(passwordHash: string | null, password: string): Promise<boolean> {
+  if (passwordHash === null) return false;
   try {
     return await verify(passwordHash, password);
   } catch {

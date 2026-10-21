@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { LOCALES } from '../constants/app';
+import { DEFAULT_LOCALE, LOCALES } from '../constants/app';
 import { ValidationRule } from '../validation/rules';
 
 export const PASSWORD_MIN_LENGTH = 8;
@@ -69,3 +69,15 @@ export type EmailOnlyInput = z.infer<typeof emailOnlySchema>;
 export type TokenOnlyInput = z.infer<typeof tokenOnlySchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/**
+ * `GET /auth/google` (sign in or sign up) and `POST /auth/google` (link, confirm deletion). `next` is checked with
+ * `safeRedirectPath` on the server; `loginHint` pre-selects the Google account (and picks the fake one in tests).
+ */
+export const oauthStartQuerySchema = z.object({
+  locale: localeSchema.default(DEFAULT_LOCALE),
+  next: z.string().max(500).optional(),
+  loginHint: z.email().max(254).optional(),
+});
+
+export type OAuthStartQuery = z.output<typeof oauthStartQuerySchema>;

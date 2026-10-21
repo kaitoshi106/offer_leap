@@ -30,4 +30,15 @@ describe('validateEnv', () => {
   it('requires a database URL and a long enough JWT secret', () => {
     expect(() => validateEnv({ JWT_ACCESS_SECRET: 'short' })).toThrow(/DATABASE_URL[\s\S]*JWT_ACCESS_SECRET/);
   });
+
+  it('derives the API public URL and picks the mock sign-in only under test', () => {
+    expect(validateEnv({ ...REQUIRED, API_PORT: '4100' })).toMatchObject({
+      API_PUBLIC_URL: 'http://localhost:4100',
+      OAUTH_PROVIDER: 'google',
+    });
+    expect(validateEnv({ ...REQUIRED, NODE_ENV: 'test' }).OAUTH_PROVIDER).toBe('mock');
+    expect(() => validateEnv({ ...REQUIRED, NODE_ENV: 'production', OAUTH_PROVIDER: 'mock' })).toThrow(
+      /OAUTH_PROVIDER/,
+    );
+  });
 });

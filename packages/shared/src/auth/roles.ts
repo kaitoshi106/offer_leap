@@ -48,6 +48,15 @@ export function canDeleteOwnAccount(account: AccountIdentity): boolean {
 }
 
 /**
+ * @description Whether the account may sign in with Google (or another provider). Admin accounts keep to a
+ * password: fewer ways into the most powerful accounts, and root stays fully managed by config.
+ * @param account - Role and admin level of the account.
+ */
+export function canUseSignInProviders(account: AccountIdentity): boolean {
+  return account.role === Role.USER;
+}
+
+/**
  * @description Whether the account may invite or revoke general admins.
  * @param account - Role and admin level of the account.
  * @returns `true` only for the root admin.

@@ -5,6 +5,8 @@ export const envSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     API_PORT: z.coerce.number().int().positive().default(4000),
     WEB_ORIGIN: z.url().default('http://localhost:3000'),
+    /** Public URL of this API (without `/api/v1`), used for OAuth callbacks. Default: http://localhost:API_PORT. */
+    API_PUBLIC_URL: z.url().optional(),
 
     DATABASE_URL: z.url(),
     REDIS_URL: z.url().default('redis://localhost:6379'),
@@ -42,11 +44,28 @@ export const envSchema = z
     GEMINI_EMBEDDING_MODEL: z.string().default('gemini-embedding-001'),
     /** Successful AI calls a user may make per rolling 24 hours (admins can override per user). */
     AI_DAILY_QUOTA: z.coerce.number().int().min(0).default(50),
+
+    /**
+     * Sign in with Google. `google` needs GOOGLE_CLIENT_ID/SECRET (without them the button is hidden); `mock` signs
+     * in a fake Google account for tests and is refused in production. Default: `mock` under NODE_ENV=test.
+     */
+    OAUTH_PROVIDER: z.enum(['google', 'mock']).optional(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
   })
   .refine((env) => env.AI_PROVIDER !== 'gemini' || Boolean(env.GEMINI_API_KEY), {
     message: 'is required when AI_PROVIDER=gemini',
     path: ['GEMINI_API_KEY'],
-  });
+  })
+  .refine((env) => !(env.NODE_ENV === 'production' && env.OAUTH_PROVIDER === 'mock'), {
+    message: 'mock sign-in is not allowed in production',
+    path: ['OAUTH_PROVIDER'],
+  })
+  .transform((env) => ({
+    ...env,
+    API_PUBLIC_URL: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+    OAUTH_PROVIDER: env.OAUTH_PROVIDER ?? (env.NODE_ENV === 'test' ? 'mock' : 'google'),
+  }));
 
 export type Env = z.infer<typeof envSchema>;
 

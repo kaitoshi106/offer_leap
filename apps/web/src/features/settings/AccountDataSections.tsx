@@ -1,8 +1,8 @@
 'use client';
 
-import { type DeleteAccountInput, deleteAccountSchema, ErrorCode } from '@offerleap/shared';
+import { type DeleteAccountInput, deleteAccountSchema, ErrorCode, type Locale } from '@offerleap/shared';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -10,6 +10,7 @@ import { Button } from '@/components/atoms';
 import { Alert, FormField, PasswordInput } from '@/components/molecules';
 import { Dialog, useToast } from '@/components/organisms';
 import { accountApi } from '@/features/account/api/account-api';
+import { startGoogleAccountFlow } from '@/features/auth/api/google';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { useAuthRedirect } from '@/lib/auth-redirect';
@@ -56,13 +57,16 @@ export function ExportDataButton() {
 /**
  * @description "Delete account" with a confirmation dialog that asks for the password. On success the API has
  * cleared the session cookies; a full page load to the login page drops every cached query of the old account.
+ * Accounts without a password (created with Google) confirm with a fresh Google sign-in instead.
  */
-export function DeleteAccount() {
+export function DeleteAccount({ hasPassword = true }: { hasPassword?: boolean }) {
   const t = useTranslations();
   const errorText = useErrorText();
   const fieldError = useFieldErrorText();
   const redirect = useAuthRedirect();
   const formId = useId();
+  const locale = useLocale() as Locale;
+  const google = useMutation({ mutationFn: () => startGoogleAccountFlow('delete', locale) });
   const [open, setOpen] = useState(false);
   const form = useForm<DeleteAccountInput>({
     resolver: sharedSchemaResolver(deleteAccountSchema),
@@ -94,21 +98,27 @@ export function DeleteAccount() {
         open={open}
         onClose={close}
         title={t('settings.delete.title')}
-        description={t('settings.delete.body')}
+        description={t(hasPassword ? 'settings.delete.body' : 'settings.delete.googleBody')}
         closeLabel={t('common.close')}
         footer={
           <>
             <Button variant="ghost" onClick={close}>
               {t('settings.delete.cancel')}
             </Button>
-            <Button type="submit" form={formId} variant="danger" loading={remove.isPending}>
-              {t('settings.delete.confirm')}
-            </Button>
+            {hasPassword ? (
+              <Button type="submit" form={formId} variant="danger" loading={remove.isPending}>
+                {t('settings.delete.confirm')}
+              </Button>
+            ) : (
+              <Button variant="danger" loading={google.isPending} onClick={() => google.mutate()}>
+                {t('settings.delete.confirmGoogle')}
+              </Button>
+            )}
           </>
         }
       >
         {/* Mounted only while open, so the password field never sits hidden in the page. */}
-        {open && (
+        {open && hasPassword && (
           <form
             id={formId}
             noValidate

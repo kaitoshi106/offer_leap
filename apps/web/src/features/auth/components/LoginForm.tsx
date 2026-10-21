@@ -1,6 +1,6 @@
 'use client';
 
-import { ErrorCode, type LoginInput, loginSchema } from '@offerleap/shared';
+import { ErrorCode, type LoginInput, loginSchema, safeRedirectPath } from '@offerleap/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -13,10 +13,10 @@ import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { useAuthRedirect } from '@/lib/auth-redirect';
 import { sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
-import { safeRedirectPath } from '@/lib/safe-redirect';
 
 import { authApi } from '../api/auth-api';
 import { currentUserKey } from '../api/use-auth';
+import { GoogleSignIn } from './GoogleSignIn';
 import { ResendVerificationButton } from './ResendVerificationButton';
 
 /**
@@ -47,56 +47,70 @@ export function LoginForm() {
   const notVerified = isApiError(login.error) && login.error.code === ErrorCode.AUTH_EMAIL_NOT_VERIFIED;
   const { errors } = form.formState;
 
+  // A failed Google sign-in comes back as `?error=<code>`; anything else in the URL is ignored.
+  const oauthError = searchParams.get('error');
+  const redirectError =
+    oauthError && (Object.values(ErrorCode) as string[]).includes(oauthError) ? oauthError : null;
+
   return (
-    <form
-      noValidate
-      onSubmit={form.handleSubmit((values) => login.mutate(values))}
-      className="flex flex-col gap-4"
-    >
-      {notVerified ? (
-        <div className="flex flex-col gap-3">
-          <Alert tone="warning">{t('auth.login.notVerified', { email: login.variables?.email ?? '' })}</Alert>
-          <ResendVerificationButton email={login.variables?.email ?? ''} />
+    <div className="flex flex-col gap-4">
+      <GoogleSignIn next={searchParams.get('next')} />
+      <form
+        noValidate
+        onSubmit={form.handleSubmit((values) => login.mutate(values))}
+        className="flex flex-col gap-4"
+      >
+        {notVerified ? (
+          <div className="flex flex-col gap-3">
+            <Alert tone="warning">
+              {t('auth.login.notVerified', { email: login.variables?.email ?? '' })}
+            </Alert>
+            <ResendVerificationButton email={login.variables?.email ?? ''} />
+          </div>
+        ) : login.error ? (
+          <Alert tone="danger">{errorText(login.error)}</Alert>
+        ) : redirectError ? (
+          <Alert tone="danger">{t(`errors.${redirectError as ErrorCode}`)}</Alert>
+        ) : (
+          searchParams.get('deleted') === '1' && (
+            <Alert tone="success">{t('auth.login.accountDeleted')}</Alert>
+          )
+        )}
+
+        <FormField label={t('auth.fields.email')} error={fieldError(errors.email)} required>
+          {(field) => (
+            <Input
+              {...field}
+              {...form.register('email')}
+              type="email"
+              autoComplete="username"
+              inputMode="email"
+            />
+          )}
+        </FormField>
+
+        <FormField label={t('auth.fields.password')} error={fieldError(errors.password)} required>
+          {(field) => (
+            <PasswordInput
+              {...field}
+              {...form.register('password')}
+              autoComplete="current-password"
+              showLabel={t('common.showPassword')}
+              hideLabel={t('common.hidePassword')}
+            />
+          )}
+        </FormField>
+
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-sm font-medium text-primary-text hover:underline">
+            {t('auth.login.forgot')}
+          </Link>
         </div>
-      ) : login.error ? (
-        <Alert tone="danger">{errorText(login.error)}</Alert>
-      ) : (
-        searchParams.get('deleted') === '1' && <Alert tone="success">{t('auth.login.accountDeleted')}</Alert>
-      )}
 
-      <FormField label={t('auth.fields.email')} error={fieldError(errors.email)} required>
-        {(field) => (
-          <Input
-            {...field}
-            {...form.register('email')}
-            type="email"
-            autoComplete="username"
-            inputMode="email"
-          />
-        )}
-      </FormField>
-
-      <FormField label={t('auth.fields.password')} error={fieldError(errors.password)} required>
-        {(field) => (
-          <PasswordInput
-            {...field}
-            {...form.register('password')}
-            autoComplete="current-password"
-            showLabel={t('common.showPassword')}
-            hideLabel={t('common.hidePassword')}
-          />
-        )}
-      </FormField>
-
-      <div className="flex justify-end">
-        <Link href="/forgot-password" className="text-sm font-medium text-primary-text hover:underline">
-          {t('auth.login.forgot')}
-        </Link>
-      </div>
-
-      <Button type="submit" fullWidth size="lg" loading={login.isPending}>
-        {t('auth.login.submit')}
-      </Button>
-    </form>
+        <Button type="submit" fullWidth size="lg" loading={login.isPending}>
+          {t('auth.login.submit')}
+        </Button>
+      </form>
+    </div>
   );
 }

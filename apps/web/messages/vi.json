@@ -76,7 +76,14 @@
     "TAXONOMY_IN_USE": "Ngành này đang được hồ sơ sử dụng nên không thể xoá.",
     "KNOWLEDGE_LIMIT_REACHED": "Bạn đã có tối đa 20 tài liệu. Hãy xoá bớt để thêm mới.",
     "KNOWLEDGE_PROCESSING_FAILED": "Không đọc được nội dung tài liệu này (có thể là file ảnh scan). Hãy thử file khác hoặc dán nội dung.",
-    "AUTH_ACCOUNT_DELETE_NOT_ALLOWED": "Tài khoản quản trị viên gốc không thể tự xoá."
+    "AUTH_ACCOUNT_DELETE_NOT_ALLOWED": "Tài khoản quản trị viên gốc không thể tự xoá.",
+    "AUTH_OAUTH_FAILED": "Không đăng nhập được bằng Google. Vui lòng thử lại.",
+    "AUTH_OAUTH_NOT_CONFIGURED": "Đăng nhập bằng Google chưa được bật.",
+    "AUTH_OAUTH_EMAIL_UNVERIFIED": "Email của tài khoản Google này chưa được Google xác thực.",
+    "AUTH_OAUTH_NOT_ALLOWED": "Tài khoản quản trị chỉ đăng nhập bằng email và mật khẩu.",
+    "AUTH_OAUTH_ALREADY_LINKED": "Tài khoản Google này đã được liên kết với một tài khoản khác, hoặc bạn đã liên kết một tài khoản Google khác.",
+    "AUTH_OAUTH_ACCOUNT_MISMATCH": "Hãy xác nhận bằng đúng tài khoản Google đã liên kết.",
+    "AUTH_OAUTH_UNLINK_NOT_ALLOWED": "Hãy đặt mật khẩu trước khi gỡ liên kết Google, để bạn vẫn đăng nhập được."
   },
   "validation": {
     "required": "Vui lòng nhập thông tin này.",
@@ -167,6 +174,10 @@
       "submit": "Tạo tài khoản",
       "missingToken": "Liên kết mời không hợp lệ.",
       "askRoot": "Hãy nhờ quản trị viên gốc gửi lại lời mời."
+    },
+    "google": {
+      "continue": "Tiếp tục với Google",
+      "or": "hoặc"
     }
   },
   "nav": {
@@ -658,8 +669,24 @@
       "body": "Hồ sơ, CV, kết quả phân tích, đơn ứng tuyển, buổi phỏng vấn và tài liệu sẽ bị xoá ngay. Bạn có thể tải dữ liệu về trước. Nhập mật khẩu để xác nhận.",
       "cancel": "Huỷ",
       "confirm": "Xoá vĩnh viễn",
-      "wrongPassword": "Mật khẩu không đúng."
-    }
+      "wrongPassword": "Mật khẩu không đúng.",
+      "googleBody": "Hồ sơ, CV, kết quả phân tích, đơn ứng tuyển, buổi phỏng vấn và tài liệu sẽ bị xoá ngay. Bạn có thể tải dữ liệu về trước. Để xác nhận, hãy đăng nhập lại bằng tài khoản Google đã liên kết.",
+      "confirmGoogle": "Xác nhận bằng Google"
+    },
+    "google": {
+      "title": "Đăng nhập bằng Google",
+      "description": "Liên kết tài khoản Google để đăng nhập không cần mật khẩu.",
+      "link": "Liên kết Google",
+      "linkedAs": "Đã liên kết với {email}",
+      "unlink": "Gỡ liên kết",
+      "unlinked": "Đã gỡ liên kết Google",
+      "linked": "Đã liên kết Google",
+      "onlyMethod": "Google là cách đăng nhập duy nhất của bạn. Hãy đặt mật khẩu nếu muốn gỡ liên kết."
+    },
+    "noPassword": "Bạn đăng nhập bằng Google và chưa có mật khẩu. Chúng tôi sẽ gửi email để bạn đặt mật khẩu.",
+    "setPassword": "Gửi email đặt mật khẩu",
+    "setPasswordSent": "Đã gửi email tới {email}",
+    "setPasswordTitle": "Đặt mật khẩu"
   },
   "onboarding": {
     "metaTitle": "Hoàn thiện hồ sơ",

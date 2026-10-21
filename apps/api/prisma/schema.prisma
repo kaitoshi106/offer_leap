@@ -37,23 +37,24 @@ enum UserTokenType {
 }
 
 model User {
-  id                    String         @id @default(cuid())
-  email                 String         @unique
-  passwordHash          String
+  id                    String              @id @default(cuid())
+  email                 String              @unique
+  /// Null for accounts created with a sign-in provider (Google) that never set a password.
+  passwordHash          String?
   fullName              String
-  role                  Role           @default(USER)
+  role                  Role                @default(USER)
   /// Only set when role = ADMIN.
   adminLevel            AdminLevel?
-  status                UserStatus     @default(ACTIVE)
-  locale                Locale         @default(vi)
+  status                UserStatus          @default(ACTIVE)
+  locale                Locale              @default(vi)
   emailVerifiedAt       DateTime?
   onboardingCompletedAt DateTime?
   passwordChangedAt     DateTime?
   lastLoginAt           DateTime?
   /// Per-user override of AI_DAILY_QUOTA (successful AI calls per rolling 24 h); null = default.
   aiDailyQuota          Int?
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
   refreshTokens         RefreshToken[]
   tokens                UserToken[]
   profile               Profile?
@@ -64,12 +65,34 @@ model User {
   sentInvitations       AdminInvitation[]
   aiUsage               AiUsageLog[]
   documents             KnowledgeDocument[]
+  identities            UserIdentity[]
 
   @@map("users")
 }
 
 /// One row per issued refresh token. Tokens of one login share a `familyId`; rotating marks the old row
 /// revoked and links it to its replacement, so a reused (stolen) token can revoke the whole family.
+enum IdentityProvider {
+  GOOGLE
+}
+
+/// A sign-in provider account linked to a user. Matched by the provider's stable id (`sub`), never by email: the
+/// email at the provider can change. One provider account links to one user, and a user links each provider once.
+model UserIdentity {
+  id             String           @id @default(cuid())
+  userId         String
+  provider       IdentityProvider
+  providerUserId String
+  /// Email at the provider when linked (shown in settings; not used for matching).
+  email          String
+  createdAt      DateTime         @default(now())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@unique([userId, provider])
+  @@map("user_identities")
+}
+
 model RefreshToken {
   id           String    @id @default(cuid())
   userId       String
@@ -185,14 +208,14 @@ enum ResumeStatus {
 /// An uploaded CV. The file stays on disk (`storageKey`); a BullMQ job asks the AI to read it and stores the
 /// suggested profile values in `suggestions`.
 model Resume {
-  id           String       @id @default(cuid())
+  id           String        @id @default(cuid())
   userId       String
   fileName     String
   mimeType     String
   sizeBytes    Int
   /// Path inside STORAGE_DIR.
-  storageKey   String       @unique
-  status       ResumeStatus @default(PENDING)
+  storageKey   String        @unique
+  status       ResumeStatus  @default(PENDING)
   /// `ResumeSuggestions` from @offerleap/shared, validated before saving.
   suggestions  Json?
   /// ErrorCode when parsing failed.
@@ -201,9 +224,9 @@ model Resume {
   inputTokens  Int?
   outputTokens Int?
   processedAt  DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   analyses     JobAnalysis[]
 
   @@index([userId, createdAt])
@@ -212,13 +235,13 @@ model Resume {
 
 /// A CV compared with a job description by the AI. Runs in the background like CV parsing (same statuses).
 model JobAnalysis {
-  id             String       @id @default(cuid())
+  id             String           @id @default(cuid())
   userId         String
   resumeId       String
   jobDescription String
   /// Language the AI answers in.
   locale         Locale
-  status         ResumeStatus @default(PENDING)
+  status         ResumeStatus     @default(PENDING)
   /// Read from the job description by the AI.
   jobTitle       String?
   company        String?
@@ -231,10 +254,10 @@ model JobAnalysis {
   inputTokens    Int?
   outputTokens   Int?
   processedAt    DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume         Resume       @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume         Resume           @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   applications   JobApplication[]
 
   @@index([userId, createdAt])
@@ -252,23 +275,23 @@ enum ApplicationStatus {
 
 /// A job the user is tracking on the kanban board, with its cover letter.
 model JobApplication {
-  id             String            @id @default(cuid())
+  id             String             @id @default(cuid())
   userId         String
   company        String
   jobTitle       String
   jobUrl         String?
   jobDescription String?
-  status         ApplicationStatus @default(SAVED)
+  status         ApplicationStatus  @default(SAVED)
   /// Order inside the column. Fractional: dropping between two cards takes the midpoint.
   position       Float
   notes          String?
   coverLetter    String?
   /// Analysis the application was created from (kept when the analysis is deleted, just unlinked).
   analysisId     String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  analysis       JobAnalysis?      @relation(fields: [analysisId], references: [id], onDelete: SetNull)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis       JobAnalysis?       @relation(fields: [analysisId], references: [id], onDelete: SetNull)
   interviews     InterviewSession[]
 
   @@index([userId, status, position])
@@ -414,13 +437,13 @@ model KnowledgeDocument {
 /// filter by owner without a join. No ANN (HNSW) index on purpose: searches are always per user (a few hundred
 /// chunks at most), where an exact scan is fast and never misses — an ANN index filters by user only afterwards.
 model KnowledgeChunk {
-  id         String                       @id @default(cuid())
+  id         String                      @id @default(cuid())
   documentId String
   userId     String
   index      Int
   content    String
   embedding  Unsupported("vector(768)")?
-  document   KnowledgeDocument            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document   KnowledgeDocument           @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([documentId])

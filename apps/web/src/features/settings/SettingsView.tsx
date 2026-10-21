@@ -3,12 +3,15 @@
 import {
   canDeleteOwnAccount,
   canManageOwnPassword,
+  canUseSignInProviders,
+  ErrorCode,
   type ChangePasswordInput,
   changePasswordSchema,
 } from '@offerleap/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { type ReactNode, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Avatar, Button, Heading, Skeleton, Text } from '@/components/atoms';
@@ -16,29 +19,40 @@ import { Alert, FormField, PasswordInput } from '@/components/molecules';
 import { useToast } from '@/components/organisms';
 import { roleKey } from '@/features/admin/components/labels';
 import { authApi } from '@/features/auth/api/auth-api';
+import { useAuthProviders, useSignInMethods } from '@/features/auth/api/google';
 import { currentUserKey, useCurrentUser } from '@/features/auth/api/use-auth';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
 
 import { DeleteAccount, ExportDataButton } from './AccountDataSections';
+import { GoogleAccountSection, SetPasswordByEmail } from './GoogleAccountSection';
 
 /**
- * `/settings`: account details, password change, data export and account deletion (root can neither change its
- * password nor delete itself — both are managed by config).
+ * `/settings`: account details, password, linked Google account, data export and account deletion (root can
+ * neither change its password nor delete itself — both are managed by config). Google flows come back here with
+ * `?linked=google` or `?error=<code>`.
  */
 export function SettingsView() {
   const t = useTranslations('settings');
   const tAdmin = useTranslations('admin');
+  const tErrors = useTranslations('errors');
   const { data: user, isPending } = useCurrentUser();
+  const { data: providers } = useAuthProviders();
+  const { data: methods } = useSignInMethods();
+  const redirectError = useGoogleRedirectResult();
 
   if (isPending || !user) return <Skeleton className="h-96 w-full" />;
+  // Until the methods load, assume a password (the common case) rather than flashing the Google-only variants.
+  const hasPassword = methods?.hasPassword ?? true;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <Heading level={1} size="lg">
         {t('title')}
       </Heading>
+      {redirectError && <Alert tone="danger">{tErrors(redirectError)}</Alert>}
       <Section title={t('account')}>
         <div className="flex items-center gap-4">
           <Avatar name={user.fullName} size="lg" />
@@ -52,19 +66,56 @@ export function SettingsView() {
           </dl>
         </div>
       </Section>
-      <Section title={t('password')} description={t('passwordDescription')}>
-        {canManageOwnPassword(user) ? <ChangePasswordForm /> : <Alert tone="info">{t('rootPassword')}</Alert>}
+      <Section
+        title={t(hasPassword ? 'password' : 'setPasswordTitle')}
+        description={hasPassword ? t('passwordDescription') : undefined}
+      >
+        {!canManageOwnPassword(user) ? (
+          <Alert tone="info">{t('rootPassword')}</Alert>
+        ) : hasPassword ? (
+          <ChangePasswordForm />
+        ) : (
+          <SetPasswordByEmail email={user.email} />
+        )}
       </Section>
+      {providers?.google && canUseSignInProviders(user) && methods && (
+        <Section title={t('google.title')} description={t('google.description')}>
+          <GoogleAccountSection methods={methods} />
+        </Section>
+      )}
       <Section title={t('data.title')} description={t('data.description')}>
         <ExportDataButton />
       </Section>
       {canDeleteOwnAccount(user) && (
         <Section title={t('delete.sectionTitle')} description={t('delete.description')}>
-          <DeleteAccount />
+          <DeleteAccount hasPassword={hasPassword} />
         </Section>
       )}
     </div>
   );
+}
+
+/**
+ * @description Reads the result of a Google flow from the URL once: a toast for a new link, the error code for
+ * a failure. The URL is then cleaned so a reload doesn't repeat them.
+ * @returns The error code to show, if any.
+ */
+function useGoogleRedirectResult(): ErrorCode | null {
+  const t = useTranslations('settings.google');
+  const toast = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const linked = searchParams.get('linked') === 'google';
+  const error = searchParams.get('error');
+
+  useEffect(() => {
+    if (!linked) return;
+    toast.show({ tone: 'success', title: t('linked') });
+    router.replace(pathname);
+  }, [linked, pathname, router, t, toast]);
+
+  return error && (Object.values(ErrorCode) as string[]).includes(error) ? (error as ErrorCode) : null;
 }
 
 function Section({

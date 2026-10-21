@@ -32,4 +32,17 @@ describe('renderMail', () => {
     expect(mail.html).not.toContain('<script>x');
     expect(mail.html).toContain('&#60;script&#62;');
   });
+
+  it('warns about a newly linked Google account with a way to undo it', () => {
+    const mail = renderMail({
+      template: 'google-linked',
+      to: 'a@b.co',
+      locale: 'vi',
+      fullName: 'Minh',
+      link: 'https://x/vi/settings',
+    });
+    expect(mail.subject).toContain('Đã liên kết tài khoản Google');
+    expect(mail.text).toContain('gỡ liên kết Google');
+    expect(mail.text).toContain('https://x/vi/settings');
+  });
 });

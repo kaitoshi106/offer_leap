@@ -31,7 +31,11 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
 
     try {
-      const payload = await this.jwt.verifyAsync<AccessTokenPayload>(token);
+      const payload = await this.jwt.verifyAsync<AccessTokenPayload & { aud?: unknown }>(token);
+      // The same key signs short-lived tokens with an audience (the OAuth flow cookie); only access tokens,
+      // which have none, open the API.
+      if (payload.aud !== undefined || typeof payload.sub !== 'string')
+        throw new Error('Not an access token');
       request.user = { sub: payload.sub, role: payload.role, adminLevel: payload.adminLevel };
       return true;
     } catch (error) {
