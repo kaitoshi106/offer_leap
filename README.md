@@ -70,7 +70,7 @@ More: [architecture](docs/ai/architecture.md) · [decisions (ADRs)](docs/adr) ·
   treat CVs and job descriptions as untrusted data, hashed single-use admin invitation tokens, a JSON
   export of your data and password-confirmed account deletion.
 - **Accessibility** — native elements first (`<dialog>`, `<select>`, file input in a label), WAI-ARIA combobox,
-  focus management between steps, live regions for async results, keyboard alternative to drag and drop.
+  focus management between steps, live regions for async results, keyboard alternative to drag and drop; every page is scanned with axe (WCAG 2.2 AA) in light and dark mode.
 - **AI quality is measured** — `pnpm --filter @offerleap/api eval <task>` runs a dataset of hard cases (abbreviations,
   overlapping jobs, missing data, prompt injection) against the real model and reports field accuracy and p95
   latency. Baseline: 100% field accuracy, p95 2.8 s for CV extraction. The eval found two real bugs.

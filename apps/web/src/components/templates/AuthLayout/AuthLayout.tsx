@@ -42,7 +42,7 @@ export function AuthLayout({
         <AuthShowcase copy={showcase} />
         <Link
           href="/"
-          aria-label={homeLabel}
+          aria-label={`${APP_NAME} – ${homeLabel}`}
           className="relative z-10 flex items-center gap-2 text-lg font-bold"
         >
           <Icon name="sparkles" />
@@ -63,7 +63,11 @@ export function AuthLayout({
 
       <div className="flex flex-col">
         <header className="flex items-center justify-between px-4 py-4 sm:px-8">
-          <Link href="/" aria-label={homeLabel} className="flex items-center gap-2 font-bold lg:invisible">
+          <Link
+            href="/"
+            aria-label={`${APP_NAME} – ${homeLabel}`}
+            className="flex items-center gap-2 font-bold lg:invisible"
+          >
             <Icon name="sparkles" className="text-primary-text" />
             {APP_NAME}
           </Link>

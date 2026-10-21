@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test as base } from '@playwright/test';
 
 const MAILPIT = 'http://localhost:8025/api/v1';
@@ -112,4 +113,29 @@ export async function completeOnboarding(page: Page): Promise<void> {
 
   await page.getByRole('button', { name: 'Hoàn tất' }).click();
   await expect(page).toHaveURL(/\/vi\/dashboard$/);
+}
+
+/** WCAG 2.2 A and AA rules — the level the app aims for. */
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+
+/**
+ * @description Runs axe on the page as it is now and fails with a readable list (rule, impact, elements) when it
+ * finds WCAG A/AA violations. Call it after the content you want checked is visible.
+ * @param page - Page to scan.
+ * @param label - What is being checked, shown in the failure message (e.g. "dashboard · dark").
+ */
+export async function expectAccessible(page: Page, label: string): Promise<void> {
+  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+  const report = violations.map(
+    (violation) =>
+      `${violation.id} (${violation.impact}): ${violation.help}\n` +
+      violation.nodes
+        .slice(0, 5)
+        .map(
+          (node) => `    ${node.target.join(' ')} — ${node.failureSummary?.split('\n').slice(1).join(' ')}`,
+        )
+        .join('\n'),
+  );
+  // Soft: one run reports every page that fails, not just the first.
+  expect.soft(report, `accessibility violations on ${label}`).toEqual([]);
 }

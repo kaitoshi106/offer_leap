@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useEffect } from 'react';
 
-import { Avatar, Button, Icon, type IconName } from '@/components/atoms';
+import { Avatar, Button, Icon, type IconName, VisuallyHidden } from '@/components/atoms';
 import { AppLayout, navLinkClasses } from '@/components/templates';
 import { useCurrentUser, useLogout } from '@/features/auth/api/use-auth';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
@@ -74,11 +74,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           {user && (
             <Link
               href="/settings"
-              aria-label={t('settings')}
               title={t('settings')}
               className="hidden rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/40 sm:inline-flex"
             >
-              <Avatar name={user.fullName} size="sm" />
+              {/* The initials are decoration; hidden text names the link. An aria-label would differ from the
+                  visible initials, which speech-input users can't then say (WCAG 2.5.3 Label in Name). */}
+              <Avatar name={user.fullName} size="sm" aria-hidden />
+              <VisuallyHidden>{t('settings')}</VisuallyHidden>
             </Link>
           )}
           <Button variant="ghost" size="sm" loading={logout.isPending} onClick={() => logout.mutate()}>
