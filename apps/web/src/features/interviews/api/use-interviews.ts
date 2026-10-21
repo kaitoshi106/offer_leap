@@ -1,15 +1,22 @@
 'use client';
 
-import type { InterviewDetail } from '@offerleap/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { InterviewDetail, PageQuery } from '@offerleap/shared';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { interviewsApi } from './interviews-api';
 
 export const interviewsKey = ['interviews'] as const;
+/** Every page of the history. */
+const interviewsListKey = [...interviewsKey, 'list'] as const;
 const interviewKey = (id: string) => [...interviewsKey, id] as const;
 
-export function useInterviews() {
-  return useQuery({ queryKey: interviewsKey, queryFn: ({ signal }) => interviewsApi.list(signal) });
+/** One page of past interviews, newest first; the previous page stays on screen while the next one loads. */
+export function useInterviews(query: PageQuery) {
+  return useQuery({
+    queryKey: [...interviewsListKey, query.page, query.pageSize],
+    queryFn: ({ signal }) => interviewsApi.list(query, signal),
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useInterview(id: string) {
@@ -23,7 +30,7 @@ function useInterviewStep<TVariables>(id: string, step: (variables: TVariables) 
     mutationFn: step,
     onSuccess: (interview) => {
       queryClient.setQueryData(interviewKey(id), interview);
-      void queryClient.invalidateQueries({ queryKey: interviewsKey, exact: true });
+      void queryClient.invalidateQueries({ queryKey: interviewsListKey });
     },
   });
 }
@@ -34,7 +41,7 @@ export function useCreateInterview() {
     mutationFn: interviewsApi.create,
     onSuccess: (interview) => {
       queryClient.setQueryData(interviewKey(interview.id), interview);
-      void queryClient.invalidateQueries({ queryKey: interviewsKey, exact: true });
+      void queryClient.invalidateQueries({ queryKey: interviewsListKey });
     },
   });
 }
@@ -53,7 +60,7 @@ export function useDeleteInterview() {
     mutationFn: interviewsApi.remove,
     onSuccess: (_result, id) => {
       queryClient.removeQueries({ queryKey: interviewKey(id) });
-      void queryClient.invalidateQueries({ queryKey: interviewsKey, exact: true });
+      void queryClient.invalidateQueries({ queryKey: interviewsListKey });
     },
   });
 }

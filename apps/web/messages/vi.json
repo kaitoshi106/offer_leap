@@ -11,7 +11,14 @@
     "dismiss": "Ẩn thông báo",
     "backToHome": "Về trang chủ",
     "showPassword": "Hiện mật khẩu",
-    "hidePassword": "Ẩn mật khẩu"
+    "hidePassword": "Ẩn mật khẩu",
+    "pagination": {
+      "previous": "Trang trước",
+      "next": "Trang sau",
+      "status": "Trang {page}/{pages}",
+      "pageSize": "Số mục mỗi trang",
+      "pageSizeOption": "{size} / trang"
+    }
   },
   "theme": {
     "darkMode": "Giao diện tối"
@@ -231,7 +238,8 @@
       "empty": "Chưa có phân tích nào. Kết quả sẽ xuất hiện ở đây.",
       "pending": "Đang phân tích…",
       "failed": "Không thành công",
-      "resume": "CV: {fileName}"
+      "resume": "CV: {fileName}",
+      "pages": "Các trang lịch sử phân tích"
     },
     "status": {
       "processingTitle": "AI đang phân tích…",
@@ -370,7 +378,8 @@
       "empty": "Chưa có buổi phỏng vấn nào.",
       "progress": "{answered}/{total} câu",
       "inProgress": "Đang làm",
-      "completed": "Đã xong"
+      "completed": "Đã xong",
+      "pages": "Các trang lịch sử phỏng vấn"
     },
     "session": {
       "back": "Tất cả buổi phỏng vấn",
@@ -512,12 +521,7 @@
       },
       "onboardingDone": "Đã hoàn tất",
       "onboardingPending": "Chưa xong",
-      "unverified": "Chưa xác thực email",
-      "previous": "Trang trước",
-      "next": "Trang sau",
-      "page": "Trang {page}/{pages}",
-      "pageSize": "Số mục mỗi trang",
-      "pageSizeOption": "{size} / trang"
+      "unverified": "Chưa xác thực email"
     },
     "user": {
       "back": "Danh sách người dùng",

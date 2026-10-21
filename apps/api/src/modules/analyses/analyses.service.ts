@@ -6,6 +6,8 @@ import {
   type CreateAnalysis,
   ErrorCode,
   ValidationRule,
+  type PageQuery,
+  type Paginated,
 } from '@offerleap/shared';
 import type { Queue } from 'bullmq';
 
@@ -24,9 +26,6 @@ import { KnowledgeService } from '../knowledge/knowledge.service';
 import { ResumesService } from '../resumes/resumes.service';
 import { ANALYSIS_INCLUDE, toAnalysisDetail, toAnalysisResult, toAnalysisSummary } from './analysis.mapper';
 import { ANALYSIS_QUEUE, type AnalysisJob } from './analyses.types';
-
-/** How many past analyses the history returns. */
-const HISTORY_LIMIT = 50;
 
 /** Compares a user's CV with a job description using the AI, in the background. */
 @Injectable()
@@ -66,15 +65,20 @@ export class AnalysesService {
     return toAnalysisDetail(analysis);
   }
 
-  /** The user's analyses, newest first. */
-  async list(userId: string): Promise<AnalysisSummary[]> {
-    const analyses = await this.prisma.jobAnalysis.findMany({
-      where: { userId },
-      include: ANALYSIS_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-      take: HISTORY_LIMIT,
-    });
-    return analyses.map(toAnalysisSummary);
+  /** One page of the user's analyses, newest first. */
+  async list(userId: string, query: PageQuery): Promise<Paginated<AnalysisSummary>> {
+    const where = { userId };
+    const [total, analyses] = await this.prisma.$transaction([
+      this.prisma.jobAnalysis.count({ where }),
+      this.prisma.jobAnalysis.findMany({
+        where,
+        include: ANALYSIS_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+    ]);
+    return { items: analyses.map(toAnalysisSummary), total, page: query.page, pageSize: query.pageSize };
   }
 
   /**

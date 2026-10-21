@@ -1,7 +1,7 @@
 'use client';
 
-import { type AnalysisDetail, RESUME_FINAL_STATUSES } from '@offerleap/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type AnalysisDetail, type PageQuery, RESUME_FINAL_STATUSES } from '@offerleap/shared';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { analysesApi } from './analyses-api';
 
@@ -9,18 +9,25 @@ import { analysesApi } from './analyses-api';
 const POLL_INTERVAL_MS = 2_000;
 
 export const analysesKey = ['analyses'] as const;
+/** Every page of the history; invalidated whenever an analysis is added, finished or deleted. */
+const analysesListKey = [...analysesKey, 'list'] as const;
 const analysisKey = (id: string) => [...analysesKey, id] as const;
 
 const isFinal = (analysis: { status: AnalysisDetail['status'] }) =>
   RESUME_FINAL_STATUSES.includes(analysis.status);
 
-/** History, newest first. Refreshes itself while an analysis in it is still running. */
-export function useAnalyses() {
+/**
+ * @description One page of the history, newest first. Refreshes itself while an analysis on it is still running;
+ * the previous page stays on screen while the next one loads.
+ * @param query - Page and page size.
+ */
+export function useAnalyses(query: PageQuery) {
   return useQuery({
-    queryKey: analysesKey,
-    queryFn: ({ signal }) => analysesApi.list(signal),
-    refetchInterval: (query) =>
-      query.state.data?.some((analysis) => !isFinal(analysis)) ? POLL_INTERVAL_MS : false,
+    queryKey: [...analysesListKey, query.page, query.pageSize],
+    queryFn: ({ signal }) => analysesApi.list(query, signal),
+    placeholderData: keepPreviousData,
+    refetchInterval: (state) =>
+      state.state.data?.items.some((analysis) => !isFinal(analysis)) ? POLL_INTERVAL_MS : false,
   });
 }
 
@@ -35,7 +42,7 @@ export function useAnalysis(id: string) {
     queryKey: analysisKey(id),
     queryFn: async ({ signal }) => {
       const analysis = await analysesApi.get(id, signal);
-      if (isFinal(analysis)) void queryClient.invalidateQueries({ queryKey: analysesKey, exact: true });
+      if (isFinal(analysis)) void queryClient.invalidateQueries({ queryKey: analysesListKey });
       return analysis;
     },
     refetchInterval: (query) => (query.state.data && !isFinal(query.state.data) ? POLL_INTERVAL_MS : false),
@@ -49,7 +56,7 @@ export function useCreateAnalysis() {
     mutationFn: analysesApi.create,
     onSuccess: (analysis) => {
       queryClient.setQueryData(analysisKey(analysis.id), analysis);
-      void queryClient.invalidateQueries({ queryKey: analysesKey, exact: true });
+      void queryClient.invalidateQueries({ queryKey: analysesListKey });
     },
   });
 }
@@ -60,7 +67,7 @@ export function useDeleteAnalysis() {
     mutationFn: analysesApi.remove,
     onSuccess: (_result, id) => {
       queryClient.removeQueries({ queryKey: analysisKey(id) });
-      void queryClient.invalidateQueries({ queryKey: analysesKey, exact: true });
+      void queryClient.invalidateQueries({ queryKey: analysesListKey });
     },
   });
 }

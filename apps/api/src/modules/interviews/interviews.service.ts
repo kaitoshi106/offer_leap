@@ -5,6 +5,8 @@ import {
   type InterviewDetail,
   type InterviewListItem,
   ValidationRule,
+  type PageQuery,
+  type Paginated,
 } from '@offerleap/shared';
 
 import { AppException } from '../../common/errors/app.exception';
@@ -28,8 +30,6 @@ import {
   interviewSummarySystem,
 } from '../ai/prompts/interview.v1';
 import { INTERVIEW_INCLUDE, toInterviewDetail, toInterviewListItem } from './interview.mapper';
-
-const HISTORY_LIMIT = 50;
 
 /**
  * Mock interviews. Each step is one short AI call made inside the request (questions ~3 s, feedback ~2 s), so the
@@ -98,14 +98,20 @@ export class InterviewsService {
     return toInterviewDetail(session);
   }
 
-  async list(userId: string): Promise<InterviewListItem[]> {
-    const sessions = await this.prisma.interviewSession.findMany({
-      where: { userId },
-      include: INTERVIEW_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-      take: HISTORY_LIMIT,
-    });
-    return sessions.map(toInterviewListItem);
+  /** One page of the user's interviews, newest first. */
+  async list(userId: string, query: PageQuery): Promise<Paginated<InterviewListItem>> {
+    const where = { userId };
+    const [total, sessions] = await this.prisma.$transaction([
+      this.prisma.interviewSession.count({ where }),
+      this.prisma.interviewSession.findMany({
+        where,
+        include: INTERVIEW_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+    ]);
+    return { items: sessions.map(toInterviewListItem), total, page: query.page, pageSize: query.pageSize };
   }
 
   /** @throws AppException COMMON_NOT_FOUND (also for someone else's id). */

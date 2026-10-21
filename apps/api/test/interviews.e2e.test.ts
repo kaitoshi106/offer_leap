@@ -91,9 +91,12 @@ describe('mock interviews', () => {
     expect(ai.generateJson.mock.calls.at(-1)![0].parts[0].text).toContain('(skipped)');
 
     const list = await agent.get('/api/v1/interviews').expect(200);
-    expect(list.body).toEqual([
-      expect.objectContaining({ id: started.id, overallScore: 68, answeredCount: 3 }),
-    ]);
+    expect(list.body).toMatchObject({
+      items: [expect.objectContaining({ id: started.id, overallScore: 68, answeredCount: 3 })],
+      total: 1,
+      page: 1,
+      pageSize: 10,
+    });
   });
 
   it('refuses to answer a question twice or after the interview is completed', async () => {

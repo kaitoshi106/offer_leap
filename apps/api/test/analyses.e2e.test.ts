@@ -98,10 +98,17 @@ describe('analyses', () => {
     expect(request.parts[2]).toMatchObject({ type: 'file', mimeType: 'application/pdf' });
 
     const list = await agent.get('/api/v1/analyses').expect(200);
-    expect(list.body).toEqual([
-      expect.objectContaining({ id: done.id, score: 72, jobTitle: 'Senior Frontend Engineer' }),
-    ]);
-    expect(list.body[0]).not.toHaveProperty('jobDescription');
+    expect(list.body).toEqual({
+      items: [expect.objectContaining({ id: done.id, score: 72, jobTitle: 'Senior Frontend Engineer' })],
+      total: 1,
+      page: 1,
+      pageSize: 10,
+    });
+    expect(list.body.items[0]).not.toHaveProperty('jobDescription');
+    // Pages past the end are empty; only the offered sizes are accepted.
+    const second = await agent.get('/api/v1/analyses').query({ page: 2, pageSize: 50 }).expect(200);
+    expect(second.body).toMatchObject({ items: [], total: 1, page: 2, pageSize: 50 });
+    await agent.get('/api/v1/analyses').query({ pageSize: 20 }).expect(422);
   });
 
   it('lists the CVs to choose from', async () => {
@@ -166,7 +173,7 @@ describe('analyses', () => {
     const other = await signUpOnboarded(ctx, 'other@example.com');
     await other.get(`/api/v1/analyses/${body.id}`).expect(404);
     await other.delete(`/api/v1/analyses/${body.id}`).expect(404);
-    expect((await other.get('/api/v1/analyses').expect(200)).body).toEqual([]);
+    expect((await other.get('/api/v1/analyses').expect(200)).body).toMatchObject({ items: [], total: 0 });
 
     await owner.delete(`/api/v1/analyses/${body.id}`).expect(204);
     await owner.get(`/api/v1/analyses/${body.id}`).expect(404);

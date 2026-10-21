@@ -11,7 +11,14 @@
     "dismiss": "Dismiss notification",
     "backToHome": "Back to home",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "pagination": {
+      "previous": "Previous page",
+      "next": "Next page",
+      "status": "Page {page} of {pages}",
+      "pageSize": "Items per page",
+      "pageSizeOption": "{size} / page"
+    }
   },
   "theme": {
     "darkMode": "Dark mode"
@@ -231,7 +238,8 @@
       "empty": "No analyses yet. Results will show up here.",
       "pending": "Analysing…",
       "failed": "Failed",
-      "resume": "CV: {fileName}"
+      "resume": "CV: {fileName}",
+      "pages": "Analysis history pages"
     },
     "status": {
       "processingTitle": "AI is analysing…",
@@ -370,7 +378,8 @@
       "empty": "No interviews yet.",
       "progress": "{answered}/{total} answered",
       "inProgress": "In progress",
-      "completed": "Completed"
+      "completed": "Completed",
+      "pages": "Interview history pages"
     },
     "session": {
       "back": "All interviews",
@@ -512,12 +521,7 @@
       },
       "onboardingDone": "Complete",
       "onboardingPending": "In progress",
-      "unverified": "Email not verified",
-      "previous": "Previous page",
-      "next": "Next page",
-      "page": "Page {page} of {pages}",
-      "pageSize": "Items per page",
-      "pageSizeOption": "{size} / page"
+      "unverified": "Email not verified"
     },
     "user": {
       "back": "All users",

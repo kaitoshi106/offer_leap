@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 
 import type { Locale } from '@offerleap/shared';
 
@@ -15,7 +16,10 @@ export default async function InterviewsPage({ params }: { params: Promise<{ loc
   setRequestLocale((await params).locale);
   return (
     <AppShell>
-      <InterviewsView />
+      {/* The history's page and page size are read from the URL, which needs a Suspense boundary. */}
+      <Suspense>
+        <InterviewsView />
+      </Suspense>
     </AppShell>
   );
 }

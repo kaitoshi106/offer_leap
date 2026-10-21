@@ -249,6 +249,16 @@ analysis / cover letter: embed the job description (purpose: query)
 - `GET /knowledge/search` returns passages with their score and `relevant` flag so users can see exactly what the
   AI would be given.
 
+## Paginated lists
+
+- Every list that grows without bound is paginated with the shared `pageQuerySchema` (`?page=&pageSize=`, sizes
+  `PAGE_SIZES` 10/50/100 only) and answers `Paginated<T>` (`items`, `total`, `page`, `pageSize`): admin users,
+  analysis history (`GET /analyses`), interview history (`GET /interviews`).
+- Web: `usePageParams()` keeps page and size in the URL (defaults left out, a size change returns to page 1, an
+  unknown size falls back to 10); `ListPagination` renders the pager and the size picker; React Query keeps the
+  previous page on screen while the next one loads (`keepPreviousData`). The dashboard shows the 3 newest analyses
+  from the first page.
+
 ## Theming & i18n
 
 - Light / dark themes via CSS variables on `<html data-theme>`, set by an inline script before paint. Until the user

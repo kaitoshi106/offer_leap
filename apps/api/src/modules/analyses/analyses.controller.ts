@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import {
@@ -7,6 +7,9 @@ import {
   type CreateAnalysis,
   createAnalysisSchema,
   ErrorCode,
+  type PageQuery,
+  pageQuerySchema,
+  type Paginated,
 } from '@offerleap/shared';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators';
@@ -41,10 +44,17 @@ export class AnalysesController {
     return this.analyses.create(user.sub, body);
   }
 
-  @ApiOperation({ summary: 'Your analyses, newest first' })
+  @ApiOperation({
+    summary: 'Your analyses, newest first',
+    description: '`?page=&pageSize=` (10, 50 or 100).',
+  })
+  @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED)
   @Get()
-  list(@CurrentUser() user: AccessTokenPayload): Promise<AnalysisSummary[]> {
-    return this.analyses.list(user.sub);
+  list(
+    @CurrentUser() user: AccessTokenPayload,
+    @Query(new ZodValidationPipe(pageQuerySchema)) query: PageQuery,
+  ): Promise<Paginated<AnalysisSummary>> {
+    return this.analyses.list(user.sub, query);
   }
 
   @ApiOperation({ summary: 'Status and, once done, the result of an analysis' })

@@ -1,24 +1,50 @@
 'use client';
 
-import type { AnalysisSummary } from '@offerleap/shared';
+import { type AnalysisSummary, DEFAULT_PAGE_SIZE, type PageQuery } from '@offerleap/shared';
 import { useFormatter, useTranslations } from 'next-intl';
 
 import { Badge, Skeleton, Spinner, Text } from '@/components/atoms';
 import { Alert, ScoreGauge } from '@/components/molecules';
 import { Link } from '@/i18n/navigation';
+import { ListPagination } from '@/features/pagination/ListPagination';
+import { usePageParams } from '@/features/pagination/use-page-params';
 import { useErrorText } from '@/lib/api/use-error-text';
 
 import { useAnalyses } from '../api/use-analyses';
 import { scoreBand } from './match';
 
 /**
- * @description Past analyses as links to their result, newest first.
- * @param props.limit - Show only the latest N (e.g. on the dashboard).
+ * @description Past analyses as links to their result, newest first: paginated (page and size in the URL), or just
+ * the latest few.
+ * @param props.limit - Show only the latest N, without paging (the dashboard).
  */
 export function AnalysisHistory({ limit }: { limit?: number }) {
+  return limit ? (
+    <HistoryPage query={{ page: 1, pageSize: DEFAULT_PAGE_SIZE }} limit={limit} />
+  ) : (
+    <PagedHistory />
+  );
+}
+
+function PagedHistory() {
+  const { page, pageSize, setPage, setPageSize } = usePageParams();
+  return <HistoryPage query={{ page, pageSize }} onPageChange={setPage} onPageSizeChange={setPageSize} />;
+}
+
+function HistoryPage({
+  query,
+  limit,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  query: PageQuery;
+  limit?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+}) {
   const t = useTranslations('analyses');
   const errorText = useErrorText();
-  const { data, error, isPending } = useAnalyses();
+  const { data, error, isPending, isPlaceholderData } = useAnalyses(query);
 
   if (error) return <Alert tone="danger">{errorText(error)}</Alert>;
   if (isPending) {
@@ -29,16 +55,26 @@ export function AnalysisHistory({ limit }: { limit?: number }) {
       </div>
     );
   }
-  if (data.length === 0) return <Text tone="muted">{t('history.empty')}</Text>;
+  if (data.total === 0) return <Text tone="muted">{t('history.empty')}</Text>;
 
   return (
-    <ul className="flex flex-col gap-3">
-      {data.slice(0, limit).map((analysis) => (
-        <li key={analysis.id}>
-          <HistoryItem analysis={analysis} />
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-4">
+      <ul aria-busy={isPlaceholderData} className="flex flex-col gap-3">
+        {data.items.slice(0, limit).map((analysis) => (
+          <li key={analysis.id}>
+            <HistoryItem analysis={analysis} />
+          </li>
+        ))}
+      </ul>
+      {onPageChange && onPageSizeChange && (
+        <ListPagination
+          data={data}
+          label={t('history.pages')}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
+    </div>
   );
 }
 

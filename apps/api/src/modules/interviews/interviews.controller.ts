@@ -8,6 +8,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -19,6 +20,9 @@ import {
   ErrorCode,
   type InterviewDetail,
   type InterviewListItem,
+  type PageQuery,
+  pageQuerySchema,
+  type Paginated,
 } from '@offerleap/shared';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators';
@@ -48,10 +52,17 @@ export class InterviewsController {
     return this.interviews.create(user.sub, body);
   }
 
-  @ApiOperation({ summary: 'Your mock interviews, newest first' })
+  @ApiOperation({
+    summary: 'Your mock interviews, newest first',
+    description: '`?page=&pageSize=` (10, 50 or 100).',
+  })
+  @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED)
   @Get()
-  list(@CurrentUser() user: AccessTokenPayload): Promise<InterviewListItem[]> {
-    return this.interviews.list(user.sub);
+  list(
+    @CurrentUser() user: AccessTokenPayload,
+    @Query(new ZodValidationPipe(pageQuerySchema)) query: PageQuery,
+  ): Promise<Paginated<InterviewListItem>> {
+    return this.interviews.list(user.sub, query);
   }
 
   @ApiOperation({ summary: 'Questions, answers, feedback and summary of one interview' })

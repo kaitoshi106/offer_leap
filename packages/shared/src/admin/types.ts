@@ -3,14 +3,6 @@ import type { AdminLevel, Role } from '../auth/roles';
 import type { CareerLevel } from '../profile/constants';
 import type { InvitationStatus, UserStatus } from './constants';
 
-/** One page of a list. */
-export interface Paginated<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
 export interface AdminUserListItem {
   id: string;
   email: string;

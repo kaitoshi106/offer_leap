@@ -1,18 +1,14 @@
 'use client';
 
-import {
-  type AdminUsersQueryInput,
-  DEFAULT_PAGE_SIZE,
-  PAGE_SIZES,
-  Role,
-  USER_STATUSES,
-} from '@offerleap/shared';
+import { type AdminUsersQueryInput, DEFAULT_PAGE_SIZE, Role, USER_STATUSES } from '@offerleap/shared';
 import { useSearchParams } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { Avatar, Badge, Input, Select, Skeleton, Text } from '@/components/atoms';
-import { Alert, Pagination } from '@/components/molecules';
+import { Alert } from '@/components/molecules';
+import { ListPagination } from '@/features/pagination/ListPagination';
+import { toPageSize } from '@/features/pagination/use-page-params';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useErrorText } from '@/lib/api/use-error-text';
 
@@ -21,10 +17,6 @@ import { roleKey, STATUS_TONE } from './labels';
 import { SignInMethods } from './SignInMethods';
 
 const SEARCH_DELAY_MS = 300;
-
-/** A size from the URL, or the default when it is missing or not one we offer (an old or hand-edited link). */
-const toPageSize = (value: string | null) =>
-  PAGE_SIZES.find((size) => String(size) === value) ?? DEFAULT_PAGE_SIZE;
 
 /**
  * @description Paginated, searchable list of accounts. Filters, page and page size live in the URL
@@ -69,8 +61,6 @@ export function AdminUsersView() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to the typed text
   }, [search]);
-
-  const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
     <div className="flex flex-col gap-4">
@@ -192,29 +182,13 @@ export function AdminUsersView() {
                 </table>
               </div>
             )}
-            <Pagination
-              page={data.page}
-              pages={pages}
-              onChange={(page) => update({ page: String(page) })}
-              labels={{
-                nav: t('users.title'),
-                previous: t('users.previous'),
-                next: t('users.next'),
-                status: t('users.page', { page: data.page, pages }),
-              }}
-              // Worth offering only when the list doesn't fit in the smallest page.
-              pageSize={
-                data.total > PAGE_SIZES[0]
-                  ? {
-                      value: data.pageSize,
-                      options: PAGE_SIZES,
-                      // The default size stays out of the URL.
-                      onChange: (size) =>
-                        update({ pageSize: size === DEFAULT_PAGE_SIZE ? undefined : String(size) }),
-                      label: t('users.pageSize'),
-                      optionLabel: (size) => t('users.pageSizeOption', { size }),
-                    }
-                  : undefined
+            <ListPagination
+              data={data}
+              label={t('users.title')}
+              onPageChange={(page) => update({ page: String(page) })}
+              // The default size stays out of the URL.
+              onPageSizeChange={(size) =>
+                update({ pageSize: size === DEFAULT_PAGE_SIZE ? undefined : String(size) })
               }
             />
           </>

@@ -1,9 +1,16 @@
-import type { CreateInterviewInput, InterviewDetail, InterviewListItem } from '@offerleap/shared';
+import type {
+  CreateInterviewInput,
+  InterviewDetail,
+  InterviewListItem,
+  Paginated,
+  PageQuery,
+} from '@offerleap/shared';
 
 import { apiRequest } from '@/lib/api/client';
 
 export const interviewsApi = {
-  list: (signal?: AbortSignal) => apiRequest<InterviewListItem[]>('/interviews', { signal }),
+  list: ({ page, pageSize }: PageQuery, signal?: AbortSignal) =>
+    apiRequest<Paginated<InterviewListItem>>(`/interviews?page=${page}&pageSize=${pageSize}`, { signal }),
   get: (id: string, signal?: AbortSignal) => apiRequest<InterviewDetail>(`/interviews/${id}`, { signal }),
   create: (body: CreateInterviewInput) =>
     apiRequest<InterviewDetail>('/interviews', { method: 'POST', body }),
