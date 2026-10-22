@@ -195,7 +195,14 @@
     "profile": "Hồ sơ",
     "admin": "Quản trị",
     "settings": "Cài đặt tài khoản",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "menu": {
+      "open": "Mở menu",
+      "close": "Đóng menu",
+      "title": "Menu",
+      "language": "Ngôn ngữ",
+      "theme": "Giao diện"
+    }
   },
   "dashboard": {
     "title": "Tổng quan",

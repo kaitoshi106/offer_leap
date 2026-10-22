@@ -195,7 +195,14 @@
     "profile": "Profile",
     "admin": "Admin",
     "settings": "Account settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "menu": {
+      "open": "Open menu",
+      "close": "Close menu",
+      "title": "Menu",
+      "language": "Language",
+      "theme": "Appearance"
+    }
   },
   "dashboard": {
     "title": "Overview",

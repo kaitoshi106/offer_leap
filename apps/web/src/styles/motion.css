@@ -9,6 +9,13 @@
   --animate-fill: fill 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   /* A dragged card being picked up: grows and tilts slightly, then stays like that. */
   --animate-lift: lift 150ms ease-out both;
+  /* The phone menu: slides in from its side, and back out a little faster; the backdrop fades with it. */
+  --animate-drawer-in-left: drawer-in-left 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-drawer-in-right: drawer-in-right 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-drawer-out-left: drawer-out-left 250ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  --animate-drawer-out-right: drawer-out-right 250ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-fade-out: fade-out 250ms ease-in forwards;
 
   @keyframes gradient-pan {
     from {
@@ -59,6 +66,42 @@
     to {
       scale: 1.03;
       rotate: 2deg;
+    }
+  }
+
+  @keyframes drawer-in-left {
+    from {
+      translate: -100% 0;
+    }
+  }
+
+  @keyframes drawer-in-right {
+    from {
+      translate: 100% 0;
+    }
+  }
+
+  @keyframes drawer-out-left {
+    to {
+      translate: -100% 0;
+    }
+  }
+
+  @keyframes drawer-out-right {
+    to {
+      translate: 100% 0;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
     }
   }
 }

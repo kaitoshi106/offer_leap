@@ -139,3 +139,35 @@ export async function expectAccessible(page: Page, label: string): Promise<void>
   // Soft: one run reports every page that fails, not just the first.
   expect.soft(report, `accessibility violations on ${label}`).toEqual([]);
 }
+
+/**
+ * @description Fails (softly) when the page is wider than the viewport — the usual sign of a layout that breaks
+ * on phones — naming the elements that stick out. Content inside a sideways-scrolling container (the kanban
+ * board, wide tables) is intended and ignored.
+ * @param page - Page to check, at the viewport size under test.
+ * @param label - What is being checked, shown in the failure message.
+ */
+export async function expectNoHorizontalOverflow(page: Page, label: string): Promise<void> {
+  const offenders = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    if (document.documentElement.scrollWidth <= width) return [];
+    const scrollsSideways = (element: HTMLElement | null): boolean => {
+      for (let node = element; node; node = node.parentElement) {
+        if (/(auto|scroll)/.test(getComputedStyle(node).overflowX) && node.scrollWidth > node.clientWidth)
+          return true;
+      }
+      return false;
+    };
+    return Array.from(document.querySelectorAll<HTMLElement>('body *'))
+      .filter(
+        (element) =>
+          element.getBoundingClientRect().right > width + 1 && !scrollsSideways(element.parentElement),
+      )
+      .slice(0, 5)
+      .map(
+        (element) =>
+          `${element.tagName.toLowerCase()}.${String(element.className).split(' ').slice(0, 3).join('.')}`,
+      );
+  });
+  expect.soft(offenders, `horizontal overflow on ${label}`).toEqual([]);
+}

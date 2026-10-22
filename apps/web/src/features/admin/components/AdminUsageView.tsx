@@ -122,13 +122,19 @@ function Usage({ stats }: { stats: AiUsageStats }) {
         </Text>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card title={t('byTask')}>
           {stats.byTask.length === 0 ? (
             <Text tone="muted">{t('noData')}</Text>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            // Scrolls sideways on phones; focusable and named so keyboard users can scroll it too.
+            <div
+              tabIndex={0}
+              role="region"
+              aria-label={t('byTask')}
+              className="overflow-x-auto rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+            >
+              <table className="w-full min-w-[26rem] text-left text-sm">
                 <thead className="text-xs text-fg-muted uppercase">
                   <tr>
                     <th scope="col" className="py-2 font-medium">

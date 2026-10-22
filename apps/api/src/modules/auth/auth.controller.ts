@@ -25,6 +25,7 @@ import {
   ErrorCode,
   emailOnlySchema,
   isLocale,
+  onboardingFlag,
   type Locale,
   type LoginInput,
   loginSchema,
@@ -43,7 +44,12 @@ import { type AccessTokenPayload, type AppRequest, clientInfo } from '../../comm
 import { ApiErrors, ApiZodBody, ApiZodResponse } from '../../common/openapi/openapi.decorators';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import type { Env } from '../../config/env.schema';
-import { clearSessionCookies, REFRESH_TOKEN_COOKIE, setSessionCookies } from './auth.cookies';
+import {
+  clearSessionCookies,
+  REFRESH_TOKEN_COOKIE,
+  setOnboardingFlagCookie,
+  setSessionCookies,
+} from './auth.cookies';
 import { AdminInvitationsService } from './admin-invitations.service';
 import { AuthService, type SessionResult } from './auth.service';
 
@@ -69,6 +75,7 @@ function requestLocale(request: AppRequest): Locale {
 @Controller('auth')
 export class AuthController {
   private readonly secureCookies: boolean;
+  private readonly sessionDays: number;
 
   constructor(
     private readonly auth: AuthService,
@@ -76,6 +83,7 @@ export class AuthController {
     config: ConfigService<Env, true>,
   ) {
     this.secureCookies = config.get('NODE_ENV', { infer: true }) === 'production';
+    this.sessionDays = config.get('REFRESH_TOKEN_TTL_DAYS', { infer: true });
   }
 
   @Public()
@@ -193,8 +201,16 @@ export class AuthController {
   @ApiZodResponse(200, authUserSchema, 'The signed-in user.')
   @ApiErrors(ErrorCode.AUTH_UNAUTHENTICATED, ErrorCode.AUTH_TOKEN_EXPIRED)
   @Get('me')
-  me(@CurrentUser() user: AccessTokenPayload): Promise<AuthUser> {
-    return this.auth.me(user.sub);
+  async me(
+    @CurrentUser() user: AccessTokenPayload,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthUser> {
+    const me = await this.auth.me(user.sub);
+    // Every app page asks for /me first: keeping the proxy's onboarding flag right here means sessions started
+    // before the flag existed (or a stale flag) are corrected on the first page, not at the next token refresh.
+    const expires = new Date(Date.now() + this.sessionDays * 24 * 60 * 60 * 1000);
+    setOnboardingFlagCookie(response, onboardingFlag(me), this.secureCookies, expires);
+    return me;
   }
 
   @Public()
@@ -305,7 +321,7 @@ export class AuthController {
   }
 
   private respondWithSession({ user, tokens }: SessionResult, response: Response): AuthSession {
-    setSessionCookies(response, tokens, this.secureCookies);
+    setSessionCookies(response, tokens, this.secureCookies, onboardingFlag(user));
     return { user, accessTokenExpiresAt: tokens.accessTokenExpiresAt.toISOString() };
   }
 }

@@ -74,7 +74,7 @@ function CreateForm({ onClose, onCreated, defaults }: ApplicationFormDialogProps
   return (
     <form noValidate onSubmit={form.handleSubmit(submit)} className="flex flex-col gap-4">
       {generalError && <Alert tone="danger">{errorText(create.error)}</Alert>}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label={t('form.company')} error={fieldError(errors.company)} required>
           {(field) => <Input {...field} {...form.register('company')} autoComplete="organization" />}
         </FormField>

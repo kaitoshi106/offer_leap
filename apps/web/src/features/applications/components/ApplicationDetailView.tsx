@@ -52,7 +52,7 @@ export function ApplicationDetailView({ id }: { id: string }) {
       {application && (
         <>
           <Header application={application} />
-          <div className="grid items-start gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             {/* Remount when the saved data changes so the form starts from it. */}
             <DetailsForm key={application.updatedAt} application={application} />
             <CoverLetterPanel key={application.id} application={application} />
@@ -205,7 +205,7 @@ function DetailsForm({ application }: { application: ApplicationDetail }) {
       {update.error && !(isApiError(update.error) && update.error.fieldErrors.length > 0) && (
         <Alert tone="danger">{errorText(update.error)}</Alert>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label={t('form.company')} error={fieldError(errors.company)} required>
           {(field) => <Input {...field} {...form.register('company')} />}
         </FormField>

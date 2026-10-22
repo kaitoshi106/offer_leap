@@ -3,7 +3,14 @@ import path from 'node:path';
 
 import type { Page } from '@playwright/test';
 
-import { completeOnboarding, expect, expectAccessible, registerAndVerify, test } from './support';
+import {
+  completeOnboarding,
+  expect,
+  expectAccessible,
+  expectNoHorizontalOverflow,
+  registerAndVerify,
+  test,
+} from './support';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 4000}/api/v1`;
 const ROOT_EMAIL = process.env.E2E_ROOT_EMAIL;
@@ -12,9 +19,13 @@ const CV = path.join(__dirname, 'fixtures', 'CV Nguyễn Văn An.pdf');
 const JD = `Acme Tech tuyển Senior Frontend Engineer làm sản phẩm thương mại điện tử.
 Yêu cầu: 5+ năm React và TypeScript, kinh nghiệm GraphQL, kiểm thử tự động với Playwright, làm việc nhóm tốt.`;
 
+const DESKTOP = { width: 1280, height: 720 };
+/** The narrowest phones in use (320px): if a page fits there, it fits wider phones too. */
+const PHONE = { width: 320, height: 700 };
+
 /**
  * @description Opens a page in light and dark mode (the app follows the OS theme until one is chosen) and scans
- * each with axe once its content has loaded.
+ * each with axe once its content has loaded; then once more at phone width, where it must not overflow sideways.
  */
 async function scan(page: Page, url: string, label: string) {
   for (const colorScheme of ['light', 'dark'] as const) {
@@ -23,6 +34,13 @@ async function scan(page: Page, url: string, label: string) {
     await page.waitForLoadState('networkidle');
     await expectAccessible(page, `${label} · ${colorScheme}`);
   }
+  await page.setViewportSize(PHONE);
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto(url);
+  await page.waitForLoadState('networkidle');
+  await expectNoHorizontalOverflow(page, `${label} · phone`);
+  await expectAccessible(page, `${label} · phone`);
+  await page.setViewportSize(DESKTOP);
 }
 
 test.describe('accessibility (axe, WCAG 2.2 AA)', () => {
@@ -100,6 +118,18 @@ test.describe('accessibility (axe, WCAG 2.2 AA)', () => {
     ] as const) {
       await scan(page, url, label);
     }
+    // The phone menu, open, in both themes.
+    await page.setViewportSize(PHONE);
+    for (const colorScheme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme });
+      await page.goto('/vi/dashboard');
+      await page.getByRole('button', { name: 'Mở menu' }).click();
+      await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible();
+      await expectAccessible(page, `phone menu · ${colorScheme}`);
+    }
+    await page.setViewportSize(DESKTOP);
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/vi/settings');
     await page.getByRole('button', { name: 'Xoá tài khoản' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Xoá vĩnh viễn' }).click();
     await expect(page.getByRole('dialog').getByText('Vui lòng nhập thông tin này.')).toBeVisible();

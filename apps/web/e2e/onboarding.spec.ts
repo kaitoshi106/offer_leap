@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { expect, registerAndVerify, test } from './support';
+import { completeOnboarding, expect, registerAndVerify, test } from './support';
 
 test.describe('onboarding', () => {
   test('is required, validates each step, resumes after a reload and unlocks the dashboard', async ({
@@ -122,5 +122,42 @@ test.describe('onboarding', () => {
     await page.getByRole('button', { name: 'Quay lại' }).click();
     await page.getByRole('button', { name: 'Quay lại' }).click();
     await expect(page.getByText('Đã đọc xong CV Nguyễn Văn An.pdf')).toBeVisible();
+  });
+});
+
+test.describe('onboarding redirects happen on the server', () => {
+  test('unfinished accounts are sent to onboarding and finished ones away from it, before any page renders', async ({
+    page,
+  }) => {
+    await registerAndVerify(page, 'Minh Redirect');
+    // Not followed: the answer itself must be the redirect (no page rendered first, then moved by the client).
+    const visit = (path: string) => page.request.get(path, { maxRedirects: 0 });
+
+    const early = await visit('/vi/dashboard');
+    expect(early.status()).toBe(307);
+    expect(early.headers().location).toMatch(/\/vi\/onboarding$/);
+
+    await completeOnboarding(page);
+    const late = await visit('/vi/onboarding');
+    expect(late.status()).toBe(307);
+    expect(late.headers().location).toMatch(/\/vi\/dashboard$/);
+    expect((await visit('/vi/dashboard')).status()).toBe(200);
+  });
+
+  test('a session from before the flag existed gets it on its first page', async ({ page, context }) => {
+    await registerAndVerify(page, 'Minh Old Session');
+    await completeOnboarding(page);
+    // As if the session had been started before the flag cookie existed.
+    await context.clearCookies({ name: 'ol_onboarding' });
+    const visit = (path: string) => page.request.get(path, { maxRedirects: 0 });
+    expect((await visit('/vi/onboarding')).status()).toBe(200); // unknown: the page decides
+
+    // Any app page asks the API for /auth/me, which sets the flag again…
+    await page.goto('/vi/dashboard');
+    await page.waitForLoadState('networkidle');
+    // …so from now on the server redirects before rendering.
+    const after = await visit('/vi/onboarding');
+    expect(after.status()).toBe(307);
+    expect(after.headers().location).toMatch(/\/vi\/dashboard$/);
   });
 });

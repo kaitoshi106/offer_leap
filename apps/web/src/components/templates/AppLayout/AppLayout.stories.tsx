@@ -44,6 +44,12 @@ export const Default: Story = {
             {copy.signOut}
           </Button>
         }
+        menuLabels={copy.menu}
+        menuFooter={
+          <Button variant="outline" fullWidth>
+            {copy.signOut}
+          </Button>
+        }
       >
         <Heading level={1} size="lg">
           {copy.title}
@@ -54,4 +60,10 @@ export const Default: Story = {
       </AppLayout>
     );
   },
+};
+
+/** Phone width: the header shrinks to ☰ and the brand; the menu opens as a drawer. */
+export const Phone: Story = {
+  ...Default,
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
 };

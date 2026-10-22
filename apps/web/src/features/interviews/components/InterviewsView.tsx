@@ -19,7 +19,7 @@ export function InterviewsView() {
         </Heading>
         <Text tone="muted">{t('description')}</Text>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <section
           aria-labelledby="new-interview"
           className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-6 shadow-card"

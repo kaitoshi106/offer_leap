@@ -42,8 +42,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <Heading level={1} size="lg">
               {t('title')}
             </Heading>
-            <nav aria-label={t('tabs.label')}>
-              <ul className="flex gap-1">
+            <nav aria-label={t('tabs.label')} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+              <ul className="flex w-max gap-1">
                 {tabs.map(({ href, label, exact }) => {
                   const active = pathname === href || (!exact && pathname.startsWith(`${href}/`));
                   return (

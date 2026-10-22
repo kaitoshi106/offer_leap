@@ -95,3 +95,81 @@ test.describe('applications', () => {
     await expect(page.getByRole('button', { name: 'Viết bằng AI' })).toBeEnabled();
   });
 });
+
+test.describe('applications on a touch screen', () => {
+  test('drags from the handle at once; on the card body a swipe scrolls and a hold picks it up', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 812 },
+      hasTouch: true,
+      isMobile: true,
+    });
+    const page = await context.newPage();
+    await registerAndVerify(page, 'Minh Touch');
+    await completeOnboarding(page);
+    for (const [company, jobTitle] of [
+      ['Acme', 'Frontend Engineer'],
+      ['Globex', 'React Developer'],
+    ]) {
+      await page.request.post(`http://localhost:${process.env.E2E_API_PORT ?? 4000}/api/v1/applications`, {
+        data: { company, jobTitle },
+      });
+    }
+    // Real touch events (as on a phone), not mouse events.
+    const cdp = await context.newCDPSession(page);
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x = 0, y = 0) =>
+      cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+    const saved = page.getByRole('region', { name: /Đã lưu/ });
+    const titles = () => saved.getByRole('link').allTextContents();
+
+    /** Drags the Acme card (second) up onto Globex (first), starting at `from` inside the card. */
+    async function dragAcmeUp(from: 'handle' | 'body', holdMs: number) {
+      const card = saved.getByRole('listitem').filter({ hasText: 'Acme' });
+      const start = (await (
+        from === 'handle' ? card.locator('[data-drag-handle]') : card.getByRole('link')
+      ).boundingBox())!;
+      const target = (await saved.getByRole('listitem').filter({ hasText: 'Globex' }).boundingBox())!;
+      const [x, y] = [start.x + start.width / 2, start.y + start.height / 2];
+      await touch('touchStart', x, y);
+      if (holdMs) await page.waitForTimeout(holdMs);
+      for (let step = 1; step <= 10; step += 1) {
+        await touch('touchMove', x, y + ((target.y + 8 - y) * step) / 10);
+        await page.waitForTimeout(16);
+      }
+      await touch('touchEnd');
+    }
+
+    await page.goto('/vi/applications');
+    await expect.poll(titles).toEqual(['React Developer', 'Frontend Engineer']);
+
+    // A quick swipe on the card body scrolls; nothing moves.
+    await dragAcmeUp('body', 0);
+    await page.waitForTimeout(300);
+    expect(await titles()).toEqual(['React Developer', 'Frontend Engineer']);
+
+    // From the handle the drag starts at once.
+    await dragAcmeUp('handle', 0);
+    await expect.poll(titles).toEqual(['Frontend Engineer', 'React Developer']);
+    await expect(page).toHaveURL(/\/vi\/applications$/);
+
+    // On the card body, resting the finger first picks the card up.
+    await page.reload();
+    const globex = saved.getByRole('listitem').filter({ hasText: 'Globex' });
+    const acme = saved.getByRole('listitem').filter({ hasText: 'Acme' });
+    await expect(acme).toBeVisible();
+    // Globex is now second: drag it back up by holding on its body.
+    const start = (await globex.getByRole('link').boundingBox())!;
+    const target = (await acme.boundingBox())!;
+    const [x, y] = [start.x + start.width / 2, start.y + start.height / 2];
+    await touch('touchStart', x, y);
+    await page.waitForTimeout(350);
+    for (let step = 1; step <= 10; step += 1) {
+      await touch('touchMove', x, y + ((target.y + 8 - y) * step) / 10);
+      await page.waitForTimeout(16);
+    }
+    await touch('touchEnd');
+    await expect.poll(titles).toEqual(['React Developer', 'Frontend Engineer']);
+    await context.close();
+  });
+});

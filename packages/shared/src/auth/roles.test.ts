@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { onboardingFlag } from './cookies';
 import { AdminLevel, canInviteAdmins, canManageOwnPassword, isRootAdmin, Role } from './roles';
 
 const user = { role: Role.USER, adminLevel: null };
@@ -23,5 +24,13 @@ describe('admin capabilities', () => {
     expect(canInviteAdmins(root)).toBe(true);
     expect(canInviteAdmins(general)).toBe(false);
     expect(canInviteAdmins(user)).toBe(false);
+  });
+});
+
+describe('onboardingFlag', () => {
+  it('is pending only for users who have not finished onboarding', () => {
+    expect(onboardingFlag({ role: 'USER', onboardingCompleted: false })).toBe('pending');
+    expect(onboardingFlag({ role: 'USER', onboardingCompleted: true })).toBe('done');
+    expect(onboardingFlag({ role: 'ADMIN', onboardingCompleted: false })).toBe('done');
   });
 });

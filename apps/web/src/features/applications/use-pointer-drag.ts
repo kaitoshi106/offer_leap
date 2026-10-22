@@ -70,7 +70,8 @@ interface Gesture {
  * - a full copy of the card follows the pointer (rendered by the caller at `overlayRef`, positioned here
  *   without re-rendering React on every move);
  * - the drop target comes from what is under the pointer (`[data-drag-id]` cards, `[data-drop-column]` columns);
- * - works with mouse, pen and touch (hold briefly to pick up), scrolls near edges, Escape cancels, and the click
+ * - works with mouse, pen and touch (from a `[data-drag-handle]` at once, elsewhere after a short hold), scrolls
+ *   near edges, Escape cancels, and the click
  *   that ends a drag doesn't open the card's link.
  * Keyboard and screen-reader users have another way to move cards (the column select); this is pointer-only.
  */
@@ -260,7 +261,15 @@ export function usePointerDrag<TColumn extends string>({
           height: rect.height,
           active: false,
         };
-        if (event.pointerType === 'touch') gesture.current.touchTimer = setTimeout(activate, TOUCH_DELAY);
+        if (event.pointerType !== 'touch') return;
+        // A touch on the card's handle (`[data-drag-handle]`, touch-action: none) drags at once; anywhere else on
+        // the card the finger has to rest first, so a swipe still scrolls the page.
+        if ((event.target as HTMLElement).closest('[data-drag-handle]')) activate();
+        else gesture.current.touchTimer = setTimeout(activate, TOUCH_DELAY);
+      },
+      // Long-pressing the card's link would open the browser's link menu (and cancel the drag on some phones).
+      onContextMenu(event: ReactMouseEvent) {
+        if (gesture.current?.pointerType === 'touch') event.preventDefault();
       },
       onClickCapture(event: ReactMouseEvent) {
         if (!suppressClick.current) return;

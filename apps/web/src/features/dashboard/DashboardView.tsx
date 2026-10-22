@@ -24,22 +24,26 @@ export function DashboardView() {
               {t('greeting', { name: user.fullName })}
             </Heading>
           ) : (
-            <Skeleton className="h-8 w-1/2" />
+            // About as long as the greeting it stands for (it fills most of a phone, a quarter of a desktop).
+            <Skeleton className="h-8 w-1/2 sm:w-1/4" />
           )}
           <Text tone="muted">{t('subtitle')}</Text>
         </div>
 
-        {quota && (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
-            <span className="font-medium text-fg">{t('quota')}</span>
-            <span className="font-semibold text-primary-text tabular-nums">
+        {/* Drawn right away with its fixed text; only the number waits for the API, so the page below doesn't move. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
+          <span className="font-medium text-fg">{t('quota')}</span>
+          {quota ? (
+            <span className="min-w-12 font-semibold text-primary-text tabular-nums">
               {quota.limit === null
                 ? t('quotaUnlimited')
                 : t('quotaValue', { used: quota.used, limit: quota.limit })}
             </span>
-            <span className="text-xs text-fg-muted">{t('quotaHint')}</span>
-          </div>
-        )}
+          ) : (
+            <Skeleton className="h-5 w-12" />
+          )}
+          <span className="text-xs text-fg-muted">{t('quotaHint')}</span>
+        </div>
 
         <section className="flex flex-col gap-4 rounded-xl border border-border bg-linear-to-br from-primary-soft to-ai-soft p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">

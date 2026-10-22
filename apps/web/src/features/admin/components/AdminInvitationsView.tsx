@@ -33,7 +33,7 @@ export function AdminInvitationsView() {
   const { data, error, isPending } = useInvitations();
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[2fr_3fr]">
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <section
         aria-labelledby="invite-admin"
         className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-card"

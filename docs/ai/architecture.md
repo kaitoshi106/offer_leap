@@ -69,6 +69,11 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
   rotated token more than 15 s later (theft, not a multi-tab race) revokes the whole family.
 - **Session flag**: `ol_session=1` (path `/`, no secret) lives as long as the refresh token so the web proxy can
   redirect signed-out visitors; the API never trusts it.
+- **Onboarding flag**: `ol_onboarding=pending|done` (same lifetime, no secret; `onboardingFlag()` in shared) is set
+  with every session, refreshed by `GET /auth/me` (so older sessions get it on their first page) and switched to
+  `done` when onboarding is finished. The web proxy uses it to send unfinished
+  accounts to `/onboarding` and finished ones away from it before rendering; without it (older sessions) the page
+  decides, as before. The API still enforces onboarding itself (`ProfileCompletedGuard`).
 - **Cookies**: `SameSite=Lax` (CSRF), `Secure` in production. Web and API must be same-site (e.g. `app.` / `api.`
   subdomains) in production.
 - **Welcome email**: sent once the account is ready — after the email is verified (the link is single-use), or

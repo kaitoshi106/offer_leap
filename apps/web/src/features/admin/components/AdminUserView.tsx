@@ -51,16 +51,17 @@ function UserDetail({ user }: { user: AdminUserDetail }) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+        {/* min-w-0 + wrap-anywhere: a long email wraps instead of widening the page on small phones. */}
+        <div className="flex min-w-0 items-center gap-4">
           <Avatar name={user.fullName} size="lg" />
-          <div className="flex flex-col gap-1">
-            <Heading level={2} size="md">
+          <div className="flex min-w-0 flex-col gap-1">
+            <Heading level={2} size="md" className="wrap-anywhere">
               {user.fullName}
             </Heading>
-            <Text tone="muted" size="sm">
+            <Text tone="muted" size="sm" className="wrap-anywhere">
               {user.email}
             </Text>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Badge tone="primary">{t(`roles.${roleKey(user.role, user.adminLevel)}`)}</Badge>
               <Badge tone={STATUS_TONE[user.status]}>{t(`statuses.${user.status}`)}</Badge>
             </div>
@@ -69,7 +70,7 @@ function UserDetail({ user }: { user: AdminUserDetail }) {
         <StatusAction user={user} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card title={t('user.account')}>
           <Facts
             items={[
@@ -132,7 +133,7 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 
 function Facts({ items }: { items: [string, ReactNode][] }) {
   return (
-    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2 text-sm [&_dd]:wrap-anywhere">
       {items.map(([label, value]) => (
         <div key={label} className="contents">
           <dt className="text-fg-muted">{label}</dt>

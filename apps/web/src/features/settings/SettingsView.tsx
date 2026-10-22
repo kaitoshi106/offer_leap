@@ -39,12 +39,14 @@ export function SettingsView() {
   const tAdmin = useTranslations('admin');
   const tErrors = useTranslations('errors');
   const { data: user, isPending } = useCurrentUser();
-  const { data: providers } = useAuthProviders();
-  const { data: methods } = useSignInMethods();
+  const { data: providers, isPending: providersPending } = useAuthProviders();
+  const { data: methods, isPending: methodsPending } = useSignInMethods();
   const redirectError = useGoogleRedirectResult();
 
-  if (isPending || !user) return <Skeleton className="h-96 w-full" />;
-  // Until the methods load, assume a password (the common case) rather than flashing the Google-only variants.
+  // Wait for everything that decides which sections exist, then render once: a section appearing later (Google)
+  // would push the others down.
+  if (isPending || !user || providersPending || methodsPending) return <Skeleton className="h-96 w-full" />;
+  // If the methods failed to load, assume a password (the common case) rather than the Google-only variants.
   const hasPassword = methods?.hasPassword ?? true;
 
   return (
@@ -56,7 +58,7 @@ export function SettingsView() {
       <Section title={t('account')}>
         <div className="flex items-center gap-4">
           <Avatar name={user.fullName} size="lg" />
-          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
+          <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 text-sm [&_dd]:wrap-anywhere">
             <dt className="text-fg-muted">{t('name')}</dt>
             <dd>{user.fullName}</dd>
             <dt className="text-fg-muted">{t('email')}</dt>

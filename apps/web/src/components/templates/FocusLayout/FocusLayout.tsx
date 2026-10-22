@@ -26,10 +26,11 @@ export function FocusLayout({ children, actions, width = 'lg' }: FocusLayoutProp
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:px-6">
           <span className="flex items-center gap-2 font-bold">
             <Icon name="sparkles" className="text-primary-text" />
-            {APP_NAME}
+            {/* The smallest phones (320px) have no room for the name next to the controls: icon only there. */}
+            <span className="max-[379px]:sr-only">{APP_NAME}</span>
           </span>
           <div className="flex items-center gap-2">
             <LocaleSwitcher />

@@ -21,4 +21,22 @@ describe('decideRouteAccess', () => {
     expect(decideRouteAccess('/verify-email', '?token=x', true)).toBeNull();
     expect(decideRouteAccess('/dashboards-are-not-dashboard', '', false)).toBeNull();
   });
+
+  it('keeps finished accounts out of onboarding and unfinished ones in it, before anything renders', () => {
+    expect(decideRouteAccess('/onboarding', '', true, 'done')).toEqual({ redirect: '/dashboard' });
+    expect(decideRouteAccess('/dashboard', '', true, 'pending')).toEqual({ redirect: '/onboarding' });
+    expect(decideRouteAccess('/settings', '', true, 'pending')).toEqual({ redirect: '/onboarding' });
+    expect(decideRouteAccess('/onboarding', '', true, 'pending')).toBeNull();
+    expect(decideRouteAccess('/dashboard', '', true, 'done')).toBeNull();
+    // Public pages are not affected.
+    expect(decideRouteAccess('/', '', true, 'pending')).toBeNull();
+  });
+
+  it('decides nothing about onboarding without the flag (sessions from before it existed) or a session', () => {
+    expect(decideRouteAccess('/onboarding', '', true)).toBeNull();
+    expect(decideRouteAccess('/dashboard', '', true)).toBeNull();
+    expect(decideRouteAccess('/onboarding', '', false, 'done')).toEqual({
+      redirect: '/login?next=%2Fonboarding',
+    });
+  });
 });

@@ -64,12 +64,13 @@ export function ProfileView() {
             <Section id="profile-preferences" title={tSteps('preferences')}>
               <PreferencesStep key={`w-${dataUpdatedAt}`} mode="profile" values={profile} onSaved={saved} />
             </Section>
+            {/* After the forms, not before them: rendered earlier it would jump down when they arrive. */}
+            <Section id="profile-cvs" title={t('cvs.title')} description={t('cvs.description')}>
+              <ResumeManager />
+            </Section>
           </>
         )
       )}
-      <Section id="profile-cvs" title={t('cvs.title')} description={t('cvs.description')}>
-        <ResumeManager />
-      </Section>
     </div>
   );
 }

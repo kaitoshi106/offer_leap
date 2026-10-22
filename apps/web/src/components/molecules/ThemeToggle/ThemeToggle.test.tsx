@@ -35,4 +35,11 @@ describe('ThemeToggle', () => {
     renderWithProviders(<ThemeToggle />, { locale: 'en' });
     expect(screen.getByRole('switch', { name: 'Dark mode' })).toBeChecked();
   });
+
+  it('takes its look from <html data-theme>, so it is right before React knows the theme', () => {
+    renderWithProviders(<ThemeToggle />);
+    const thumb = screen.getByRole('switch').firstElementChild!;
+    // Styled by the attribute the init script sets before the first paint, not by React state.
+    expect(thumb).toHaveClass('[[data-theme=dark]_&]:translate-x-6');
+  });
 });

@@ -27,10 +27,15 @@ export function Select({
   ...rest
 }: SelectProps) {
   return (
-    <span className={cn('relative block w-full', wrapperClassName)}>
+    // min-w-0: a native select is as wide as its longest option; let it shrink and cut the text instead.
+    <span className={cn('relative block w-full min-w-0', wrapperClassName)}>
       <select
         aria-invalid={invalid || undefined}
-        className={cn(fieldClasses, 'h-10 cursor-pointer appearance-none px-3 pr-10 text-sm', className)}
+        className={cn(
+          fieldClasses,
+          'h-10 min-w-0 cursor-pointer appearance-none truncate px-3 pr-10 text-sm',
+          className,
+        )}
         {...rest}
       >
         {placeholder !== undefined && (

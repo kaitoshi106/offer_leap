@@ -58,7 +58,16 @@ export function ApplicationCard({
           'before:absolute before:inset-x-0 before:-top-2 before:h-0.5 before:rounded-full before:bg-primary',
       )}
     >
-      <div className="flex flex-col gap-0.5">
+      {/* Drag handle: on touch screens dragging starts here at once (no hold), since `touch-none` keeps the
+          browser from treating the gesture as a scroll. Pointer-only: keyboards use the column select. */}
+      <span
+        data-drag-handle
+        aria-hidden
+        className="absolute top-2 right-2 z-1 flex size-8 touch-none items-center justify-center rounded-md text-fg-subtle hover:bg-surface-muted hover:text-fg"
+      >
+        <Icon name="grip-vertical" size="sm" />
+      </span>
+      <div className="flex flex-col gap-0.5 pr-8">
         <Link
           href={`/applications/${application.id}`}
           draggable={false}

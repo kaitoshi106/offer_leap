@@ -27,3 +27,21 @@ export function resolveTheme(stored: Theme | null, prefersDark: boolean): Theme 
  * the OS). Kept dependency-free and wrapped in try/catch because storage can be blocked.
  */
 export const themeInitScript = `(function(){try{var p=localStorage.getItem('${THEME_STORAGE_KEY}');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var t=p==='light'||p==='dark'?p:(d?'dark':'light');var e=document.documentElement;e.dataset.theme=t;e.style.colorScheme=t;}catch(_){}})();`;
+
+/**
+ * @description Puts the real current theme on `<html>`: the stored choice, else the OS preference. Read straight
+ * from localStorage and matchMedia rather than from React state, which during hydration still holds the
+ * server's guess (light) and would briefly repaint a dark page light.
+ */
+export function applyCurrentTheme(): void {
+  let stored: Theme | null = null;
+  try {
+    stored = parseStoredTheme(localStorage.getItem(THEME_STORAGE_KEY));
+  } catch {
+    // Storage blocked: follow the OS.
+  }
+  const theme = resolveTheme(stored, window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const root = document.documentElement;
+  if (root.dataset.theme !== theme) root.dataset.theme = theme;
+  if (root.style.colorScheme !== theme) root.style.colorScheme = theme;
+}

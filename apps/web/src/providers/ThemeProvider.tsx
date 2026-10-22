@@ -1,8 +1,21 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useSyncExternalStore,
+} from 'react';
 
-import { parseStoredTheme, resolveTheme, type Theme, THEME_STORAGE_KEY } from '@/lib/theme';
+import {
+  applyCurrentTheme,
+  parseStoredTheme,
+  resolveTheme,
+  type Theme,
+  THEME_STORAGE_KEY,
+} from '@/lib/theme';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -66,11 +79,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const prefersDark = useSyncExternalStore(subscribePrefersDark, readPrefersDark, serverPrefersDark);
   const theme = resolveTheme(stored, prefersDark);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.theme = theme;
-    root.style.colorScheme = theme;
-  }, [theme]);
+  // When the theme changes (the switch, the OS setting, another tab), put it on <html> before the next paint.
+  // `applyCurrentTheme` reads the real value, not `theme`: during hydration `theme` is still the server's guess.
+  // (Re-renders of the root layout, which wipe the attribute, are handled earlier by `ThemeScript`.)
+  useLayoutEffect(applyCurrentTheme, [theme]);
 
   const value = useMemo(
     () => ({

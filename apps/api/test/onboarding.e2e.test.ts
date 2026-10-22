@@ -160,11 +160,69 @@ describe('onboarding', () => {
       },
     });
     const admin = request.agent(ctx.app.getHttpServer());
-    await admin
+    const signedIn = await admin
       .post('/api/v1/auth/login')
       .send({ email: 'root@offerleap.local', password: 'root-password-123' })
       .expect(200);
+    // The web app's proxy never sends admins to onboarding.
+    expect(String(signedIn.headers['set-cookie'])).toMatch(/ol_onboarding=done;/);
 
     await admin.get('/api/v1/profile').expect(200);
+  });
+});
+
+describe("onboarding flag cookie (for the web app's proxy)", () => {
+  const flag = (response: request.Response) =>
+    ([] as string[])
+      .concat(response.headers['set-cookie'] ?? [])
+      .find((line) => line.startsWith('ol_onboarding='))
+      ?.split(';')[0];
+
+  it('says pending until onboarding is finished, done afterwards, and goes away on sign-out', async () => {
+    const agent = request.agent(ctx.app.getHttpServer());
+    await agent
+      .post('/api/v1/auth/register')
+      .send({ email: 'lan@example.com', password: 'leap2026', fullName: 'Lan' });
+    const verified = await agent
+      .post('/api/v1/auth/verify-email')
+      .send({ token: ctx.mail.lastToken('lan@example.com', 'verify-email') })
+      .expect(200);
+    expect(flag(verified)).toBe('ol_onboarding=pending');
+    expect(String(verified.headers['set-cookie'])).toMatch(
+      /ol_onboarding=pending; Path=\/; Expires=[^;]+; HttpOnly; SameSite=Lax/,
+    );
+
+    for (const body of [
+      { step: 'personal', values: { fullName: 'Lan', provinceCode: 'ha-noi' } },
+      {
+        step: 'career',
+        values: {
+          industryCode: 'software',
+          jobTitle: 'Frontend Developer',
+          level: 'JUNIOR',
+          yearsOfExperience: 1,
+          skills: ['React'],
+        },
+      },
+      { step: 'preferences', values: { workTypes: ['REMOTE'] } },
+    ]) {
+      await agent.put('/api/v1/onboarding/draft').send(body).expect(200);
+    }
+    const completed = await agent.post('/api/v1/onboarding/complete').expect(200);
+    expect(flag(completed)).toBe('ol_onboarding=done');
+
+    // Every new session carries the current value.
+    const relogin = await request(ctx.app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ email: 'lan@example.com', password: 'leap2026' })
+      .expect(200);
+    expect(flag(relogin)).toBe('ol_onboarding=done');
+
+    // A session from before the flag existed gets it on the first page (every page asks for /me).
+    const me = await agent.get('/api/v1/auth/me').expect(200);
+    expect(flag(me)).toBe('ol_onboarding=done');
+
+    const signedOut = await agent.post('/api/v1/auth/logout').expect(204);
+    expect(flag(signedOut)).toBe('ol_onboarding=');
   });
 });

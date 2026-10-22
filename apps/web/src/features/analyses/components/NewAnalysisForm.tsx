@@ -88,7 +88,15 @@ export function NewAnalysisForm() {
       {createError && <Alert tone="danger">{errorText(create.error)}</Alert>}
 
       {resumes.isPending ? (
-        <Skeleton className="h-16 w-full" />
+        // Same shape as the CV picker below (label, select, "upload another" button) so nothing moves.
+        <div aria-hidden className="flex flex-col gap-1.5">
+          <Skeleton className="h-5 w-44" />
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {/* flex-1 only side by side: in a column it would collapse the height to 0. */}
+            <Skeleton className="h-10 sm:flex-1" />
+            <Skeleton className="h-10 sm:w-36" />
+          </div>
+        </div>
       ) : uploadMode || !hasResumes ? (
         <div className="flex flex-col gap-2">
           {!hasResumes && <p className="text-sm text-fg-muted">{t('noResume')}</p>}

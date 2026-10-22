@@ -129,7 +129,7 @@ export function ReviewStep({ values, onEdit, onBack, onCompleted }: ReviewStepPr
               {t('actions.edit')}
             </Button>
           </div>
-          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[minmax(0,12rem)_1fr]">
+          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
             {rows.map(([term, detail]) => (
               <div key={term} className="contents">
                 <dt className="text-fg-muted">{term}</dt>

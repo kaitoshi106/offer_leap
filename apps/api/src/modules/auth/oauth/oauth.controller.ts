@@ -18,6 +18,7 @@ import {
   ErrorCode,
   type OAuthStartQuery,
   oauthStartQuerySchema,
+  onboardingFlag,
   type SignInMethods,
 } from '@offerleap/shared';
 import type { Response } from 'express';
@@ -119,7 +120,10 @@ export class OAuthController {
       clientInfo(request),
     );
     clearFlowCookie(response, this.secureCookies);
-    if (outcome.session) setSessionCookies(response, outcome.session.tokens, this.secureCookies);
+    if (outcome.session) {
+      const { tokens, user } = outcome.session;
+      setSessionCookies(response, tokens, this.secureCookies, onboardingFlag(user));
+    }
     if (outcome.signOut) clearSessionCookies(response, this.secureCookies);
     response.redirect(HttpStatus.FOUND, outcome.redirectTo);
   }

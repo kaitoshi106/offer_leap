@@ -157,7 +157,7 @@ function Result({ result }: { result: AnalysisResult }) {
         </div>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card title={t('matchedSkills')}>
           <TagList empty={t('none')}>
             {result.matchedSkills.map((skill) => (

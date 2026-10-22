@@ -49,17 +49,30 @@ export function DocumentsView() {
           {t('description')}
         </Text>
       </div>
-      <div className="grid items-start gap-6 lg:grid-cols-[2fr_3fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card title={t('add')} id="add-document">
           <AddDocument />
         </Card>
-        <div className="flex flex-col gap-6">
-          <DocumentList />
-          <Card title={t('search.title')} id="search-documents" description={t('search.description')}>
-            <SearchDocuments />
-          </Card>
-        </div>
+        <ListAndSearch />
       </div>
+    </div>
+  );
+}
+
+/**
+ * @description The document list with the search below it, shown together once the list has loaded: the list's
+ * height isn't known before, and the search card would move down when it arrives.
+ */
+function ListAndSearch() {
+  const t = useTranslations('documents');
+  const { isPending } = useDocuments();
+  if (isPending) return <Skeleton className="h-64 w-full" />;
+  return (
+    <div className="flex flex-col gap-6">
+      <DocumentList />
+      <Card title={t('search.title')} id="search-documents" description={t('search.description')}>
+        <SearchDocuments />
+      </Card>
     </div>
   );
 }
