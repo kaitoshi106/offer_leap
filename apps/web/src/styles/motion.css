@@ -7,6 +7,8 @@
   --animate-blob: blob 22s ease-in-out infinite;
   --animate-float: float 7s ease-in-out infinite;
   --animate-fill: fill 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* A dragged card being picked up: grows and tilts slightly, then stays like that. */
+  --animate-lift: lift 150ms ease-out both;
 
   @keyframes gradient-pan {
     from {
@@ -46,6 +48,17 @@
     }
     to {
       transform: scaleX(1);
+    }
+  }
+
+  @keyframes lift {
+    from {
+      scale: 1;
+      rotate: 0deg;
+    }
+    to {
+      scale: 1.03;
+      rotate: 2deg;
     }
   }
 }

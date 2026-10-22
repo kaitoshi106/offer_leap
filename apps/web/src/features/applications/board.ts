@@ -42,3 +42,24 @@ export function dropPosition(column: ApplicationSummary[], cardId: string, befor
   if (index === -1) return positionBetween(others.at(-1)?.position, undefined);
   return positionBetween(others[index - 1]?.position, others[index]!.position);
 }
+
+/**
+ * @description Which card a dragged card would land above while the pointer is over `hoveredId`: that card when
+ * the pointer is on its upper half, the next one when on its lower half (`undefined` = end of the column).
+ * Hovering the dragged card itself keeps it where it is.
+ * @param columnIds - Card ids of the hovered column, in board order (may include the dragged card).
+ * @param hoveredId - Card under the pointer.
+ * @param lowerHalf - Whether the pointer is below the hovered card's middle.
+ * @param draggedId - Card being dragged.
+ */
+export function dropBeforeId(
+  columnIds: string[],
+  hoveredId: string,
+  lowerHalf: boolean,
+  draggedId: string,
+): string | undefined {
+  if (hoveredId === draggedId) return columnIds[columnIds.indexOf(draggedId) + 1];
+  const others = columnIds.filter((id) => id !== draggedId);
+  const index = others.indexOf(hoveredId);
+  return lowerHalf ? others[index + 1] : hoveredId;
+}

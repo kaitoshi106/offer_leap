@@ -1,7 +1,7 @@
 import type { ApplicationSummary } from '@offerleap/shared';
 import { describe, expect, it } from 'vitest';
 
-import { dropPosition, positionBetween, toColumns } from './board';
+import { dropBeforeId, dropPosition, positionBetween, toColumns } from './board';
 
 const card = (id: string, status: ApplicationSummary['status'], position: number): ApplicationSummary => ({
   id,
@@ -49,5 +49,23 @@ describe('dropPosition', () => {
 
   it('ignores the moved card itself (reordering inside a column)', () => {
     expect(dropPosition(column, 'a', 'c')).toBe(1.5);
+  });
+});
+
+describe('dropBeforeId', () => {
+  const column = ['a', 'b', 'c'];
+
+  it('lands above the hovered card on its upper half, below it on its lower half', () => {
+    expect(dropBeforeId(column, 'b', false, 'x')).toBe('b');
+    expect(dropBeforeId(column, 'b', true, 'x')).toBe('c');
+    expect(dropBeforeId(column, 'c', true, 'x')).toBeUndefined();
+  });
+
+  it('skips the dragged card itself', () => {
+    // Dragging "a" over the lower half of "b": lands before "c", not before "a".
+    expect(dropBeforeId(column, 'b', true, 'a')).toBe('c');
+    // Hovering the dragged card keeps it in place (before its current next card).
+    expect(dropBeforeId(column, 'b', false, 'b')).toBe('c');
+    expect(dropBeforeId(column, 'c', true, 'c')).toBeUndefined();
   });
 });

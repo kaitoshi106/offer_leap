@@ -50,6 +50,11 @@ function setup() {
   renderWithProviders(<ApplicationBoard />);
 }
 
+/** jsdom has no `elementFromPoint` (no layout): define it to answer with `element`. */
+function pointerOver(element: Element) {
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: () => element });
+}
+
 const moves = () =>
   fetchMock.mock.calls
     .filter(([, init]) => init?.method === 'PATCH')
@@ -67,6 +72,8 @@ describe('ApplicationBoard', () => {
   afterEach(() => {
     fetchMock.mockReset();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    Reflect.deleteProperty(document, 'elementFromPoint');
   });
 
   it('shows one column per status with its cards', async () => {
@@ -101,16 +108,58 @@ describe('ApplicationBoard', () => {
     await vi.waitFor(() => expect(moves()).toEqual([['b', { status: 'INTERVIEW', position: -1 }]]));
   });
 
-  it('moves a card by drag and drop, above the card it is dropped on', async () => {
+  it('drags a full copy of the card with the pointer and drops it above the card under it', async () => {
     setup();
     const target = (await screen.findByText('Job c')).closest('li')!;
     const dragged = screen.getByText('Job b').closest('li')!;
+    // jsdom has no layout: say what is under the pointer, and where card c is.
+    pointerOver(screen.getByText('Job c'));
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 280, 100));
 
-    fireEvent.dragStart(dragged, { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
-    fireEvent.dragOver(target, { dataTransfer: { dropEffect: '' } });
-    fireEvent.drop(target, { dataTransfer: {} });
+    fireEvent.pointerDown(dragged, {
+      button: 0,
+      pointerId: 1,
+      pointerType: 'mouse',
+      clientX: 10,
+      clientY: 10,
+    });
+    // Under the 5px threshold it is still a click.
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 12, clientY: 12 });
+    expect(document.querySelector('[data-drag-overlay]')).toBeNull();
 
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 40, clientY: 30 });
+    const overlay = document.querySelector<HTMLElement>('[data-drag-overlay]')!;
+    expect(overlay).toHaveTextContent('Job b');
+    expect(overlay).toHaveAttribute('aria-hidden', 'true');
+    expect(dragged).toHaveClass('opacity-40');
+    // Upper half of card c: lands above it.
+    expect(target).toHaveClass('before:bg-primary');
+
+    fireEvent.pointerUp(window, { pointerId: 1, clientX: 40, clientY: 30 });
+    expect(document.querySelector('[data-drag-overlay]')).toBeNull();
     await vi.waitFor(() => expect(moves()).toEqual([['b', { status: 'INTERVIEW', position: -1 }]]));
+    expect(screen.getByRole('status')).toHaveTextContent('Đã chuyển Job b sang cột Phỏng vấn.');
+  });
+
+  it('cancels a drag with Escape', async () => {
+    setup();
+    const dragged = (await screen.findByText('Job b')).closest('li')!;
+    pointerOver(screen.getByText('Job c'));
+
+    fireEvent.pointerDown(dragged, {
+      button: 0,
+      pointerId: 1,
+      pointerType: 'mouse',
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 60, clientY: 60 });
+    expect(document.querySelector('[data-drag-overlay]')).not.toBeNull();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.pointerUp(window, { pointerId: 1 });
+
+    expect(document.querySelector('[data-drag-overlay]')).toBeNull();
+    expect(moves()).toEqual([]);
   });
 
   it('rolls back when the API refuses the move', async () => {

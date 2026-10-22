@@ -38,8 +38,20 @@ test.describe('applications', () => {
     await expect(applied.getByRole('link', { name: /Senior Frontend Engineer/ })).toBeVisible();
 
     const interview = page.getByRole('region', { name: /Phỏng vấn/ });
-    await applied.getByRole('listitem').first().dragTo(interview.getByRole('list'));
+    // A real mouse drag: a full copy of the card follows the pointer, then lands in the column.
+    const from = (await applied.getByRole('listitem').first().boundingBox())!;
+    const to = (await interview.getByRole('list').boundingBox())!;
+    await page.mouse.move(from.x + from.width / 2, from.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 12 });
+    const overlay = page.locator('[data-drag-overlay]');
+    await expect(overlay).toBeVisible();
+    await expect(overlay).toContainText('Senior Frontend Engineer');
+    await page.mouse.up();
+    await expect(overlay).toHaveCount(0);
     await expect(interview.getByRole('link', { name: /Senior Frontend Engineer/ })).toBeVisible();
+    // Dropping didn't open the card (the link under the pointer ignores the drag's click).
+    await expect(page).toHaveURL(/\/vi\/applications$/);
     await expect(page.getByRole('status').filter({ hasText: 'Đã chuyển' })).toHaveText(
       'Đã chuyển Senior Frontend Engineer sang cột Phỏng vấn.',
     );

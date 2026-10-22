@@ -165,7 +165,9 @@ web: /analyses (form + history) → /analyses/:id polls every 2 s → score gaug
   shown; the link is cleared if the analysis is deleted).
 - Ordering uses **fractional positions**: a moved card gets the midpoint of its new neighbours, so a move is one
   `PATCH /applications/:id/move { status, position }`. The board updates optimistically and rolls back on error.
-  Cards move by HTML5 drag and drop or by a per-card column `<select>` (keyboard, touch, screen readers).
+  Cards move by drag and drop built on Pointer Events (`usePointerDrag`, no library: a full copy of the card follows
+  the pointer, the drop target comes from `elementFromPoint`, mouse/pen/touch with a short hold, auto-scroll near
+  edges, Escape cancels) or by a per-card column `<select>` (keyboard, screen readers).
 - Cover letters are **streamed**: `POST /applications/:id/cover-letter` answers `text/plain` chunks while the
   model writes (`AiProvider.streamText`, prompt `cover-letter.v1`). Everything that can fail cleanly (no job
   description, AI unavailable) is checked before the first byte, so it is still a JSON error; a failure mid-way
