@@ -454,3 +454,13 @@ model KnowledgeChunk {
   @@index([documentId])
   @@map("knowledge_chunks")
 }
+
+/// Uploaded files when STORAGE_DRIVER=database: for hosts whose disk is wiped on restart (free tiers). The key is
+/// the same as the disk path would be (`resumes/<user>/<id>.pdf`), so rows match `Resume.storageKey` etc.
+model StoredFile {
+  key       String   @id
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@map("stored_files")
+}

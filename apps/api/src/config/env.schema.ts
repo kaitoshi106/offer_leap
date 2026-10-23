@@ -42,7 +42,12 @@ const envSchema = z
     SMTP_PASSWORD: z.string().optional(),
     MAIL_FROM: z.string().default('OfferLeap <no-reply@offerleap.local>'),
 
-    /** Where uploaded files are kept (local disk). Relative paths resolve from the API's working directory. */
+    /**
+     * Where uploaded files go: `disk` (under STORAGE_DIR) or `database` (Postgres) for hosts whose disk is wiped on
+     * restart, such as free tiers.
+     */
+    STORAGE_DRIVER: z.enum(['disk', 'database']).default('disk'),
+    /** Upload folder for STORAGE_DRIVER=disk. Relative paths resolve from the API's working directory. */
     STORAGE_DIR: z.string().default('storage'),
 
     /** `mock` returns canned answers (tests, offline dev); `gemini` calls Google's Gemini API. */
