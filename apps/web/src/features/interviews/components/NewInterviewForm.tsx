@@ -19,6 +19,7 @@ import { useRouter } from '@/i18n/navigation';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
+import { useMutateOnce } from '@/lib/api/use-mutate-once';
 
 import { useCreateInterview } from '../api/use-interviews';
 
@@ -40,6 +41,7 @@ export function NewInterviewForm() {
   const fieldError = useFieldErrorText();
   const applications = useApplications();
   const create = useCreateInterview();
+  const createOnce = useMutateOnce(create);
   const form = useForm<CreateInterviewInput, unknown, CreateInterview>({
     resolver: sharedSchemaResolver(createInterviewSchema),
     defaultValues: {
@@ -62,7 +64,7 @@ export function NewInterviewForm() {
   }, [application, form]);
 
   function submit(values: CreateInterview) {
-    create.mutate(
+    createOnce(
       // The API copies the saved job description of an application.
       { ...values, locale, ...(values.applicationId && { jobDescription: null }) },
       {

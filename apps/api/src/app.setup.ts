@@ -17,6 +17,11 @@ export function configureApp(app: INestApplication): void {
   const config = app.get<ConfigService<Env, true>>(ConfigService);
   const isProduction = config.get('NODE_ENV', { infer: true }) === 'production';
 
+  // The client IP (rate limits, session records) comes from X-Forwarded-For only when a proxy is trusted.
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .set('trust proxy', config.get('TRUST_PROXY', { infer: true }));
   app.setGlobalPrefix(API_PREFIX);
   app.use(
     helmet({

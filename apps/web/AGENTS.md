@@ -24,8 +24,9 @@ A layer may import only from layers below it. Pages are the only place that fetc
 - Responsive: every page must work at 320px wide (the narrowest phones). Grids always declare columns with `minmax(0, …)` — `grid-cols-1` on phones too (an implicit or bare `fr`
   track grows to its widest content), wide tables sit in a sideways-scrolling container that is focusable and named when it has no
   focusable content, long values wrap (`wrap-anywhere`). `e2e/a11y.spec.ts` checks every page at phone width.
-  Below 1280px (`xl`) the signed-in header is ☰ + brand (the full row needs ~1100px); navigation, language, theme and account live in the `Drawer`
-  (`AppLayout` `menuLabels` / `menuFooter`).
+  Below 1024px (`lg`) the signed-in header is ☰ + brand; navigation, language, theme and account live in the `Drawer`
+  (`AppLayout` `menuLabels` / `menuFooter`), which closes itself when the window grows past `lg`. From `lg` the full
+  row is shown; between `lg` and `xl` its navigation drops the icons and tightens its spacing to fit (~920px).
 - i18n: all copy via `useTranslations` / `getTranslations`; add keys to both `messages/vi.json` and `messages/en.json`.
 - API errors: map `ApiErrorResponse.code` to `t('errors.<CODE>')`; never display `message`.
 - Each component folder: `Component.tsx`, `Component.stories.tsx`, `Component.test.tsx`, `index.ts`.

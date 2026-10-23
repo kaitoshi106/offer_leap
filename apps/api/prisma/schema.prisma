@@ -311,50 +311,55 @@ enum InterviewStatus {
 
 /// A mock interview: AI-written questions, the user's answers with feedback, and a final summary.
 model InterviewSession {
-  id             String              @id @default(cuid())
-  userId         String
+  id               String              @id @default(cuid())
+  userId           String
   /// Application practised for (kept when the application is deleted, just unlinked).
-  applicationId  String?
-  jobTitle       String
-  jobDescription String?
-  type           InterviewType
-  locale         Locale
-  status         InterviewStatus     @default(IN_PROGRESS)
+  applicationId    String?
+  jobTitle         String
+  jobDescription   String?
+  type             InterviewType
+  locale           Locale
+  status           InterviewStatus     @default(IN_PROGRESS)
   /// 0–100, set when the interview is completed (copied out of `result` for lists).
-  overallScore   Int?
+  overallScore     Int?
   /// `InterviewSummary` from @offerleap/shared.
-  result         Json?
-  aiModel        String?
+  result           Json?
+  aiModel          String?
   /// Tokens of every AI call in this session (questions, feedback, summary).
-  inputTokens    Int                 @default(0)
-  outputTokens   Int                 @default(0)
-  completedAt    DateTime?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  application    JobApplication?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
-  questions      InterviewQuestion[]
+  inputTokens      Int                 @default(0)
+  outputTokens     Int                 @default(0)
+  completedAt      DateTime?
+  /// Set while the AI writes the summary (same purpose as `InterviewQuestion.scoringStartedAt`).
+  summaryStartedAt DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application      JobApplication?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  questions        InterviewQuestion[]
 
   @@index([userId, createdAt])
   @@map("interview_sessions")
 }
 
 model InterviewQuestion {
-  id           String           @id @default(cuid())
-  sessionId    String
+  id               String           @id @default(cuid())
+  sessionId        String
   /// 0-based order in the interview.
-  index        Int
-  question     String
+  index            Int
+  question         String
   /// What the question assesses.
-  focus        String
-  answer       String?
-  skipped      Boolean          @default(false)
+  focus            String
+  answer           String?
+  skipped          Boolean          @default(false)
   /// 0–10.
-  score        Int?
-  feedback     String?
-  betterAnswer String?
-  answeredAt   DateTime?
-  session      InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  score            Int?
+  feedback         String?
+  betterAnswer     String?
+  answeredAt       DateTime?
+  /// Set while the AI scores an answer, so a second request for the same question doesn't call the AI again.
+  /// Expires (see InterviewsService) in case the process dies mid-call.
+  scoringStartedAt DateTime?
+  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, index])
   @@map("interview_questions")

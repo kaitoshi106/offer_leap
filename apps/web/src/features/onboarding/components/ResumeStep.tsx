@@ -55,7 +55,11 @@ export function ResumeStep({
     setError(tErrors(reason === 'size' ? 'COMMON_FILE_TOO_LARGE' : 'COMMON_UNSUPPORTED_FILE_TYPE'));
   }
 
-  const next = () => save.mutate({ step: 'resume', values: {} }, { onSuccess: onSaved });
+  const next = () =>
+    save.mutate(
+      { step: 'resume', values: {} },
+      { onSuccess: onSaved, onError: (saveError) => setError(errorText(saveError)) },
+    );
 
   return (
     <div className="flex flex-col gap-6">

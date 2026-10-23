@@ -16,7 +16,8 @@
       "status": "Page {page} of {pages}",
       "pageSize": "Items per page",
       "pageSizeOption": "{size} / page"
-    }
+    },
+    "unsavedChanges": "You have unsaved changes. Leave this page and lose them?"
   },
   "theme": {
     "darkMode": "Dark mode"
@@ -51,6 +52,7 @@
     "COMMON_INTERNAL_ERROR": "Something went wrong. Please try again later.",
     "COMMON_VALIDATION_FAILED": "Some information is invalid. Please check and try again.",
     "COMMON_NOT_FOUND": "We couldn't find what you were looking for.",
+    "COMMON_CONFLICT": "This was just changed by another request. Refresh the page and try again.",
     "COMMON_RATE_LIMITED": "You're going too fast. Please try again in a few minutes.",
     "AUTH_UNAUTHENTICATED": "Please sign in to continue.",
     "AUTH_FORBIDDEN": "You don't have permission to do this.",
@@ -59,9 +61,9 @@
     "AUTH_EMAIL_NOT_VERIFIED": "Please verify your email before signing in.",
     "AUTH_TOKEN_INVALID": "This link is invalid.",
     "AUTH_TOKEN_EXPIRED": "This link has expired. Please request a new one.",
+    "AUTH_REFRESH_RACE": "Your session was just renewed in another tab. Please try again.",
     "AUTH_ACCOUNT_LOCKED": "This account is locked. Please contact an administrator.",
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "This account's password can't be changed in the app.",
-    "AUTH_EMAIL_ALREADY_VERIFIED": "This email is already verified. You can sign in.",
     "NETWORK_ERROR": "Can't reach the server. Check your connection and try again.",
     "ONBOARDING_REQUIRED": "Please complete your profile to continue.",
     "COMMON_FILE_TOO_LARGE": "The file is too large (max 10 MB).",
@@ -73,6 +75,7 @@
     "INTERVIEW_ALREADY_ANSWERED": "This question has already been answered.",
     "INTERVIEW_NOT_FINISHED": "Answer or skip every question before the summary.",
     "INTERVIEW_ALREADY_COMPLETED": "This interview has ended.",
+    "INTERVIEW_BUSY": "The summary of this interview is being written. Try again in a moment.",
     "AI_FAILED": "The AI returned something unusable. Please try again.",
     "ADMIN_ACTION_NOT_ALLOWED": "You aren't allowed to do this to that account.",
     "ADMIN_INVITATION_PENDING": "This email already has a pending invitation. Use \"Resend\".",
@@ -104,7 +107,9 @@
     "tooLarge": "The maximum is {max}.",
     "tooFew": "Choose at least {min}.",
     "tooMany": "Choose at most {max}.",
-    "minExceedsMax": "The maximum must be greater than or equal to the minimum."
+    "minExceedsMax": "The maximum must be greater than or equal to the minimum.",
+    "wholeNumber": "Enter a whole number.",
+    "invalidUrl": "Enter a web address starting with https:// (or http://)."
   },
   "auth": {
     "highlights": {
@@ -132,7 +137,7 @@
     "resend": {
       "action": "Resend email",
       "cooldown": "Resend in {seconds}s",
-      "sent": "Verification email sent again."
+      "sent": "If this email still needs verifying, a new link is on its way. Already verified? Just sign in."
     },
     "login": {
       "title": "Sign in",
@@ -303,6 +308,7 @@
       "open": "Open {jobTitle} at {company}"
     },
     "moved": "Moved {jobTitle} to {status}.",
+    "moveFailed": "Couldn't move {jobTitle}. The card is back in {status}.",
     "form": {
       "createTitle": "Add application",
       "company": "Company",
@@ -344,7 +350,8 @@
       "copy": "Copy",
       "copied": "Copied",
       "save": "Save",
-      "saved": "Cover letter saved"
+      "saved": "Cover letter saved",
+      "copyFailed": "Couldn't copy. Select the text and copy it yourself."
     }
   },
   "interviews": {
@@ -415,7 +422,7 @@
     "speech": {
       "start": "Answer by voice",
       "stop": "Stop recording",
-      "listening": "Listening… press again to stop.",
+      "listening": "Listening… stop recording to send your answer.",
       "error": "The microphone isn't available. Check the browser's microphone permission."
     }
   },
@@ -706,6 +713,8 @@
     "description": "A few details so the AI can tailor its suggestions. You can change them any time.",
     "progress": "Profile progress",
     "completedStep": "(done)",
+    "skippedStep": "(skipped)",
+    "stepOf": "Step {current} of {total}: {label}",
     "steps": {
       "resume": "CV",
       "personal": "Personal",

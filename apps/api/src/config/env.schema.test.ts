@@ -41,4 +41,21 @@ describe('validateEnv', () => {
       /OAUTH_PROVIDER/,
     );
   });
+
+  it('reads which proxies to trust for the client IP (rate limits are per IP), trusting none by default', () => {
+    expect(validateEnv(REQUIRED).TRUST_PROXY).toBe(false);
+    expect(validateEnv({ ...REQUIRED, TRUST_PROXY: '1' }).TRUST_PROXY).toBe(1);
+    expect(validateEnv({ ...REQUIRED, TRUST_PROXY: 'true' }).TRUST_PROXY).toBe(true);
+    expect(validateEnv({ ...REQUIRED, TRUST_PROXY: 'loopback, 10.0.0.0/8' }).TRUST_PROXY).toBe(
+      'loopback, 10.0.0.0/8',
+    );
+  });
+
+  it('keeps queues of separate test runs apart when asked to', () => {
+    expect(validateEnv(REQUIRED).QUEUE_PREFIX).toBe('bull');
+    expect(validateEnv({ ...REQUIRED, NODE_ENV: 'test' }).QUEUE_PREFIX).toBe('bull-test');
+    expect(validateEnv({ ...REQUIRED, NODE_ENV: 'test', QUEUE_PREFIX: 'bull-e2e' }).QUEUE_PREFIX).toBe(
+      'bull-e2e',
+    );
+  });
 });

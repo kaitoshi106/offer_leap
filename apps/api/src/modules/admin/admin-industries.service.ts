@@ -7,6 +7,7 @@ import {
 } from '@offerleap/shared';
 
 import { AppException } from '../../common/errors/app.exception';
+import { isUniqueViolation } from '../../common/errors/prisma-errors';
 import type { Industry } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -43,11 +44,17 @@ export class AdminIndustriesService {
       throw new AppException(ErrorCode.TAXONOMY_CODE_TAKEN);
     }
     const last = await this.prisma.industry.aggregate({ _max: { sortOrder: true } });
-    const industry = await this.prisma.industry.create({
-      data: { ...input, sortOrder: (last._max.sortOrder ?? -1) + 1 },
-      include: WITH_COUNT,
-    });
-    return toAdminIndustry(industry);
+    try {
+      const industry = await this.prisma.industry.create({
+        data: { ...input, sortOrder: (last._max.sortOrder ?? -1) + 1 },
+        include: WITH_COUNT,
+      });
+      return toAdminIndustry(industry);
+    } catch (error) {
+      // Added by another request in the meantime.
+      if (isUniqueViolation(error)) throw new AppException(ErrorCode.TAXONOMY_CODE_TAKEN);
+      throw error;
+    }
   }
 
   /** @throws AppException COMMON_NOT_FOUND. */

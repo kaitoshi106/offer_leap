@@ -155,6 +155,60 @@ describe('GeminiProvider.streamText', () => {
     });
   });
 
+  it('stops generating upstream (and stops paying) when the reader stops, e.g. the user left the page', async () => {
+    const { provider, generateContentStream } = setupStream(
+      chunks({ text: 'Dear ' }, { text: 'team, ' }, { text: 'I am writing…' }),
+    );
+    const stream = await provider.streamText(textRequest);
+    const signal: AbortSignal = generateContentStream.mock.calls[0]![0].config.abortSignal;
+
+    for await (const piece of stream.chunks) {
+      expect(piece).toBe('Dear ');
+      break;
+    }
+    expect(signal.aborted).toBe(true);
+  });
+
+  it('lets a long letter finish while chunks keep coming, and gives up only when they stop', async () => {
+    vi.useFakeTimers();
+    try {
+      /** A chunk every 25 s: over a minute in total (the old limit for the whole stream), never silent for long. */
+      async function* slow() {
+        for (const text of ['One. ', 'Two. ', 'Three. ']) {
+          await new Promise((resolve) => setTimeout(resolve, 25_000));
+          yield { text };
+        }
+      }
+      const { provider } = setupStream(slow());
+      const started = provider.streamText(textRequest);
+      await vi.advanceTimersByTimeAsync(25_000);
+      const stream = await started;
+      const reading = collect(stream.chunks);
+      await vi.advanceTimersByTimeAsync(50_000);
+      expect(await reading).toBe('One. Two. Three. ');
+
+      // Silence after the first chunk: the request is aborted instead of hanging.
+      let signal: AbortSignal | undefined;
+      const hanging = vi.fn(async (request: { config: { abortSignal: AbortSignal } }) => {
+        signal = request.config.abortSignal;
+        return (async function* () {
+          yield { text: 'Dear ' };
+          await new Promise(() => {});
+        })();
+      });
+      const stuck = new GeminiProvider({
+        client: { models: { generateContentStream: hanging } } as never,
+        models: ['main-model'],
+      });
+      const stuckStream = await stuck.streamText(textRequest);
+      void collect(stuckStream.chunks).catch(() => undefined);
+      await vi.advanceTimersByTimeAsync(31_000);
+      expect(signal?.aborted).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('falls back when the first chunk reports an overloaded model', async () => {
     const { provider } = setupStream(
       chunks(new ApiError({ message: 'overloaded', status: 503 })),

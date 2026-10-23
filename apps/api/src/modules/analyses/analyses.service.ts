@@ -14,7 +14,7 @@ import type { Queue } from 'bullmq';
 import { AppException } from '../../common/errors/app.exception';
 import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AI_JOB_OPTIONS } from '../ai/ai-job';
+import { enqueueAiJob } from '../ai/ai-job';
 import { AI_PROVIDER, type AiProvider } from '../ai/ai.types';
 import {
   buildJobMatchParts,
@@ -61,7 +61,9 @@ export class AnalysesService {
       data: { userId, resumeId: resume.id, jobDescription: input.jobDescription, locale: input.locale },
       include: ANALYSIS_INCLUDE,
     });
-    await this.queue.add('analyse', { analysisId: analysis.id }, { jobId: analysis.id, ...AI_JOB_OPTIONS });
+    await enqueueAiJob(this.queue, 'analyse', { analysisId: analysis.id }, analysis.id, () =>
+      this.markFailed(analysis.id, ErrorCode.ANALYSIS_FAILED),
+    );
     return toAnalysisDetail(analysis);
   }
 

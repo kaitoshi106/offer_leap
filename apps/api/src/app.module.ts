@@ -63,7 +63,7 @@ function redisConnection(url: string) {
       useFactory: (config: ConfigService<Env, true>) => ({
         connection: redisConnection(config.get('REDIS_URL', { infer: true })),
         // Tests share Redis with `pnpm dev`: a separate prefix keeps the dev workers from taking test jobs.
-        prefix: config.get('NODE_ENV', { infer: true }) === 'test' ? 'bull-test' : 'bull',
+        prefix: config.get('QUEUE_PREFIX', { infer: true }),
       }),
     }),
     PrismaModule,

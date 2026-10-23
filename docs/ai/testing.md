@@ -31,4 +31,6 @@ NEXT_PUBLIC_API_URL=http://localhost:4100/api/v1 pnpm exec next build && pnpm ex
 E2E_WEB_PORT=3100 E2E_API_PORT=4100 E2E_ROOT_EMAIL=root@offerleap.test E2E_ROOT_PASSWORD=e2e-root-password-2026 pnpm test:browser
 ```
 
-API e2e (`pnpm test:e2e`) truncates the test database, so re-run the seed before the browser tests afterwards.
+API e2e (`pnpm test:e2e`) truncates the test database, so re-run the seed before the browser tests afterwards. They
+use their own job queues (`QUEUE_PREFIX=bull-e2e`, set in `apps/api/vitest.config.mts`), so they can run while this
+server is up without it taking their background jobs.

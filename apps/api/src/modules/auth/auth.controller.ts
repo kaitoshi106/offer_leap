@@ -40,6 +40,7 @@ import type { Response } from 'express';
 import { z } from 'zod';
 
 import { AllowIncompleteProfile, CurrentUser, Public } from '../../common/decorators/auth.decorators';
+import { AppException } from '../../common/errors/app.exception';
 import { type AccessTokenPayload, type AppRequest, clientInfo } from '../../common/http/request';
 import { ApiErrors, ApiZodBody, ApiZodResponse } from '../../common/openapi/openapi.decorators';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -91,11 +92,13 @@ export class AuthController {
   @ApiOperation({
     summary: 'Create an account',
     description:
-      'Creates an unverified account and emails a verification link (Mailpit locally). No session yet.',
+      'Creates an unverified account and emails a verification link (Mailpit locally). No session yet. ' +
+      'Same answer for a known email (an unverified account gets the new password and a new link; a verified ' +
+      "one is left unchanged and its owner is notified), so it can't be used to discover accounts.",
   })
   @ApiZodBody(registerSchema)
-  @ApiZodResponse(201, registeredSchema, 'Account created, verification email queued.')
-  @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED, ErrorCode.AUTH_EMAIL_TAKEN)
+  @ApiZodResponse(201, registeredSchema, 'Verification email (or notice to the owner) queued.')
+  @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED)
   @Post('register')
   register(
     @Body(new ZodValidationPipe(registerSchema)) body: RegisterInput,
@@ -124,11 +127,12 @@ export class AuthController {
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
     summary: 'Resend the verification email',
-    description: 'Always 202 for unknown emails, so the endpoint cannot be used to discover accounts.',
+    description:
+      'Always 202 for unknown and already verified emails, so the endpoint cannot be used to discover accounts.',
   })
   @ApiZodBody(emailOnlySchema)
   @ApiAcceptedResponse({ description: 'Accepted.' })
-  @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED, ErrorCode.AUTH_EMAIL_ALREADY_VERIFIED)
+  @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED)
   @Post('resend-verification')
   async resendVerification(
     @Body(new ZodValidationPipe(emailOnlySchema)) body: EmailOnlyInput,
@@ -170,6 +174,7 @@ export class AuthController {
     ErrorCode.AUTH_TOKEN_INVALID,
     ErrorCode.AUTH_TOKEN_EXPIRED,
     ErrorCode.AUTH_ACCOUNT_LOCKED,
+    ErrorCode.AUTH_REFRESH_RACE,
   )
   @Post('refresh')
   async refresh(
@@ -180,8 +185,11 @@ export class AuthController {
       const refreshToken = request.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
       return this.respondWithSession(await this.auth.refresh(refreshToken, clientInfo(request)), response);
     } catch (error) {
-      // A dead refresh token is useless: clear it so the client stops retrying with it.
-      clearSessionCookies(response, this.secureCookies);
+      // A dead refresh token is useless: clear it so the client stops retrying with it. Except when another request
+      // rotated it a moment ago: its fresh cookies are already in the browser and must stay.
+      if (!(error instanceof AppException && error.code === ErrorCode.AUTH_REFRESH_RACE)) {
+        clearSessionCookies(response, this.secureCookies);
+      }
       throw error;
     }
   }

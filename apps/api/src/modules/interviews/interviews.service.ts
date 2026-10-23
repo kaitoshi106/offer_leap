@@ -31,6 +31,20 @@ import {
 } from '../ai/prompts/interview.v1';
 import { INTERVIEW_INCLUDE, toInterviewDetail, toInterviewListItem } from './interview.mapper';
 
+/** An AI call that started longer ago than this is assumed dead (the provider times out well before). */
+const AI_CLAIM_TTL_MS = 2 * 60_000;
+
+/**
+ * @description `where` condition for "nobody is calling the AI for this row": never claimed, or claimed so long
+ * ago that the request must have died (process restart) — so a crash can't lock a question forever.
+ * @param field - The row's claim timestamp.
+ */
+function unclaimed<TField extends 'scoringStartedAt' | 'summaryStartedAt'>(field: TField) {
+  return {
+    OR: [{ [field]: null }, { [field]: { lt: new Date(Date.now() - AI_CLAIM_TTL_MS) } }],
+  } as Record<'OR', Record<TField, Date | null | { lt: Date }>[]>;
+}
+
 /**
  * Mock interviews. Each step is one short AI call made inside the request (questions ~3 s, feedback ~2 s), so the
  * conversation feels direct; a busy provider surfaces as 503 and the user simply retries that step.
@@ -133,6 +147,16 @@ export class InterviewsService {
    */
   async answer(userId: string, id: string, index: number, text: string): Promise<InterviewDetail> {
     const { session, question } = await this.openQuestion(userId, id, index);
+    // Claim the question before calling the AI: a second request for it (another tab, a double submit) stops here
+    // instead of paying for a second score that would be thrown away.
+    const claimed = await this.prisma.interviewQuestion.updateMany({
+      where: { id: question.id, answeredAt: null, ...unclaimed('scoringStartedAt') },
+      data: { scoringStartedAt: new Date() },
+    });
+    if (claimed.count === 0) {
+      throw new AppException(ErrorCode.INTERVIEW_ALREADY_ANSWERED, { message: 'Question is being answered' });
+    }
+
     const context = await this.context(userId, session);
     const result = await callAi(() =>
       this.ai.generateJson({
@@ -146,7 +170,14 @@ export class InterviewsService {
         }),
         schema: interviewFeedbackSchema,
       }),
-    );
+    ).catch(async (error: unknown) => {
+      // Let the user retry.
+      await this.prisma.interviewQuestion.update({
+        where: { id: question.id },
+        data: { scoringStartedAt: null },
+      });
+      throw error;
+    });
 
     await this.saveAnswer(session.id, question.id, result.usage, {
       answer: text,
@@ -170,14 +201,24 @@ export class InterviewsService {
   }
 
   /**
-   * @description Writes the final summary once every question is answered or skipped. Idempotent.
-   * @throws AppException INTERVIEW_NOT_FINISHED, AI_UNAVAILABLE / AI_FAILED.
+   * @description Writes the final summary once every question is answered or skipped. Idempotent once done.
+   * @throws AppException INTERVIEW_NOT_FINISHED, INTERVIEW_BUSY (another request is writing it),
+   *   AI_UNAVAILABLE / AI_FAILED.
    */
   async complete(userId: string, id: string): Promise<InterviewDetail> {
     const session = await this.findSession(userId, id);
     if (session.status === 'COMPLETED') return toInterviewDetail(session);
     if (session.questions.some((question) => question.answeredAt === null)) {
       throw new AppException(ErrorCode.INTERVIEW_NOT_FINISHED, { message: 'Some questions are unanswered' });
+    }
+
+    // Same claim as for answers: only one request writes (and pays for) the summary.
+    const claimed = await this.prisma.interviewSession.updateMany({
+      where: { id: session.id, status: 'IN_PROGRESS', ...unclaimed('summaryStartedAt') },
+      data: { summaryStartedAt: new Date() },
+    });
+    if (claimed.count === 0) {
+      throw new AppException(ErrorCode.INTERVIEW_BUSY, { message: 'The summary is being written' });
     }
 
     const context = await this.context(userId, session);
@@ -189,7 +230,13 @@ export class InterviewsService {
         parts: buildInterviewSummaryParts(context, session.questions),
         schema: interviewSummarySchema,
       }),
-    );
+    ).catch(async (error: unknown) => {
+      await this.prisma.interviewSession.update({
+        where: { id: session.id },
+        data: { summaryStartedAt: null },
+      });
+      throw error;
+    });
 
     const summary = {
       overallScore: result.data.overallScore,

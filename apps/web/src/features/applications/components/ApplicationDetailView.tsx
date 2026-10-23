@@ -19,14 +19,16 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
+import { useServerValues } from '@/lib/forms/use-server-values';
+import { useUnsavedChangesWarning } from '@/lib/forms/use-unsaved-changes-warning';
 
 import {
   useApplication,
   useDeleteApplication,
   useMoveApplication,
+  useTopOfColumn,
   useUpdateApplication,
 } from '../api/use-applications';
-import { positionBetween } from '../board';
 import { CoverLetterPanel } from './CoverLetterPanel';
 
 /**
@@ -53,8 +55,7 @@ export function ApplicationDetailView({ id }: { id: string }) {
         <>
           <Header application={application} />
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-            {/* Remount when the saved data changes so the form starts from it. */}
-            <DetailsForm key={application.updatedAt} application={application} />
+            <DetailsForm application={application} />
             <CoverLetterPanel key={application.id} application={application} />
           </div>
         </>
@@ -66,9 +67,11 @@ export function ApplicationDetailView({ id }: { id: string }) {
 function Header({ application }: { application: ApplicationDetail }) {
   const t = useTranslations('applications');
   const tCommon = useTranslations('common');
+  const errorText = useErrorText();
   const router = useRouter();
   const toast = useToast();
   const move = useMoveApplication();
+  const topOfColumn = useTopOfColumn();
   const remove = useDeleteApplication();
   const [confirming, setConfirming] = useState(false);
 
@@ -112,14 +115,15 @@ function Header({ application }: { application: ApplicationDetail }) {
         <Select
           aria-label={t('form.status')}
           value={application.status}
-          onChange={(event) =>
+          onChange={(event) => {
+            const status = event.target.value as ApplicationStatus;
             // Top of the new column, like a freshly moved card.
             move.mutate({
               id: application.id,
-              status: event.target.value as ApplicationStatus,
-              position: positionBetween(undefined, application.position),
-            })
-          }
+              status,
+              position: topOfColumn(application.id, status, application.position - 1),
+            });
+          }}
           className="h-9"
           wrapperClassName="w-40"
         >
@@ -139,6 +143,7 @@ function Header({ application }: { application: ApplicationDetail }) {
         title={t('detail.deleteTitle')}
         description={t('detail.deleteBody')}
         closeLabel={tCommon('close')}
+        error={remove.error ? errorText(remove.error) : undefined}
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirming(false)}>
@@ -167,25 +172,34 @@ function Header({ application }: { application: ApplicationDetail }) {
 
 function DetailsForm({ application }: { application: ApplicationDetail }) {
   const t = useTranslations('applications');
+  const tCommon = useTranslations('common');
   const toast = useToast();
   const errorText = useErrorText();
   const fieldError = useFieldErrorText();
   const update = useUpdateApplication(application.id);
+  const saved: UpdateApplicationInput = {
+    company: application.company,
+    jobTitle: application.jobTitle,
+    jobUrl: application.jobUrl ?? '',
+    jobDescription: application.jobDescription ?? '',
+    notes: application.notes ?? '',
+  };
   const form = useForm<UpdateApplicationInput, unknown, UpdateApplication>({
     resolver: sharedSchemaResolver(updateApplicationSchema),
-    defaultValues: {
-      company: application.company,
-      jobTitle: application.jobTitle,
-      jobUrl: application.jobUrl ?? '',
-      jobDescription: application.jobDescription ?? '',
-      notes: application.notes ?? '',
-    },
+    defaultValues: saved,
   });
+  // Moving the card or saving the cover letter updates the record too: keep what is being typed here.
+  useServerValues(form, saved);
   const { errors, isDirty } = form.formState;
+  useUnsavedChangesWarning(isDirty, tCommon('unsavedChanges'));
 
   function submit(values: UpdateApplication) {
     update.mutate(values, {
-      onSuccess: () => toast.show({ tone: 'success', title: t('form.saved') }),
+      onSuccess: () => {
+        // What was typed is now saved.
+        form.reset(form.getValues());
+        toast.show({ tone: 'success', title: t('form.saved') });
+      },
       onError: (error) => {
         if (isApiError(error)) applyServerFieldErrors(error.fieldErrors, form.setError);
       },

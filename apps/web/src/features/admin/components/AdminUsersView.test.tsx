@@ -92,4 +92,33 @@ describe('AdminUsersView', () => {
     await user.type(screen.getByLabelText('Tìm theo email hoặc tên'), 'minh');
     await vi.waitFor(() => expect(replace).toHaveBeenLastCalledWith('/admin/users?q=minh'));
   });
+
+  it('keeps a filter chosen while the search was still waiting to run', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValue(jsonResponse(200, { items: [], total: 0, page: 1, pageSize: 10 }));
+    // Like the router: replacing the URL changes the search params the page renders with.
+    replace.mockImplementation((url: string) => {
+      searchParams = new URLSearchParams(url.split('?')[1]);
+    });
+    const view = renderWithProviders(<AdminUsersView />);
+
+    await user.type(screen.getByRole('searchbox', { name: 'Tìm theo email hoặc tên' }), 'minh');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Vai trò' }), 'ADMIN');
+    view.rerender(<AdminUsersView />);
+
+    await vi.waitFor(() => expect(String(replace.mock.lastCall?.[0])).toContain('q=minh'));
+    expect(String(replace.mock.lastCall?.[0])).toContain('role=ADMIN');
+  });
+
+  it('ignores a page or filter in the URL that makes no sense instead of asking the API for it', async () => {
+    searchParams = new URLSearchParams('page=abc&role=OWNER&status=gone');
+    fetchMock.mockResolvedValue(jsonResponse(200, { items: [], total: 0, page: 1, pageSize: 10 }));
+    renderWithProviders(<AdminUsersView />);
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const url = new URL(String(fetchMock.mock.calls[0]![0]));
+    expect(url.searchParams.get('page')).toBe('1');
+    expect(url.searchParams.has('role')).toBe(false);
+    expect(url.searchParams.has('status')).toBe(false);
+  });
 });

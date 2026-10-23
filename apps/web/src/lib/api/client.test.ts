@@ -99,4 +99,24 @@ describe('refreshSession', () => {
     await Promise.all([refreshSession(), refreshSession(), refreshSession()]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it('waits and tries again when another tab refreshed the session at the same moment', async () => {
+    // The other tab's refresh won; its new cookies arrive, and the second try succeeds with them.
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(error(409, 'AUTH_REFRESH_RACE'))
+      .mockResolvedValueOnce(new Response(null, { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(refreshSession()).resolves.toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not loop when the race keeps happening', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async () => error(409, 'AUTH_REFRESH_RACE'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(refreshSession()).resolves.toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });

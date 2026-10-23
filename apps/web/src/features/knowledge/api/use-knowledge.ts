@@ -21,7 +21,8 @@ function useDocumentAction<TVariables, TResult>(action: (variables: TVariables) 
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: action,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentsKey }),
+    // Documents and searches: results must not list a deleted document (or miss a new one).
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['knowledge'] }),
   });
 }
 

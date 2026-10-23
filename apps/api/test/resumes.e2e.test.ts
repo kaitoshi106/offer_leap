@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { ErrorCode, RESUME_FINAL_STATUSES, RESUME_MAX_BYTES, type ResumeSummary } from '@offerleap/shared';
@@ -167,6 +167,18 @@ describe('resumes', () => {
     const response = await upload(agent, Buffer.from('just some text'), 'cv.pdf').expect(415);
     expect(response.body.code).toBe(ErrorCode.COMMON_UNSUPPORTED_FILE_TYPE);
     expect(await ctx.prisma.resume.count()).toBe(0);
+  });
+
+  it('refuses an upload from a deleted account without leaving its file behind', async () => {
+    const agent = await signUpAndVerify(ctx);
+    const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email: 'minh@example.com' } });
+    // Deleted while its access token is still valid (it lives a few minutes).
+    await ctx.prisma.user.delete({ where: { id: user.id } });
+
+    const response = await upload(agent, PDF, 'cv.pdf').expect(401);
+    expect(response.body.code).toBe(ErrorCode.AUTH_UNAUTHENTICATED);
+    const folder = join(process.cwd(), 'storage/test/resumes', user.id);
+    expect(existsSync(folder) ? readdirSync(folder) : []).toEqual([]);
   });
 
   it('rejects files over the size limit and requests without a file', async () => {

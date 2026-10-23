@@ -9,7 +9,7 @@ import {
   type ProfileValues,
 } from '@offerleap/shared';
 import { useLocale, useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, type DefaultValues, useForm } from 'react-hook-form';
 
 import { Input, Select } from '@/components/atoms';
 import { FormField } from '@/components/molecules';
@@ -48,17 +48,18 @@ export function CareerStep({
   const locale = useLocale();
   const fieldError = useFieldErrorText();
   const { industries } = useTaxonomies();
+  const saved: DefaultValues<CareerStepInput> = {
+    industryCode: values.industryCode ?? '',
+    jobTitle: values.jobTitle ?? '',
+    level: values.level ?? undefined,
+    yearsOfExperience: values.yearsOfExperience ?? undefined,
+    skills: values.skills,
+  };
   const form = useForm<CareerStepInput, unknown, CareerValues>({
     resolver: sharedSchemaResolver(careerStepSchema),
-    defaultValues: {
-      industryCode: values.industryCode ?? '',
-      jobTitle: values.jobTitle ?? '',
-      level: values.level ?? undefined,
-      yearsOfExperience: values.yearsOfExperience ?? undefined,
-      skills: values.skills,
-    },
+    defaultValues: saved,
   });
-  const { submit, save } = useStepSave('career', form.setError, onSaved, mode);
+  const { submit, save, saveError } = useStepSave('career', form, saved, onSaved, mode);
   const { errors } = form.formState;
 
   return (
@@ -169,9 +170,14 @@ export function CareerStep({
       </FormField>
 
       {mode === 'profile' ? (
-        <StepActions loading={save.isPending} submitLabel={t('actions.save')} icon={false} />
+        <StepActions
+          loading={save.isPending}
+          submitLabel={t('actions.save')}
+          icon={false}
+          error={saveError}
+        />
       ) : (
-        <StepActions onBack={onBack} loading={save.isPending} />
+        <StepActions onBack={onBack} loading={save.isPending} error={saveError} />
       )}
     </form>
   );

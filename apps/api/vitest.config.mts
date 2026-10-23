@@ -33,6 +33,8 @@ export default defineConfig({
             OAUTH_PROVIDER: 'mock',
             API_PUBLIC_URL: 'http://localhost:4000',
             STORAGE_DIR: 'storage/test',
+            // A browser-test API (NODE_ENV=test too) may share Redis: keep each one's background jobs apart.
+            QUEUE_PREFIX: 'bull-e2e',
           },
           include: ['test/**/*.e2e.test.ts'],
           globalSetup: ['test/global-setup.ts'],

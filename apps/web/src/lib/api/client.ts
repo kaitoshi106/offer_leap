@@ -1,11 +1,21 @@
 import { ErrorCode } from '@offerleap/shared';
 
-import { ApiError, NETWORK_ERROR, STREAM_INTERRUPTED, toApiError } from './errors';
+import { ApiError, isApiError, NETWORK_ERROR, STREAM_INTERRUPTED, toApiError } from './errors';
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 /** Codes meaning "the access token is missing or expired" — fixable with a refresh. */
 const SESSION_CODES = new Set<string>([ErrorCode.AUTH_UNAUTHENTICATED, ErrorCode.AUTH_TOKEN_EXPIRED]);
+
+/**
+ * @description Whether a failed request means the session is gone for good: requests refresh once on their own,
+ * so a session error that still reaches the caller could not be refreshed (signed out elsewhere, password changed
+ * on another device, session expired).
+ * @param error - Anything thrown by {@link apiRequest}.
+ */
+export function isSessionEnded(error: unknown): boolean {
+  return isApiError(error) && error.status === 401 && SESSION_CODES.has(error.code);
+}
 
 export interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -18,18 +28,39 @@ export interface ApiRequestOptions {
 
 let refreshInFlight: Promise<boolean> | null = null;
 
+/** How long to let another tab's refresh land its new cookies before trying again. */
+const REFRESH_RACE_DELAY_MS = 300;
+
+async function postRefresh(): Promise<'ok' | 'race' | 'failed'> {
+  try {
+    const response = await fetch(`${API_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
+    if (response.ok) return 'ok';
+    if (response.status !== 409) return 'failed';
+    const body: unknown = await response.json().catch(() => null);
+    return toApiError(409, body).code === ErrorCode.AUTH_REFRESH_RACE ? 'race' : 'failed';
+  } catch {
+    return 'failed';
+  }
+}
+
 /**
  * @description Rotates the session once, sharing the promise between concurrent callers: ten requests failing
- * with 401 at the same time trigger a single `/auth/refresh` (a second one would look like token reuse).
+ * with 401 at the same time trigger a single `/auth/refresh` (a second one would look like token reuse). Other
+ * tabs share the cookies but not this promise: when one of them rotated the token a moment earlier the API
+ * answers `AUTH_REFRESH_RACE` (keeping the cookies), and one more try a little later uses that tab's new token.
  * @returns Whether the session was refreshed.
  */
 export function refreshSession(): Promise<boolean> {
-  refreshInFlight ??= fetch(`${API_URL}/auth/refresh`, { method: 'POST', credentials: 'include' })
-    .then((response) => response.ok)
-    .catch(() => false)
-    .finally(() => {
-      refreshInFlight = null;
-    });
+  refreshInFlight ??= (async () => {
+    let result = await postRefresh();
+    if (result === 'race') {
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_RACE_DELAY_MS));
+      result = await postRefresh();
+    }
+    return result === 'ok';
+  })().finally(() => {
+    refreshInFlight = null;
+  });
   return refreshInFlight;
 }
 

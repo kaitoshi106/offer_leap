@@ -10,7 +10,7 @@ import {
 } from '@offerleap/shared';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
-import { useForm } from 'react-hook-form';
+import { type DefaultValues, useForm } from 'react-hook-form';
 
 import { Checkbox, Icon, Input, Text } from '@/components/atoms';
 import { FormField } from '@/components/molecules';
@@ -39,15 +39,16 @@ export function PreferencesStep({
   const t = useTranslations('onboarding');
   const fieldError = useFieldErrorText();
   const workTypesErrorId = useId();
+  const saved: DefaultValues<PreferencesStepInput> = {
+    expectedSalaryMin: values.expectedSalaryMin,
+    expectedSalaryMax: values.expectedSalaryMax,
+    workTypes: values.workTypes,
+  };
   const form = useForm<PreferencesStepInput, unknown, PreferencesValues>({
     resolver: sharedSchemaResolver(preferencesStepSchema),
-    defaultValues: {
-      expectedSalaryMin: values.expectedSalaryMin,
-      expectedSalaryMax: values.expectedSalaryMax,
-      workTypes: values.workTypes,
-    },
+    defaultValues: saved,
   });
-  const { submit, save } = useStepSave('preferences', form.setError, onSaved, mode);
+  const { submit, save, saveError } = useStepSave('preferences', form, saved, onSaved, mode);
   const { errors } = form.formState;
   const workTypesError = fieldError(errors.workTypes);
   const salaryInput = {
@@ -123,9 +124,14 @@ export function PreferencesStep({
       </fieldset>
 
       {mode === 'profile' ? (
-        <StepActions loading={save.isPending} submitLabel={t('actions.save')} icon={false} />
+        <StepActions
+          loading={save.isPending}
+          submitLabel={t('actions.save')}
+          icon={false}
+          error={saveError}
+        />
       ) : (
-        <StepActions onBack={onBack} loading={save.isPending} />
+        <StepActions onBack={onBack} loading={save.isPending} error={saveError} />
       )}
     </form>
   );

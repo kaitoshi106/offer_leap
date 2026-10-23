@@ -270,6 +270,7 @@ function DeleteDialog({ document, onClose }: { document: KnowledgeDocument | nul
       title={document ? t('deleteTitle', { title: document.title }) : ''}
       description={t('deleteBody')}
       closeLabel={tCommon('close')}
+      error={remove.error && remove.variables === document?.id ? errorText(remove.error) : undefined}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -285,7 +286,6 @@ function DeleteDialog({ document, onClose }: { document: KnowledgeDocument | nul
                   toast.show({ tone: 'success', title: t('deleted') });
                   onClose();
                 },
-                onError: (error) => toast.show({ tone: 'danger', title: errorText(error) }),
               })
             }
           >

@@ -7,7 +7,7 @@ import {
   type ProfileValues,
 } from '@offerleap/shared';
 import { useLocale, useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, type DefaultValues, useForm } from 'react-hook-form';
 
 import { Input } from '@/components/atoms';
 import { FormField } from '@/components/molecules';
@@ -43,15 +43,16 @@ export function PersonalStep({
   const locale = useLocale();
   const fieldError = useFieldErrorText();
   const { provinces } = useTaxonomies();
+  const saved: DefaultValues<PersonalStepInput> = {
+    fullName: values.fullName,
+    phone: values.phone ?? '',
+    provinceCode: values.provinceCode ?? '',
+  };
   const form = useForm<PersonalStepInput, unknown, PersonalValues>({
     resolver: sharedSchemaResolver(personalStepSchema),
-    defaultValues: {
-      fullName: values.fullName,
-      phone: values.phone ?? '',
-      provinceCode: values.provinceCode ?? '',
-    },
+    defaultValues: saved,
   });
-  const { submit, save } = useStepSave('personal', form.setError, onSaved, mode);
+  const { submit, save, saveError } = useStepSave('personal', form, saved, onSaved, mode);
   const { errors } = form.formState;
 
   return (
@@ -102,9 +103,14 @@ export function PersonalStep({
       </FormField>
 
       {mode === 'profile' ? (
-        <StepActions loading={save.isPending} submitLabel={t('actions.save')} icon={false} />
+        <StepActions
+          loading={save.isPending}
+          submitLabel={t('actions.save')}
+          icon={false}
+          error={saveError}
+        />
       ) : (
-        <StepActions onBack={onBack} loading={save.isPending} />
+        <StepActions onBack={onBack} loading={save.isPending} error={saveError} />
       )}
     </form>
   );

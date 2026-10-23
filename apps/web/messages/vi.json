@@ -16,7 +16,8 @@
       "status": "Trang {page}/{pages}",
       "pageSize": "Số mục mỗi trang",
       "pageSizeOption": "{size} / trang"
-    }
+    },
+    "unsavedChanges": "Bạn có thay đổi chưa lưu. Rời trang và bỏ các thay đổi này?"
   },
   "theme": {
     "darkMode": "Giao diện tối"
@@ -51,6 +52,7 @@
     "COMMON_INTERNAL_ERROR": "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
     "COMMON_VALIDATION_FAILED": "Thông tin chưa hợp lệ. Vui lòng kiểm tra lại.",
     "COMMON_NOT_FOUND": "Không tìm thấy nội dung bạn yêu cầu.",
+    "COMMON_CONFLICT": "Dữ liệu vừa được thay đổi bởi một yêu cầu khác. Hãy tải lại trang và thử lại.",
     "COMMON_RATE_LIMITED": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
     "AUTH_UNAUTHENTICATED": "Vui lòng đăng nhập để tiếp tục.",
     "AUTH_FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
@@ -59,9 +61,9 @@
     "AUTH_EMAIL_NOT_VERIFIED": "Vui lòng xác thực email trước khi đăng nhập.",
     "AUTH_TOKEN_INVALID": "Liên kết không hợp lệ.",
     "AUTH_TOKEN_EXPIRED": "Liên kết đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+    "AUTH_REFRESH_RACE": "Phiên đăng nhập vừa được gia hạn ở tab khác. Vui lòng thử lại.",
     "AUTH_ACCOUNT_LOCKED": "Tài khoản đang bị khoá. Vui lòng liên hệ quản trị viên.",
     "AUTH_PASSWORD_CHANGE_NOT_ALLOWED": "Tài khoản này không thể đổi mật khẩu trong ứng dụng.",
-    "AUTH_EMAIL_ALREADY_VERIFIED": "Email này đã được xác thực. Bạn có thể đăng nhập.",
     "NETWORK_ERROR": "Không kết nối được máy chủ. Kiểm tra mạng và thử lại.",
     "ONBOARDING_REQUIRED": "Vui lòng hoàn thiện hồ sơ để tiếp tục.",
     "COMMON_FILE_TOO_LARGE": "File quá lớn (tối đa 10 MB).",
@@ -73,6 +75,7 @@
     "INTERVIEW_ALREADY_ANSWERED": "Câu hỏi này đã được trả lời.",
     "INTERVIEW_NOT_FINISHED": "Hãy trả lời hoặc bỏ qua tất cả câu hỏi trước khi xem tổng kết.",
     "INTERVIEW_ALREADY_COMPLETED": "Buổi phỏng vấn đã kết thúc.",
+    "INTERVIEW_BUSY": "Bản tổng kết của buổi phỏng vấn đang được viết. Hãy thử lại sau giây lát.",
     "AI_FAILED": "AI trả về kết quả không dùng được. Vui lòng thử lại.",
     "ADMIN_ACTION_NOT_ALLOWED": "Bạn không có quyền thực hiện thao tác này với tài khoản đó.",
     "ADMIN_INVITATION_PENDING": "Email này đã có lời mời đang chờ. Hãy dùng \"Gửi lại\".",
@@ -104,7 +107,9 @@
     "tooLarge": "Tối đa là {max}.",
     "tooFew": "Chọn ít nhất {min} mục.",
     "tooMany": "Tối đa {max} mục.",
-    "minExceedsMax": "Mức tối đa phải lớn hơn hoặc bằng mức tối thiểu."
+    "minExceedsMax": "Mức tối đa phải lớn hơn hoặc bằng mức tối thiểu.",
+    "wholeNumber": "Hãy nhập số nguyên.",
+    "invalidUrl": "Hãy nhập địa chỉ web bắt đầu bằng https:// (hoặc http://)."
   },
   "auth": {
     "highlights": {
@@ -132,7 +137,7 @@
     "resend": {
       "action": "Gửi lại email",
       "cooldown": "Gửi lại sau {seconds}s",
-      "sent": "Đã gửi lại email xác thực."
+      "sent": "Nếu email này chưa được xác thực, liên kết mới đang được gửi tới. Đã xác thực rồi? Hãy đăng nhập."
     },
     "login": {
       "title": "Đăng nhập",
@@ -303,6 +308,7 @@
       "open": "Mở {jobTitle} tại {company}"
     },
     "moved": "Đã chuyển {jobTitle} sang cột {status}.",
+    "moveFailed": "Không chuyển được {jobTitle}. Thẻ đã về lại cột {status}.",
     "form": {
       "createTitle": "Thêm ứng tuyển",
       "company": "Công ty",
@@ -344,7 +350,8 @@
       "copy": "Sao chép",
       "copied": "Đã sao chép",
       "save": "Lưu",
-      "saved": "Đã lưu cover letter"
+      "saved": "Đã lưu cover letter",
+      "copyFailed": "Không sao chép được. Hãy bôi đen đoạn văn và tự sao chép."
     }
   },
   "interviews": {
@@ -415,7 +422,7 @@
     "speech": {
       "start": "Trả lời bằng giọng nói",
       "stop": "Dừng ghi âm",
-      "listening": "Đang nghe… bấm lại để dừng.",
+      "listening": "Đang nghe… dừng ghi âm để gửi câu trả lời.",
       "error": "Không dùng được micro. Hãy kiểm tra quyền truy cập micro của trình duyệt."
     }
   },
@@ -706,6 +713,8 @@
     "description": "Vài thông tin để AI gợi ý chính xác hơn. Bạn có thể chỉnh sửa lại bất cứ lúc nào.",
     "progress": "Tiến độ hoàn thiện hồ sơ",
     "completedStep": "(đã xong)",
+    "skippedStep": "(đã bỏ qua)",
+    "stepOf": "Bước {current}/{total}: {label}",
     "steps": {
       "resume": "CV",
       "personal": "Cá nhân",

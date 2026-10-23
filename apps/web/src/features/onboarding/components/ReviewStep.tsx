@@ -8,6 +8,7 @@ import { Badge, Button, Heading } from '@/components/atoms';
 import { Alert } from '@/components/molecules';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
+import { useMutateOnce } from '@/lib/api/use-mutate-once';
 
 import { useCompleteOnboarding, useTaxonomies } from '../api/use-onboarding';
 import { FIELD_STEP, toOptions } from './options';
@@ -28,6 +29,7 @@ export function ReviewStep({ values, onEdit, onBack, onCompleted }: ReviewStepPr
   const errorText = useErrorText();
   const { industries, provinces } = useTaxonomies();
   const complete = useCompleteOnboarding();
+  const completeOnce = useMutateOnce(complete);
 
   const label = (options: { value: string; label: string }[], code: string | null) =>
     options.find((option) => option.value === code)?.label ?? code;
@@ -41,7 +43,7 @@ export function ReviewStep({ values, onEdit, onBack, onCompleted }: ReviewStepPr
   };
 
   function finish() {
-    complete.mutate(undefined, {
+    completeOnce(undefined, {
       onSuccess: onCompleted,
       onError: (error) => {
         // The draft is incomplete: open the first step that has a problem.

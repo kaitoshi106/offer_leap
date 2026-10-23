@@ -70,6 +70,43 @@ test.describe('applications', () => {
     await expect(interview.getByText('Đã có cover letter')).toBeVisible();
   });
 
+  test('keeps unsaved notes when the card moves, and asks before leaving with them', async ({ page }) => {
+    await registerAndVerify(page, 'Minh Notes');
+    await completeOnboarding(page);
+    await page.goto('/vi/applications');
+    await page.getByRole('button', { name: 'Thêm ứng tuyển' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm ứng tuyển' });
+    await dialog.getByLabel(/^Công ty/).fill('Acme Tech');
+    await dialog.getByLabel(/^Vị trí/).fill('Frontend Engineer');
+    await dialog.getByRole('button', { name: 'Thêm', exact: true }).click();
+    await page.getByRole('link', { name: 'Mở Frontend Engineer tại Acme Tech' }).click();
+
+    // Typing notes, then moving the card from the header (which saves the application): the notes stay.
+    const notes = page.getByLabel('Ghi chú');
+    await notes.fill('Gọi lại cho HR vào thứ Sáu');
+    await page.getByLabel('Cột', { exact: true }).selectOption('APPLIED');
+    await expect(page.getByLabel('Cột', { exact: true })).toHaveValue('APPLIED');
+    await page.waitForLoadState('networkidle');
+    await expect(notes).toHaveValue('Gọi lại cho HR vào thứ Sáu');
+
+    // Leaving asks first; staying keeps everything.
+    const asked: string[] = [];
+    page.once('dialog', (confirm) => {
+      asked.push(confirm.message());
+      void confirm.dismiss();
+    });
+    await page.getByRole('link', { name: 'Bảng ứng tuyển' }).click();
+    await expect.poll(() => asked).toEqual(['Bạn có thay đổi chưa lưu. Rời trang và bỏ các thay đổi này?']);
+    await expect(page).toHaveURL(/\/vi\/applications\/.+/);
+    await expect(notes).toHaveValue('Gọi lại cho HR vào thứ Sáu');
+
+    // Once saved, leaving doesn't ask.
+    await page.getByRole('button', { name: 'Lưu thay đổi' }).click();
+    await expect(page.getByText('Đã lưu thay đổi')).toBeVisible();
+    await page.getByRole('link', { name: 'Bảng ứng tuyển' }).click();
+    await expect(page).toHaveURL(/\/vi\/applications$/);
+  });
+
   test('saves an analysed job to the board', async ({ page }) => {
     await registerAndVerify(page, 'Minh Save');
     await completeOnboarding(page);

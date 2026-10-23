@@ -14,9 +14,10 @@ import {
 import type { Queue } from 'bullmq';
 
 import { AppException } from '../../common/errors/app.exception';
+import { isMissingReference } from '../../common/errors/prisma-errors';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
-import { AI_JOB_OPTIONS } from '../ai/ai-job';
+import { enqueueAiJob } from '../ai/ai-job';
 import { AiInvalidOutputError } from '../ai/ai.errors';
 import { AI_PROVIDER, type AiProvider } from '../ai/ai.types';
 import { toVectorLiteral } from '../ai/providers/vectors';
@@ -188,6 +189,7 @@ export class KnowledgeService {
     return relevantOnly ? matches.filter((match) => match.relevant) : matches;
   }
 
+  /** Early check, before the file is stored; `createAndQueue` checks again under a lock. */
   private async assertBelowLimit(userId: string): Promise<void> {
     const count = await this.prisma.knowledgeDocument.count({ where: { userId } });
     if (count >= KNOWLEDGE_LIMITS.documentsPerUser) throw new AppException(ErrorCode.KNOWLEDGE_LIMIT_REACHED);
@@ -201,8 +203,26 @@ export class KnowledgeService {
     mimeType: string;
     storageKey: string;
   }): Promise<KnowledgeDocument> {
-    const document = await this.prisma.knowledgeDocument.create({ data });
-    await this.queue.add('process', { documentId: document.id }, { jobId: document.id, ...AI_JOB_OPTIONS });
+    const document = await this.prisma
+      .$transaction(async (tx) => {
+        // One add at a time per user, so simultaneous adds can't all pass the limit check.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${data.userId}))`;
+        const count = await tx.knowledgeDocument.count({ where: { userId: data.userId } });
+        if (count >= KNOWLEDGE_LIMITS.documentsPerUser) {
+          throw new AppException(ErrorCode.KNOWLEDGE_LIMIT_REACHED);
+        }
+        return tx.knowledgeDocument.create({ data });
+      })
+      .catch(async (error: unknown) => {
+        // No row for the stored file: don't keep it. A deleted account (its access token outlives it) isn't
+        // signed in.
+        await this.storage.remove(data.storageKey);
+        if (isMissingReference(error)) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
+        throw error;
+      });
+    await enqueueAiJob(this.queue, 'process', { documentId: document.id }, document.id, () =>
+      this.markFailed(document.id, ErrorCode.KNOWLEDGE_PROCESSING_FAILED),
+    );
     return toKnowledgeDocument(document);
   }
 }

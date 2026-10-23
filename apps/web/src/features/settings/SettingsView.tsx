@@ -38,16 +38,19 @@ export function SettingsView() {
   const t = useTranslations('settings');
   const tAdmin = useTranslations('admin');
   const tErrors = useTranslations('errors');
+  const errorText = useErrorText();
   const { data: user, isPending } = useCurrentUser();
   const { data: providers, isPending: providersPending } = useAuthProviders();
-  const { data: methods, isPending: methodsPending } = useSignInMethods();
+  const { data: methods, error: methodsError, isPending: methodsPending } = useSignInMethods();
   const redirectError = useGoogleRedirectResult();
 
   // Wait for everything that decides which sections exist, then render once: a section appearing later (Google)
   // would push the others down.
   if (isPending || !user || providersPending || methodsPending) return <Skeleton className="h-96 w-full" />;
-  // If the methods failed to load, assume a password (the common case) rather than the Google-only variants.
-  const hasPassword = methods?.hasPassword ?? true;
+  // Without the sign-in methods, password and deletion can't be offered correctly (a Google-only account has no
+  // password to change or to confirm deletion with): say so instead of guessing.
+  const hasPassword = methods?.hasPassword;
+  const methodsUnknown = <Alert tone="danger">{errorText(methodsError)}</Alert>;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -69,11 +72,13 @@ export function SettingsView() {
         </div>
       </Section>
       <Section
-        title={t(hasPassword ? 'password' : 'setPasswordTitle')}
+        title={t(hasPassword === false ? 'setPasswordTitle' : 'password')}
         description={hasPassword ? t('passwordDescription') : undefined}
       >
         {!canManageOwnPassword(user) ? (
           <Alert tone="info">{t('rootPassword')}</Alert>
+        ) : hasPassword === undefined ? (
+          methodsUnknown
         ) : hasPassword ? (
           <ChangePasswordForm />
         ) : (
@@ -90,7 +95,7 @@ export function SettingsView() {
       </Section>
       {canDeleteOwnAccount(user) && (
         <Section title={t('delete.sectionTitle')} description={t('delete.description')}>
-          <DeleteAccount hasPassword={hasPassword} />
+          {hasPassword === undefined ? methodsUnknown : <DeleteAccount hasPassword={hasPassword} />}
         </Section>
       )}
     </div>

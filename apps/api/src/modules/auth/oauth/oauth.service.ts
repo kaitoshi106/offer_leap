@@ -17,6 +17,7 @@ import {
 import * as client from 'openid-client';
 
 import { AppException } from '../../../common/errors/app.exception';
+import { isUniqueViolation } from '../../../common/errors/prisma-errors';
 import type { ClientInfo } from '../../../common/http/request';
 import type { Env } from '../../../config/env.schema';
 import type { User } from '../../../generated/prisma/client';
@@ -191,17 +192,24 @@ export class OAuthService {
     if (user && user.status !== 'ACTIVE') throw new AppException(ErrorCode.AUTH_ACCOUNT_LOCKED);
 
     if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          email: identity.email,
-          passwordHash: null,
-          fullName: displayName(identity),
-          locale: flow.locale,
-          emailVerifiedAt: new Date(),
-          identities: { create: this.identityRow(identity) },
-        },
-      });
-      await this.auth.sendWelcomeEmail(user);
+      try {
+        user = await this.prisma.user.create({
+          data: {
+            email: identity.email,
+            passwordHash: null,
+            fullName: displayName(identity),
+            locale: flow.locale,
+            emailVerifiedAt: new Date(),
+            identities: { create: this.identityRow(identity) },
+          },
+        });
+        await this.auth.sendWelcomeEmail(user);
+      } catch (error) {
+        // The same first sign-in finishing twice at once (a double click): the other request created the account
+        // with this Google identity; sign in to it.
+        if (!isUniqueViolation(error)) throw error;
+        user = await this.prisma.user.findUniqueOrThrow({ where: { email: identity.email } });
+      }
     } else if (!linked) {
       user = await this.linkByEmail(user, identity);
     }
@@ -214,6 +222,16 @@ export class OAuthService {
   }
 
   private async linkByEmail(user: User, identity: OAuthIdentity): Promise<User> {
+    try {
+      return await this.linkByEmailOnce(user, identity);
+    } catch (error) {
+      // Linked by a simultaneous request for the same sign-in: nothing left to do.
+      if (!isUniqueViolation(error)) throw error;
+      return this.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+    }
+  }
+
+  private async linkByEmailOnce(user: User, identity: OAuthIdentity): Promise<User> {
     if (user.emailVerifiedAt) {
       await this.prisma.userIdentity.create({ data: { ...this.identityRow(identity), userId: user.id } });
       await this.notifyLinked(user);

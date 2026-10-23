@@ -1,9 +1,15 @@
 'use client';
 
-import { type AdminUsersQueryInput, DEFAULT_PAGE_SIZE, Role, USER_STATUSES } from '@offerleap/shared';
+import {
+  adminUsersQuerySchema,
+  type AdminUsersQueryInput,
+  DEFAULT_PAGE_SIZE,
+  Role,
+  USER_STATUSES,
+} from '@offerleap/shared';
 import { useSearchParams } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 
 import { Avatar, Badge, Input, Select, Skeleton, Text } from '@/components/atoms';
 import { Alert } from '@/components/molecules';
@@ -31,11 +37,12 @@ export function AdminUsersView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // The URL can be edited by hand: anything the API would reject falls back to "no filter" / page 1.
   const query: AdminUsersQueryInput = {
     q: searchParams.get('q') ?? undefined,
-    role: (searchParams.get('role') as AdminUsersQueryInput['role']) ?? undefined,
-    status: (searchParams.get('status') as AdminUsersQueryInput['status']) ?? undefined,
-    page: Number(searchParams.get('page') ?? 1),
+    role: adminUsersQuerySchema.shape.role.safeParse(searchParams.get('role') ?? undefined).data,
+    status: adminUsersQuerySchema.shape.status.safeParse(searchParams.get('status') ?? undefined).data,
+    page: Math.max(1, Math.trunc(Number(searchParams.get('page'))) || 1),
     pageSize: toPageSize(searchParams.get('pageSize')),
   };
   const { data, error, isPending, isPlaceholderData } = useAdminUsers(query);
@@ -54,12 +61,15 @@ export function AdminUsersView() {
     router.replace(`${pathname}?${params.toString()}`);
   }
 
+  // Runs with the URL as it is when the timer fires (a filter may have changed since the typing started).
+  const applySearch = useEffectEvent(() => {
+    if (search !== (query.q ?? '')) update({ q: search.trim() || undefined });
+  });
+
   // Search as you type, once typing pauses.
   useEffect(() => {
-    if (search === (query.q ?? '')) return;
-    const timer = setTimeout(() => update({ q: search.trim() || undefined }), SEARCH_DELAY_MS);
+    const timer = setTimeout(applySearch, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to the typed text
   }, [search]);
 
   return (

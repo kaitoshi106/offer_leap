@@ -35,6 +35,8 @@ export const fieldClasses = cn(
   'w-full rounded-md border border-border-strong bg-surface text-fg placeholder:text-fg-subtle',
   'transition-colors outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30',
   'disabled:cursor-not-allowed disabled:bg-surface-muted disabled:opacity-60',
+  // Read-only (e.g. filled from a chosen record): shown as a value, so nobody tries to type into it.
+  '[&[readonly]]:cursor-default [&[readonly]]:bg-surface-muted [&[readonly]]:text-fg-muted [&[readonly]]:focus-visible:border-border-strong',
   'aria-invalid:border-danger aria-invalid:focus-visible:ring-danger/30',
 );
 

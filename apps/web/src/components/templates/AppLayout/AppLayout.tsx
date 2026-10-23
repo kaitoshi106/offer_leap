@@ -45,6 +45,8 @@ const WIDTH = { lg: 'max-w-4xl', xl: 'max-w-6xl' } as const;
  * note in sessionStorage tells the new page to reopen it where the user was.
  */
 const MENU_REOPEN_KEY = 'offerleap:menu-reopen';
+/** Width from which the header row (and not the menu) is shown; keep in sync with the `lg:` classes below. */
+const HEADER_ROW_QUERY = '(min-width: 1024px)';
 const MENU_REOPEN_TTL_MS = 5_000;
 
 function rememberMenuOpen() {
@@ -80,8 +82,9 @@ let hydrated = false;
 
 /**
  * @description Shell for signed-in pages, with the content column below the header.
- * - From `xl` (1280px) up: one header row with brand, navigation, language/theme switches and the account
- *   actions — that row needs about 1100px, so narrower screens (tablets too, not just phones) get the menu.
+ * - From `lg` (1024px) up: one header row with brand, navigation, language/theme switches and the account
+ *   actions. With icons and roomy spacing that row needs about 1150px, so between `lg` and `xl` (1280px) the
+ *   navigation drops its icons and tightens its spacing (about 920px). Narrower screens get the menu.
  * - Below that: the brand and, opposite it, a ☰ button; everything else lives in a drawer that slides in from the
  *   right, the side of the button (navigation as a vertical list, language, theme, then `menuFooter`).
  * Presentational only — links, texts and data come from the caller.
@@ -122,6 +125,18 @@ export function AppLayout({
     setMenuOpen(false);
     setMenuRestored(false);
   };
+
+  // Widening the window (or rotating a tablet) past the breakpoint hides the ☰ button: close the menu with it,
+  // so no modal is left over the header row with the page's scroll locked.
+  useEffect(() => {
+    if (!menuLabels) return;
+    const query = window.matchMedia(HEADER_ROW_QUERY);
+    const onChange = (event: { matches: boolean }) => {
+      if (event.matches) closeMenu();
+    };
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, [menuLabels]);
   const logo = (
     <span className="flex items-center gap-2 font-bold">
       <Icon name="sparkles" className="text-primary-text" />
@@ -137,11 +152,12 @@ export function AppLayout({
         >
           {brand(logo)}
           {nav && (
-            <nav aria-label={navLabel} className="hidden flex-1 xl:block">
-              <ul className="flex items-center gap-1">{nav}</ul>
+            <nav aria-label={navLabel} className="hidden flex-1 lg:block">
+              {/* Between lg and xl: text only and tighter links, so the row fits from 1024px. */}
+              <ul className="flex items-center gap-1 max-xl:[&_a]:px-2 max-xl:[&_svg]:hidden">{nav}</ul>
             </nav>
           )}
-          <div className={cn('ml-auto items-center gap-2', menuLabels ? 'hidden xl:flex' : 'flex')}>
+          <div className={cn('ml-auto items-center gap-2', menuLabels ? 'hidden lg:flex' : 'flex')}>
             <LocaleSwitcher />
             <ThemeToggle />
             {actions}
@@ -155,7 +171,7 @@ export function AppLayout({
               aria-haspopup="dialog"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(true)}
-              className="-mr-2 ml-auto xl:hidden"
+              className="-mr-2 ml-auto lg:hidden"
             >
               <Icon name="menu" />
             </Button>
@@ -168,8 +184,13 @@ export function AppLayout({
           open={menuOpen}
           onClose={closeMenu}
           instant={menuRestored}
-          // Also when it was reopened after a language switch (not opened by the button).
-          onAfterClose={() => menuButtonRef.current?.focus()}
+          // Also when it was reopened after a language switch (not opened by the button). Closed because the window
+          // grew past the breakpoint, the button is hidden: keyboard users continue from the main content instead.
+          onAfterClose={() => {
+            const button = menuButtonRef.current;
+            if (button && (button.checkVisibility?.() ?? true)) button.focus();
+            else document.getElementById('main')?.focus();
+          }}
           // Back on the language switch the user just used (keyboard users keep their place).
           initialFocus={menuRestored ? '[data-drawer-keep-open] a[hreflang]' : undefined}
           label={menuLabels.title}
@@ -206,7 +227,11 @@ export function AppLayout({
         </Drawer>
       )}
 
-      <main id="main" className={cn('mx-auto w-full flex-1 px-4 py-8 sm:px-6', WIDTH[width])}>
+      <main
+        id="main"
+        tabIndex={-1}
+        className={cn('mx-auto w-full flex-1 px-4 py-8 outline-none sm:px-6', WIDTH[width])}
+      >
         {children}
       </main>
     </div>

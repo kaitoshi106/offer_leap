@@ -131,4 +131,36 @@ describe('InterviewSessionView', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Dịch vụ AI đang quá tải');
     expect(screen.getByLabelText('Câu trả lời của bạn')).toHaveValue('Câu trả lời');
   });
+
+  it('waits for the recording to stop before sending, so the last spoken phrase is not lost', async () => {
+    const user = userEvent.setup();
+    // A fake recogniser: the final phrase only arrives when recording stops, like the browser's.
+    class FakeRecognition {
+      lang = '';
+      continuous = false;
+      interimResults = false;
+      onresult: ((event: unknown) => void) | null = null;
+      onerror = null;
+      onend: (() => void) | null = null;
+      start() {}
+      stop() {
+        this.onresult?.({
+          resultIndex: 0,
+          results: [{ isFinal: true, 0: { transcript: 'and it shipped on time' } }],
+        });
+        this.onend?.();
+      }
+    }
+    vi.stubGlobal('SpeechRecognition', FakeRecognition);
+    fetchMock.mockResolvedValue(jsonResponse(200, interview([question(0)])));
+    renderWithProviders(<InterviewSessionView id="i1" />, { locale: 'en' });
+
+    await user.type(await screen.findByRole('textbox'), 'I led the migration');
+    await user.click(screen.getByRole('button', { name: 'Answer by voice' }));
+    expect(screen.getByRole('button', { name: 'Send answer' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Stop recording' }));
+    expect(screen.getByRole('textbox')).toHaveValue('I led the migration and it shipped on time');
+    expect(screen.getByRole('button', { name: 'Send answer' })).toBeEnabled();
+  });
 });

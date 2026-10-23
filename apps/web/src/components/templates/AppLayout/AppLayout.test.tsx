@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -99,6 +99,41 @@ describe('AppLayout', () => {
     expect(reopened).toHaveAttribute('open');
     expect(reopened.className).not.toMatch(/animate-drawer-in/);
     expect(sessionStorage.getItem('offerleap:menu-reopen')).toBeNull();
+  });
+
+  it('closes the menu when the window grows wide enough for the header row', async () => {
+    // A controllable `(min-width: 1024px)` query, like rotating a tablet or widening the window.
+    let listener: ((event: { matches: boolean }) => void) | undefined;
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: (_: string, handler: (event: { matches: boolean }) => void) => {
+        if (query === '(min-width: 1024px)') listener = handler;
+      },
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as unknown as typeof window.matchMedia;
+    try {
+      const user = userEvent.setup();
+      renderWithProviders(
+        <AppLayout navLabel="Main navigation" nav={overview} menuLabels={MENU}>
+          <h1>Hello</h1>
+        </AppLayout>,
+      );
+      await user.click(screen.getByRole('button', { name: 'Open menu' }));
+      expect(screen.getByRole('dialog', { name: 'Menu' })).toHaveAttribute('open');
+
+      act(() => listener?.({ matches: true }));
+      await vi.waitFor(() =>
+        expect(screen.getByRole('dialog', { hidden: true })).not.toHaveAttribute('open'),
+      );
+    } finally {
+      window.matchMedia = original;
+    }
   });
 
   it('ignores a stale reopen note', () => {

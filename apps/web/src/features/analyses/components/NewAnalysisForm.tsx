@@ -19,6 +19,7 @@ import { useRouter } from '@/i18n/navigation';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
+import { useMutateOnce } from '@/lib/api/use-mutate-once';
 
 import { useCreateAnalysis } from '../api/use-analyses';
 
@@ -39,6 +40,7 @@ export function NewAnalysisForm() {
   const resumes = useResumes();
   const upload = useUploadResume();
   const create = useCreateAnalysis();
+  const createOnce = useMutateOnce(create);
   const [uploadMode, setUploadMode] = useState(false);
   const [uploadError, setUploadError] = useState<string>();
 
@@ -70,7 +72,7 @@ export function NewAnalysisForm() {
 
   function submit(values: CreateAnalysis) {
     // Feedback comes back in the language the user is reading.
-    create.mutate(
+    createOnce(
       { ...values, locale },
       {
         onSuccess: (analysis) => router.push(`/analyses/${analysis.id}`),

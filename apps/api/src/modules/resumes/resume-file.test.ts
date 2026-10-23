@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { zip } from '../../common/files/zip.fixture';
 import { detectResumeType } from './resume-file';
 
 const bytes = (...values: (number | string)[]) =>
@@ -15,7 +16,7 @@ describe('detectResumeType', () => {
     ['WEBP', bytes('RIFF', 0, 0, 0, 0, 'WEBPVP8 '), 'image/webp'],
     [
       'DOCX',
-      bytes('PK', 3, 4, '....word/document.xml....'),
+      zip({ 'word/document.xml': Buffer.from('<w:document>CV</w:document>') }),
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ],
   ])('recognises %s', (_name, data, type) => {
@@ -27,6 +28,9 @@ describe('detectResumeType', () => {
     ['a ZIP that is not a Word file', bytes('PK', 3, 4, 'xl/workbook.xml')],
     ['RIFF audio', bytes('RIFF', 0, 0, 0, 0, 'WAVEfmt ')],
     ['an empty file', Buffer.alloc(0)],
+    // Unpacks to far more than any CV: reading it would exhaust the server's memory.
+    ['a Word file that is a "zip bomb"', zip({ 'word/document.xml': Buffer.alloc(80 * 1024 * 1024) })],
+    ['a damaged Word file', bytes('PK', 3, 4, '....word/document.xml....')],
   ])('rejects %s', (_name, data) => {
     expect(detectResumeType(data)).toBeNull();
   });

@@ -69,6 +69,22 @@ const COPY = {
       ignore: "If you didn't create this account, reply to this email and we'll help.",
     },
   },
+  'account-exists': {
+    vi: {
+      subject: `Có người vừa đăng ký bằng email của bạn – ${APP_NAME}`,
+      greeting: (name: string) => `Chào ${name},`,
+      body: 'Ai đó vừa thử tạo tài khoản mới bằng email này, nhưng bạn đã có tài khoản rồi nên không có gì thay đổi. Nếu là bạn và bạn quên mật khẩu, hãy đặt lại mật khẩu.',
+      action: 'Đặt lại mật khẩu',
+      ignore: 'Nếu không phải bạn, hãy bỏ qua email này — tài khoản của bạn vẫn an toàn.',
+    },
+    en: {
+      subject: `Someone tried to sign up with your email – ${APP_NAME}`,
+      greeting: (name: string) => `Hi ${name},`,
+      body: 'Someone just tried to create a new account with this email. You already have one, so nothing changed. If it was you and you forgot your password, reset it.',
+      action: 'Reset password',
+      ignore: "If it wasn't you, ignore this email — your account is safe.",
+    },
+  },
   'google-linked': {
     vi: {
       subject: `Đã liên kết tài khoản Google – ${APP_NAME}`,

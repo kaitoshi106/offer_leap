@@ -63,6 +63,14 @@ describe('loginSchema', () => {
   it('does not apply strength rules to existing passwords', () => {
     expect(loginSchema.safeParse({ email: 'a@b.co', password: 'x' }).success).toBe(true);
   });
+
+  it('refuses absurdly long passwords before they reach the (deliberately slow) password check', () => {
+    expect(rulesOf(loginSchema.safeParse({ email: 'a@b.co', password: 'x'.repeat(90_000) }))).toEqual({
+      password: ['tooLong'],
+    });
+    // Anything a real password could be still passes, including longer than today's sign-up limit.
+    expect(loginSchema.safeParse({ email: 'a@b.co', password: 'x'.repeat(256) }).success).toBe(true);
+  });
 });
 
 describe('changePasswordSchema', () => {

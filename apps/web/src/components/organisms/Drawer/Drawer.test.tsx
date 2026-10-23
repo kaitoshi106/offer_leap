@@ -103,4 +103,49 @@ describe('Drawer', () => {
     await user.click(screen.getByRole('button', { name: 'Close menu' }));
     expect(drawer()).not.toHaveAttribute('open');
   });
+
+  it('finishes closing once: the slide-out and the backdrop fade both end, then the fallback timer fires', async () => {
+    const user = userEvent.setup();
+    const afterClose = vi.fn();
+    function WithAfterClose() {
+      const [open, setOpen] = useState(true);
+      return (
+        <Drawer
+          open={open}
+          onClose={() => setOpen(false)}
+          label="Menu"
+          closeLabel="Close menu"
+          onAfterClose={afterClose}
+        >
+          <p>Content</p>
+        </Drawer>
+      );
+    }
+    render(<WithAfterClose />);
+    await user.click(screen.getByRole('button', { name: 'Close menu' }));
+
+    // Both animations target the dialog (the ::backdrop has no element of its own).
+    fireEvent(drawer(), new Event('animationend'));
+    fireEvent(drawer(), new Event('animationend'));
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(afterClose).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the page from scrolling until the slide-out is over, without shifting it sideways', async () => {
+    const user = userEvent.setup();
+    // A classic 15px scrollbar: the page would widen by that much when scrolling is locked.
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(window.innerWidth - 15);
+    render(<Harness />);
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.paddingRight).toBe('15px');
+
+    await user.click(screen.getByRole('button', { name: 'Close menu' }));
+    // Still sliding out: still locked.
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    await closed();
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(document.documentElement.style.paddingRight).toBe('');
+    vi.restoreAllMocks();
+  });
 });

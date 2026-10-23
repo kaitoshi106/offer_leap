@@ -1,6 +1,6 @@
 import type { Logger } from '@nestjs/common';
 import { ErrorCode } from '@offerleap/shared';
-import type { Job } from 'bullmq';
+import type { Job, Queue } from 'bullmq';
 
 import { AiQuotaExceededError, AiUnavailableError } from './ai.errors';
 
@@ -44,3 +44,28 @@ export const AI_JOB_OPTIONS = {
   removeOnComplete: 1_000,
   removeOnFail: 1_000,
 } as const;
+
+/**
+ * @description Queues the AI job of a record that was just created. If the queue can't be reached (Redis down) no
+ * worker will ever pick the record up, so it is marked failed before the error goes back to the client.
+ * @param queue - The feature's queue.
+ * @param name - Job name.
+ * @param data - Job payload.
+ * @param recordId - Used as the job id: queueing the same record twice is a no-op.
+ * @param markFailed - Marks the record failed.
+ * @throws The queue's error.
+ */
+export async function enqueueAiJob<TData>(
+  queue: Queue,
+  name: string,
+  data: TData,
+  recordId: string,
+  markFailed: () => Promise<void>,
+): Promise<void> {
+  try {
+    await queue.add(name, data, { jobId: recordId, ...AI_JOB_OPTIONS });
+  } catch (error) {
+    await markFailed().catch(() => undefined);
+    throw error;
+  }
+}

@@ -43,29 +43,59 @@ export function useUpdateApplication(id: string) {
   });
 }
 
+const moveKey = [...applicationsKey, 'move'] as const;
+
 /**
- * @description Moves a card. The board updates at once (optimistic update) and rolls back if the API refuses,
- * so dragging feels instant.
+ * @description Moves a card. The board (and the card's own page) update at once (optimistic update) and roll back
+ * if the API refuses, so dragging feels instant. With several moves in flight (quick successive drags), only the
+ * last one to finish refetches — an earlier refetch would briefly put later cards back where they were.
  */
 export function useMoveApplication() {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: moveKey,
     mutationFn: ({ id, ...body }: MoveApplication & { id: string }) => applicationsApi.move(id, body),
     onMutate: async ({ id, status, position }) => {
       // Stop an in-flight refetch from overwriting the optimistic state.
-      await queryClient.cancelQueries({ queryKey: applicationsKey, exact: true });
+      await queryClient.cancelQueries({ queryKey: applicationsKey });
       const previous = queryClient.getQueryData<ApplicationSummary[]>(applicationsKey);
+      const previousDetail = queryClient.getQueryData<ApplicationDetail>(applicationKey(id));
       queryClient.setQueryData<ApplicationSummary[]>(applicationsKey, (cards) =>
         cards?.map((card) => (card.id === id ? { ...card, status, position } : card)),
       );
-      return { previous };
+      queryClient.setQueryData<ApplicationDetail>(applicationKey(id), (application) =>
+        application ? { ...application, status, position } : application,
+      );
+      return { previous, previousDetail };
     },
-    onError: (_error, _move, context) => queryClient.setQueryData(applicationsKey, context?.previous),
+    onError: (_error, { id }, context) => {
+      queryClient.setQueryData(applicationsKey, context?.previous);
+      queryClient.setQueryData(applicationKey(id), context?.previousDetail);
+    },
     onSettled: (_data, _error, { id }) => {
+      // `isMutating` still counts this move while its onSettled runs.
+      if (queryClient.isMutating({ mutationKey: moveKey }) > 1) return;
       void queryClient.invalidateQueries({ queryKey: applicationsKey, exact: true });
       void queryClient.invalidateQueries({ queryKey: applicationKey(id) });
     },
   });
+}
+
+/**
+ * @description Position for a card moved to the top of a column, from the cached board (the card itself
+ * excluded). Without the board in the cache, `fallback` (e.g. the card's current position minus one).
+ * @returns `(id, status, fallback) => position`.
+ */
+export function useTopOfColumn() {
+  const queryClient = useQueryClient();
+  return (id: string, status: ApplicationSummary['status'], fallback: number) => {
+    const cards = queryClient.getQueryData<ApplicationSummary[]>(applicationsKey);
+    if (!cards) return fallback;
+    const positions = cards
+      .filter((card) => card.status === status && card.id !== id)
+      .map((card) => card.position);
+    return positions.length > 0 ? Math.min(...positions) - 1 : 0;
+  };
 }
 
 export function useDeleteApplication() {
@@ -75,6 +105,8 @@ export function useDeleteApplication() {
     onSuccess: (_result, id) => {
       queryClient.removeQueries({ queryKey: applicationKey(id) });
       void queryClient.invalidateQueries({ queryKey: applicationsKey, exact: true });
+      // Interviews practised for it are kept, but no longer linked.
+      void queryClient.invalidateQueries({ queryKey: ['interviews'] });
     },
   });
 }

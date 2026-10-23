@@ -63,6 +63,12 @@ test.describe('authentication', () => {
     await expect(page.getByText('Đã gửi yêu cầu')).toBeVisible();
 
     await page.goto(await linkFromEmail(email, '/reset-password'));
+    // Switching the language keeps the token: the link works in English too, and back.
+    await page.getByRole('link', { name: /English/ }).click();
+    await expect(page).toHaveURL(/\/en\/reset-password\?token=/);
+    await expect(page.getByLabel(/^New password\*?$/)).toBeVisible();
+    await page.getByRole('link', { name: /Tiếng Việt/ }).click();
+    await expect(page).toHaveURL(/\/vi\/reset-password\?token=/);
     const newPassword = page.getByLabel(/^Mật khẩu mới\*?$/);
     const confirm = page.getByLabel(/^Nhập lại mật khẩu\*?$/);
 

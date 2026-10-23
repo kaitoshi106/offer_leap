@@ -10,6 +10,7 @@ import { type ApiErrorResponse, ERROR_HTTP_STATUS, ErrorCode } from '@offerleap/
 import type { Response } from 'express';
 
 import { AppException } from '../errors/app.exception';
+import { isUniqueViolation } from '../errors/prisma-errors';
 import type { AppRequest } from '../http/request';
 
 /** Framework errors (thrown by Nest itself, not our code) mapped to our codes by status. */
@@ -56,6 +57,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
         code: exception.code,
         message: exception.message,
         ...(exception.fieldErrors && { fieldErrors: exception.fieldErrors }),
+        requestId,
+      };
+    }
+
+    // A race the code didn't map to a more specific error: still a conflict, not a server failure.
+    if (isUniqueViolation(exception)) {
+      return {
+        statusCode: ERROR_HTTP_STATUS.COMMON_CONFLICT,
+        code: ErrorCode.COMMON_CONFLICT,
+        message: 'Conflicting change',
         requestId,
       };
     }

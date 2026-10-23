@@ -6,6 +6,8 @@ import { ValidationRule } from '../validation/rules';
 export const PASSWORD_MIN_LENGTH = 8;
 /** Argon2 accepts more, but bcrypt-era clients and password managers commonly cap at 72. */
 export const PASSWORD_MAX_LENGTH = 72;
+/** Upper bound checked on sign-in (not a password rule, just protection for the password hashing). */
+const LOGIN_PASSWORD_MAX_LENGTH = 256;
 
 export const emailSchema = z
   .string({ error: ValidationRule.REQUIRED })
@@ -43,8 +45,12 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   email: emailSchema,
-  // Only presence is checked on login: rules may have changed since the account was created.
-  password: z.string({ error: ValidationRule.REQUIRED }).min(1, { error: ValidationRule.REQUIRED }),
+  // Only presence is checked on login: rules may have changed since the account was created. The upper bound only
+  // stops huge bodies from being hashed; it is far above any password the app ever accepted.
+  password: z
+    .string({ error: ValidationRule.REQUIRED })
+    .min(1, { error: ValidationRule.REQUIRED })
+    .max(LOGIN_PASSWORD_MAX_LENGTH, { error: ValidationRule.TOO_LONG }),
 });
 
 export const emailOnlySchema = z.object({ email: emailSchema });

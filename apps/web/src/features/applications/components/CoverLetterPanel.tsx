@@ -8,6 +8,7 @@ import { Button, Heading, Icon, Text, Textarea, VisuallyHidden } from '@/compone
 import { Alert } from '@/components/molecules';
 import { useToast } from '@/components/organisms';
 import { useErrorText } from '@/lib/api/use-error-text';
+import { useUnsavedChangesWarning } from '@/lib/forms/use-unsaved-changes-warning';
 
 import { applicationsApi } from '../api/applications-api';
 import { useSetCoverLetter, useUpdateApplication } from '../api/use-applications';
@@ -20,6 +21,7 @@ import { useSetCoverLetter, useUpdateApplication } from '../api/use-applications
  */
 export function CoverLetterPanel({ application }: { application: ApplicationDetail }) {
   const t = useTranslations('applications.coverLetter');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   const errorText = useErrorText();
   const toast = useToast();
@@ -35,6 +37,8 @@ export function CoverLetterPanel({ application }: { application: ApplicationDeta
   useEffect(() => () => controller.current?.abort(), []);
 
   const canGenerate = Boolean(application.jobDescription);
+  const unsaved = !streaming && draft !== (application.coverLetter ?? '');
+  useUnsavedChangesWarning(unsaved, tCommon('unsavedChanges'));
 
   async function generate() {
     controller.current = new AbortController();
@@ -60,8 +64,13 @@ export function CoverLetterPanel({ application }: { application: ApplicationDeta
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(draft);
-    toast.show({ tone: 'success', title: t('copied') });
+    try {
+      await navigator.clipboard.writeText(draft);
+      toast.show({ tone: 'success', title: t('copied') });
+    } catch {
+      // No clipboard permission (or not a secure page).
+      toast.show({ tone: 'danger', title: t('copyFailed') });
+    }
   }
 
   return (
@@ -99,6 +108,7 @@ export function CoverLetterPanel({ application }: { application: ApplicationDeta
 
       {!canGenerate && <Alert tone="info">{t('needsJd')}</Alert>}
       {error && <Alert tone="danger">{error}</Alert>}
+      {update.error && <Alert tone="danger">{errorText(update.error)}</Alert>}
 
       {streaming ? (
         <div
@@ -127,7 +137,7 @@ export function CoverLetterPanel({ application }: { application: ApplicationDeta
               <Button
                 size="sm"
                 loading={update.isPending}
-                disabled={draft === (application.coverLetter ?? '')}
+                disabled={!unsaved}
                 onClick={() =>
                   update.mutate(
                     { coverLetter: draft },

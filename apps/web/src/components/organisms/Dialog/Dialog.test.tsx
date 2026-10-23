@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -52,6 +52,14 @@ describe('Dialog', () => {
     expect(screen.getByRole('dialog', { hidden: true })).not.toHaveAttribute('open');
   });
 
+  it('stays open when the button that opened it was double-clicked (the 2nd click lands on the backdrop)', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByRole('button', { name: 'Delete CV' }));
+    fireEvent.click(screen.getByRole('dialog'), { detail: 2 });
+    expect(screen.getByRole('dialog')).toHaveAttribute('open');
+  });
+
   it('stays open when clicking inside the content', async () => {
     const user = userEvent.setup();
     render(<Harness />);
@@ -59,5 +67,21 @@ describe('Dialog', () => {
     await user.click(screen.getByText('Body'));
 
     expect(screen.getByRole('dialog')).toHaveAttribute('open');
+  });
+
+  it('shows an error inside the dialog, where it is visible and announced (a toast would sit under it)', () => {
+    render(
+      <Dialog
+        open
+        onClose={() => {}}
+        title="Delete this CV?"
+        closeLabel="Close"
+        error="Couldn't delete. Try again."
+      >
+        <p>Body</p>
+      </Dialog>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Delete this CV?' });
+    expect(within(dialog).getByRole('alert')).toHaveTextContent("Couldn't delete. Try again.");
   });
 });

@@ -34,7 +34,8 @@ import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { callAi } from '../ai/call-ai';
 import { KnowledgeService } from './knowledge.service';
 
-const ONE_HOUR = 60 * 60_000;
+const ONE_MINUTE = 60_000;
+const ONE_HOUR = 60 * ONE_MINUTE;
 
 @ApiTags('knowledge')
 @ApiCookieAuth('cookie')
@@ -104,6 +105,8 @@ export class KnowledgeController {
       'Returns the closest passages with their cosine similarity — what the AI features would be given.',
   })
   @ApiErrors(ErrorCode.COMMON_VALIDATION_FAILED, ErrorCode.AI_UNAVAILABLE)
+  // Each search embeds the query with the AI provider (and isn't counted in the daily quota).
+  @Throttle({ default: { limit: 30, ttl: ONE_MINUTE } })
   @Get('search')
   search(
     @CurrentUser() user: AccessTokenPayload,

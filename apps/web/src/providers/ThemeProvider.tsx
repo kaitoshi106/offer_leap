@@ -9,13 +9,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-import {
-  applyCurrentTheme,
-  parseStoredTheme,
-  resolveTheme,
-  type Theme,
-  THEME_STORAGE_KEY,
-} from '@/lib/theme';
+import { applyCurrentTheme, readThemeChoice, resolveTheme, storeThemeChoice, type Theme } from '@/lib/theme';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -38,24 +32,12 @@ function subscribeStoredTheme(onChange: () => void): () => void {
   };
 }
 
-function readStoredTheme(): Theme | null {
-  try {
-    return parseStoredTheme(localStorage.getItem(THEME_STORAGE_KEY));
-  } catch {
-    return null;
-  }
-}
-
 /**
  * @description Persists the choice and notifies subscribers in this tab.
  * @param theme - New theme.
  */
 function writeTheme(theme: Theme): void {
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // Storage blocked: the event below still updates this session.
-  }
+  storeThemeChoice(theme);
   window.dispatchEvent(new Event(THEME_EVENT));
 }
 
@@ -75,7 +57,7 @@ const serverPrefersDark = () => false;
  * @param children - App subtree.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const stored = useSyncExternalStore(subscribeStoredTheme, readStoredTheme, serverStoredTheme);
+  const stored = useSyncExternalStore(subscribeStoredTheme, readThemeChoice, serverStoredTheme);
   const prefersDark = useSyncExternalStore(subscribePrefersDark, readPrefersDark, serverPrefersDark);
   const theme = resolveTheme(stored, prefersDark);
 

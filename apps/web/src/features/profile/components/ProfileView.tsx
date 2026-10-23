@@ -37,7 +37,7 @@ export function ProfileView() {
   const tSteps = useTranslations('onboarding.stepTitles');
   const toast = useToast();
   const errorText = useErrorText();
-  const { data: profile, error, isPending, dataUpdatedAt } = useProfile();
+  const { data: profile, error, isPending } = useProfile();
   const saved = () => toast.show({ tone: 'success', title: t('saved') });
 
   return (
@@ -52,24 +52,28 @@ export function ProfileView() {
       {isPending ? (
         <Skeleton className="h-96 w-full" />
       ) : (
-        profile && (
-          <>
-            {/* `key` remounts a form with fresh defaults after the profile was saved. */}
-            <Section id="profile-personal" title={tSteps('personal')}>
-              <PersonalStep key={`p-${dataUpdatedAt}`} mode="profile" values={profile} onSaved={saved} />
-            </Section>
-            <Section id="profile-career" title={tSteps('career')}>
-              <CareerStep key={`c-${dataUpdatedAt}`} mode="profile" values={profile} onSaved={saved} />
-            </Section>
-            <Section id="profile-preferences" title={tSteps('preferences')}>
-              <PreferencesStep key={`w-${dataUpdatedAt}`} mode="profile" values={profile} onSaved={saved} />
-            </Section>
-            {/* After the forms, not before them: rendered earlier it would jump down when they arrive. */}
-            <Section id="profile-cvs" title={t('cvs.title')} description={t('cvs.description')}>
-              <ResumeManager />
-            </Section>
-          </>
-        )
+        <>
+          {profile && (
+            <>
+              {/* Each form follows the saved profile (saving one section refreshes all three) without losing
+                  what is being typed in the others. */}
+              <Section id="profile-personal" title={tSteps('personal')}>
+                <PersonalStep mode="profile" values={profile} onSaved={saved} />
+              </Section>
+              <Section id="profile-career" title={tSteps('career')}>
+                <CareerStep mode="profile" values={profile} onSaved={saved} />
+              </Section>
+              <Section id="profile-preferences" title={tSteps('preferences')}>
+                <PreferencesStep mode="profile" values={profile} onSaved={saved} />
+              </Section>
+            </>
+          )}
+          {/* After the forms, not before them: rendered earlier it would jump down when they arrive. Shown even
+              when the profile failed to load — CVs don't depend on it. */}
+          <Section id="profile-cvs" title={t('cvs.title')} description={t('cvs.description')}>
+            <ResumeManager />
+          </Section>
+        </>
       )}
     </div>
   );
@@ -199,6 +203,7 @@ function DeleteResumeDialog({ resume, onClose }: { resume: ResumeSummary | null;
       title={resume ? t('deleteTitle', { fileName: resume.fileName }) : ''}
       description={resume ? t('deleteBody', { count: resume.analysisCount ?? 0 }) : undefined}
       closeLabel={tCommon('close')}
+      error={remove.error && remove.variables === resume?.id ? errorText(remove.error) : undefined}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -214,7 +219,6 @@ function DeleteResumeDialog({ resume, onClose }: { resume: ResumeSummary | null;
                   toast.show({ tone: 'success', title: t('deleted') });
                   onClose();
                 },
-                onError: (error) => toast.show({ tone: 'danger', title: errorText(error) }),
               })
             }
           >

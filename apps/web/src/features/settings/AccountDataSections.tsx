@@ -85,6 +85,7 @@ export function DeleteAccount({ hasPassword = true }: { hasPassword?: boolean })
     setOpen(false);
     form.reset();
     remove.reset();
+    google.reset();
   };
   const generalError =
     remove.error && !(isApiError(remove.error) && remove.error.code === ErrorCode.AUTH_INVALID_CREDENTIALS);
@@ -100,6 +101,7 @@ export function DeleteAccount({ hasPassword = true }: { hasPassword?: boolean })
         title={t('settings.delete.title')}
         description={t(hasPassword ? 'settings.delete.body' : 'settings.delete.googleBody')}
         closeLabel={t('common.close')}
+        error={google.error ? errorText(google.error) : undefined}
         footer={
           <>
             <Button variant="ghost" onClick={close}>

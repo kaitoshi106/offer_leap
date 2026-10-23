@@ -1,4 +1,10 @@
-import { ApiError, type GoogleGenAI, type Part, ThinkingLevel } from '@google/genai';
+import {
+  ApiError,
+  type GenerateContentResponse,
+  type GoogleGenAI,
+  type Part,
+  ThinkingLevel,
+} from '@google/genai';
 import { Logger } from '@nestjs/common';
 
 import { AiUnavailableError } from '../ai.errors';
@@ -20,6 +26,10 @@ import { normalize } from './vectors';
 /** Statuses meaning "this model can't take the request right now" → try the next model. */
 const RETRYABLE_STATUSES = new Set([429, 500, 503, 504]);
 const REQUEST_TIMEOUT_MS = 60_000;
+/** A stream that goes silent this long after its first chunk is given up (a long letter may take minutes). */
+const STREAM_IDLE_TIMEOUT_MS = 30_000;
+
+const timeoutReason = () => new DOMException('The AI stopped answering', 'TimeoutError');
 const DEFAULT_MAX_OUTPUT_TOKENS = 8192;
 
 interface GeminiUsage {
@@ -104,30 +114,60 @@ export class GeminiProvider implements AiProvider {
     const contents = [{ role: 'user', parts: toGeminiParts(request.parts) }];
 
     return this.withModels(request.task, async (model, thinkingLevel) => {
-      const stream = await this.options.client.models.generateContentStream({
-        model,
-        contents,
-        config: {
-          systemInstruction: request.system,
-          temperature: request.temperature ?? 0.7,
-          thinkingConfig: { thinkingLevel },
-          maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-          abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        },
-      });
-      const iterator = stream[Symbol.asyncIterator]();
-      // Overload errors often surface on the first chunk rather than on the call itself, so read it here,
-      // while switching to another model is still possible.
-      const first = await iterator.next();
+      // One controller per stream: it times out the wait for the first chunk, then any long silence between
+      // chunks (not the stream as a whole), and stops the generation when the reader goes away.
+      const controller = new AbortController();
+      let timer = setTimeout(() => controller.abort(timeoutReason()), REQUEST_TIMEOUT_MS);
+      const waitForNext = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => controller.abort(timeoutReason()), STREAM_IDLE_TIMEOUT_MS);
+      };
+
+      let iterator: AsyncIterator<GenerateContentResponse>;
+      let first: IteratorResult<GenerateContentResponse>;
+      try {
+        const stream = await this.options.client.models.generateContentStream({
+          model,
+          contents,
+          config: {
+            systemInstruction: request.system,
+            temperature: request.temperature ?? 0.7,
+            thinkingConfig: { thinkingLevel },
+            maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+            abortSignal: controller.signal,
+          },
+        });
+        iterator = stream[Symbol.asyncIterator]();
+        // Overload errors often surface on the first chunk rather than on the call itself, so read it here,
+        // while switching to another model is still possible.
+        first = await iterator.next();
+      } catch (error) {
+        clearTimeout(timer);
+        controller.abort();
+        throw error;
+      }
+      waitForNext();
 
       const usage: AiUsage = { inputTokens: 0, outputTokens: 0 };
       async function* chunks(): AsyncGenerator<string> {
-        let current = first;
-        while (!current.done) {
-          // Every chunk carries the running totals; the last one is final.
-          if (current.value.usageMetadata) Object.assign(usage, toUsage(current.value.usageMetadata));
-          if (current.value.text) yield current.value.text;
-          current = await iterator.next();
+        let finished = false;
+        try {
+          let current = first;
+          while (!current.done) {
+            // Every chunk carries the running totals; the last one is final.
+            if (current.value.usageMetadata) Object.assign(usage, toUsage(current.value.usageMetadata));
+            if (current.value.text) yield current.value.text;
+            current = await iterator.next();
+            waitForNext();
+          }
+          finished = true;
+        } finally {
+          clearTimeout(timer);
+          // The reader stopped early (the user left, or an error): stop generating — and paying — upstream.
+          if (!finished) {
+            controller.abort();
+            void iterator.return?.().catch(() => undefined);
+          }
         }
       }
       return { model, chunks: chunks(), usage: () => usage };

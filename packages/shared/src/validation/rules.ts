@@ -20,6 +20,10 @@ export const ValidationRule = {
   MIN_EXCEEDS_MAX: 'minExceedsMax',
   /** A new password equal to the current one. */
   SAME_AS_CURRENT: 'sameAsCurrent',
+  /** A number with a fractional part where only whole numbers make sense (years, money in millions). */
+  WHOLE_NUMBER: 'wholeNumber',
+  /** Not a web address (http/https). */
+  INVALID_URL: 'invalidUrl',
   INVALID: 'invalid',
 } as const;
 

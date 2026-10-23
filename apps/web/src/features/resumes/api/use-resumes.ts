@@ -31,6 +31,8 @@ export function useDeleteResume() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: resumesKey, exact: true });
       void queryClient.invalidateQueries({ queryKey: ['analyses'] });
+      // Its analyses go with it, and with them the scores shown on applications.
+      void queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });
 }

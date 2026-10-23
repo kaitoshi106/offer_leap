@@ -10,6 +10,25 @@ const envSchema = z
 
     DATABASE_URL: z.url(),
     REDIS_URL: z.url().default('redis://localhost:6379'),
+    /**
+     * Prefix of the job queues in Redis. Default `bull`, or `bull-test` under NODE_ENV=test so test runs don't
+     * hand their jobs to `pnpm dev`; two test setups sharing Redis (API e2e and a browser-test server) need
+     * different ones.
+     */
+    QUEUE_PREFIX: z.string().min(1).optional(),
+    /**
+     * Express `trust proxy`: which proxies in front of the API may set the client IP (`X-Forwarded-For`). Rate
+     * limits and session records use that IP, so behind a load balancer set it (e.g. `1` for one hop, or its
+     * addresses); otherwise every user looks like the proxy and shares one limit. Default: trust none.
+     */
+    TRUST_PROXY: z
+      .string()
+      .optional()
+      .transform((value): boolean | number | string => {
+        if (!value || value === 'false') return false;
+        if (value === 'true') return true;
+        return /^\d+$/.test(value) ? Number(value) : value;
+      }),
 
     JWT_ACCESS_SECRET: z.string().min(32, 'must be at least 32 characters'),
     /** Access token lifetime in seconds. */
@@ -65,6 +84,7 @@ const envSchema = z
     ...env,
     API_PUBLIC_URL: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
     OAUTH_PROVIDER: env.OAUTH_PROVIDER ?? (env.NODE_ENV === 'test' ? 'mock' : 'google'),
+    QUEUE_PREFIX: env.QUEUE_PREFIX ?? (env.NODE_ENV === 'test' ? 'bull-test' : 'bull'),
   }));
 
 export type Env = z.infer<typeof envSchema>;

@@ -81,8 +81,19 @@ export function OnboardingWizard() {
       <Stepper
         label={t('progress')}
         completedLabel={t('completedStep')}
+        skippedLabel={t('skippedStep')}
+        currentLabel={t('stepOf', {
+          current: current + 1,
+          total: ONBOARDING_STEPS.length,
+          label: t(`steps.${ONBOARDING_STEPS[current]!}`),
+        })}
         current={current}
-        steps={ONBOARDING_STEPS.map((key) => ({ key, label: t(`steps.${key}`) }))}
+        // The CV step is optional: without a CV it was skipped, not done.
+        steps={ONBOARDING_STEPS.map((key) => ({
+          key,
+          label: t(`steps.${key}`),
+          skipped: key === 'resume' && !state.resume,
+        }))}
       />
 
       <section

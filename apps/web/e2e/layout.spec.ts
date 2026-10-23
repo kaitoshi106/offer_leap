@@ -242,15 +242,48 @@ test.describe('layout', () => {
       await page.setViewportSize({ width: 1440, height: 800 });
       await page.goto(`/${locale}/dashboard`);
       await page.waitForLoadState('networkidle');
+      const header = page.getByRole('banner');
       // Resized without reloading, like dragging the window or the DevTools device toolbar.
-      for (const width of [1440, 1280, 1279, 1100, 1024, 900, 768, 640, 480, 375, 320]) {
+      for (const width of [1440, 1280, 1279, 1100, 1024, 1023, 900, 768, 640, 480, 375, 320]) {
         await page.setViewportSize({ width, height: 800 });
-        const { scrollWidth, clientWidth } = await page.evaluate(() => ({
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth,
-        }));
+        const { scrollWidth, clientWidth, rowFits } = await page.evaluate(() => {
+          const row = document.querySelector('header > div')!;
+          return {
+            scrollWidth: document.documentElement.scrollWidth,
+            clientWidth: document.documentElement.clientWidth,
+            rowFits: row.scrollWidth <= row.clientWidth,
+          };
+        });
         expect.soft(scrollWidth, `${locale} at ${width}px`).toBeLessThanOrEqual(clientWidth);
+        expect.soft(rowFits, `${locale} header row at ${width}px`).toBe(true);
+        // From 1024px the whole row (navigation included) is shown; below it, ☰ and the brand.
+        const wide = width >= 1024;
+        await expect
+          .soft(
+            header.getByRole('navigation', { name: /Điều hướng chính|Main navigation/ }),
+            `${locale} ${width}px`,
+          )
+          .toBeVisible({ visible: wide });
+        await expect
+          .soft(header.getByRole('button', { name: /Mở menu|Open menu/ }), `${locale} ${width}px`)
+          .toBeVisible({ visible: !wide });
       }
     }
+  });
+
+  test('the phone menu closes when the window grows wide enough for the header row', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 800 });
+    await registerAndVerify(page, 'Minh Tablet');
+    await completeOnboarding(page);
+    await page.getByRole('button', { name: 'Mở menu' }).click();
+    const menu = page.getByRole('dialog', { name: 'Menu' });
+    await expect(menu).toBeVisible();
+
+    // Rotating the tablet or widening the window: no modal left over the header row, the page scrolls again.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(menu).toBeHidden();
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Ứng tuyển' })).toBeVisible();
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe('hidden');
+    await expect(page.locator('main')).toBeFocused();
   });
 });

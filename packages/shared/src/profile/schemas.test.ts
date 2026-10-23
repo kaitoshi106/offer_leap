@@ -62,6 +62,12 @@ describe('careerStepSchema', () => {
     ]);
   });
 
+  it('says a fractional number of years must be a whole number, not just "invalid"', () => {
+    expect(rules(careerStepSchema.safeParse({ ...valid, yearsOfExperience: 2.5 }))).toEqual([
+      { field: 'yearsOfExperience', rule: 'wholeNumber', params: undefined },
+    ]);
+  });
+
   it('reports translatable rules with limits', () => {
     expect(rules(careerStepSchema.safeParse({ ...valid, yearsOfExperience: 70, skills: [] }))).toEqual([
       { field: 'yearsOfExperience', rule: 'tooLarge', params: { max: 50 } },

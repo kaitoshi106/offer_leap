@@ -9,6 +9,7 @@ import { AI_PROVIDER, AI_VENDOR, type AiProvider } from './ai.types';
 import { GeminiProvider } from './providers/gemini.provider';
 import { MockAiProvider } from './providers/mock.provider';
 import { TrackedAiProvider } from './providers/tracked.provider';
+import { StuckJobsSweeper } from './stuck-jobs.sweeper';
 
 /**
  * Provides `AI_PROVIDER`: the vendor chosen by `AI_PROVIDER` env (`AI_VENDOR`) wrapped in `TrackedAiProvider`
@@ -20,6 +21,7 @@ import { TrackedAiProvider } from './providers/tracked.provider';
   controllers: [AiController],
   providers: [
     AiQuotaService,
+    StuckJobsSweeper,
     {
       provide: AI_VENDOR,
       inject: [ConfigService],

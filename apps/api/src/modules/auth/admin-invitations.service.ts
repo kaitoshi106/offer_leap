@@ -11,6 +11,7 @@ import {
 } from '@offerleap/shared';
 
 import { AppException } from '../../common/errors/app.exception';
+import { isUniqueViolation } from '../../common/errors/prisma-errors';
 import { generateOpaqueToken, hashPassword, hashToken } from '../../common/security/hashing';
 import type { Env } from '../../config/env.schema';
 import type { AdminInvitation as InvitationRow, User } from '../../generated/prisma/client';
@@ -145,24 +146,30 @@ export class AdminInvitationsService {
     }
     const passwordHash = await hashPassword(input.password);
 
-    return this.prisma.$transaction(async (tx) => {
-      const { count } = await tx.adminInvitation.updateMany({
-        where: { id: invitation.id, acceptedAt: null, revokedAt: null },
-        data: { acceptedAt: new Date() },
+    return this.prisma
+      .$transaction(async (tx) => {
+        const { count } = await tx.adminInvitation.updateMany({
+          where: { id: invitation.id, acceptedAt: null, revokedAt: null },
+          data: { acceptedAt: new Date() },
+        });
+        if (count === 0) throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
+        return tx.user.create({
+          data: {
+            email: invitation.email,
+            fullName: input.fullName,
+            passwordHash,
+            role: 'ADMIN',
+            adminLevel: 'GENERAL',
+            locale,
+            emailVerifiedAt: new Date(),
+          },
+        });
+      })
+      .catch((error: unknown) => {
+        // An account with this email appeared meanwhile (e.g. the invitation accepted twice at once).
+        if (isUniqueViolation(error)) throw new AppException(ErrorCode.AUTH_EMAIL_TAKEN);
+        throw error;
       });
-      if (count === 0) throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
-      return tx.user.create({
-        data: {
-          email: invitation.email,
-          fullName: input.fullName,
-          passwordHash,
-          role: 'ADMIN',
-          adminLevel: 'GENERAL',
-          locale,
-          emailVerifiedAt: new Date(),
-        },
-      });
-    });
   }
 
   private async usable(token: string): Promise<InvitationRow> {

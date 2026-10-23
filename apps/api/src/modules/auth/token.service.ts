@@ -53,7 +53,8 @@ export class TokenService {
    * @param rawToken - Refresh token from the cookie.
    * @param client - User agent / IP for the new token row.
    * @returns The user and the new tokens.
-   * @throws AppException AUTH_TOKEN_INVALID (unknown, reused or disabled user) or AUTH_TOKEN_EXPIRED.
+   * @throws AppException AUTH_TOKEN_INVALID (unknown or reused: the whole session is revoked), AUTH_TOKEN_EXPIRED,
+   *   AUTH_ACCOUNT_LOCKED, or AUTH_REFRESH_RACE (another request rotated it a moment ago; retry).
    */
   async rotate(rawToken: string, client: ClientInfo): Promise<{ user: User; tokens: SessionTokens }> {
     const now = new Date();
@@ -64,7 +65,16 @@ export class TokenService {
     if (!stored) throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
 
     if (stored.revokedAt) {
-      await this.handleRevokedTokenUse(stored.familyId, stored.revokedAt, now);
+      // Just rotated by another request of the same browser (two tabs waking up together): not theft. That request
+      // set fresh cookies; this one must leave them alone and retry with them.
+      // (Rotated, not revoked: a sign-out or password change revokes without a replacement.)
+      const recent = now.getTime() - stored.revokedAt.getTime() <= REUSE_GRACE_MS;
+      if (recent && stored.replacedById) {
+        throw new AppException(ErrorCode.AUTH_REFRESH_RACE, { message: 'Refresh token was just rotated' });
+      }
+      // Reused long after its rotation: someone else has a copy (theft) — end the whole session. Within the grace
+      // window it was revoked on purpose (sign-out, password change) or is mid-rotation: just refuse it.
+      if (!recent) await this.revokeFamily(stored.familyId);
       throw new AppException(ErrorCode.AUTH_TOKEN_INVALID, { message: 'Refresh token already used' });
     }
     if (stored.expiresAt <= now) throw new AppException(ErrorCode.AUTH_TOKEN_EXPIRED);
@@ -78,7 +88,9 @@ export class TokenService {
       where: { id: stored.id, revokedAt: null },
       data: { revokedAt: now },
     });
-    if (claimed.count === 0) throw new AppException(ErrorCode.AUTH_TOKEN_INVALID);
+    if (claimed.count === 0) {
+      throw new AppException(ErrorCode.AUTH_REFRESH_RACE, { message: 'Refresh token was just rotated' });
+    }
 
     const tokens = await this.issue(stored.user, stored.familyId, client, stored.id);
     return { user: stored.user, tokens };
@@ -139,15 +151,6 @@ export class TokenService {
       refreshToken,
       refreshTokenExpiresAt,
     };
-  }
-
-  /**
-   * @description A revoked token was presented again. Shortly after rotation it is a multi-tab race; later it
-   * means the token was copied (stolen), so the whole session family is revoked and the thief and the victim
-   * must both sign in again.
-   */
-  private async handleRevokedTokenUse(familyId: string, revokedAt: Date, now: Date): Promise<void> {
-    if (now.getTime() - revokedAt.getTime() > REUSE_GRACE_MS) await this.revokeFamily(familyId);
   }
 
   private async revokeFamily(familyId: string): Promise<void> {

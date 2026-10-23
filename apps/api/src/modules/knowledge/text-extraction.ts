@@ -2,6 +2,8 @@ import type { KnowledgeMimeType } from '@offerleap/shared';
 import { extractRawText } from 'mammoth';
 import { extractText, getDocumentProxy } from 'unpdf';
 
+import { DOCX_MAX_UNPACKED_BYTES, unzippedSizeWithin } from '../../common/files/zip-guard';
+
 const DOCX: KnowledgeMimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 /**
@@ -15,7 +17,9 @@ export function detectKnowledgeType(data: Buffer, fileName: string): KnowledgeMi
   if (data.subarray(0, 5).toString('latin1') === '%PDF-') return 'application/pdf';
   if (
     data.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04])) &&
-    data.includes('word/document.xml')
+    data.includes('word/document.xml') &&
+    // A "zip bomb" would exhaust the server's memory when mammoth unpacks it.
+    unzippedSizeWithin(data, DOCX_MAX_UNPACKED_BYTES) !== null
   ) {
     return DOCX;
   }

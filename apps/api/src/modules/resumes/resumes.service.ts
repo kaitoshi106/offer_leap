@@ -7,10 +7,11 @@ import type { Queue } from 'bullmq';
 import { extractRawText } from 'mammoth';
 
 import { AppException } from '../../common/errors/app.exception';
+import { isMissingReference } from '../../common/errors/prisma-errors';
 import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
-import { AI_JOB_OPTIONS } from '../ai/ai-job';
+import { enqueueAiJob } from '../ai/ai-job';
 import { AiInvalidOutputError } from '../ai/ai.errors';
 import { AI_PROVIDER, type AiProvider } from '../ai/ai.types';
 import {
@@ -59,24 +60,25 @@ export class ResumesService {
 
     const storageKey = `resumes/${userId}/${randomUUID()}${RESUME_FILE_TYPES[mimeType]}`;
     await this.storage.put(storageKey, file.buffer);
-    const resume = await this.prisma.resume.create({
-      data: {
-        userId,
-        fileName: file.originalname.slice(0, 255),
-        mimeType,
-        sizeBytes: file.buffer.length,
-        storageKey,
-      },
-    });
+    const resume = await this.prisma.resume
+      .create({
+        data: {
+          userId,
+          fileName: file.originalname.slice(0, 255),
+          mimeType,
+          sizeBytes: file.buffer.length,
+          storageKey,
+        },
+      })
+      .catch(async (error: unknown) => {
+        // No row for the file: don't keep it. A deleted account (its access token outlives it) isn't signed in.
+        await this.storage.remove(storageKey);
+        if (isMissingReference(error)) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
+        throw error;
+      });
 
-    await this.queue.add(
-      'parse',
-      { resumeId: resume.id },
-      {
-        // Same id as the row: queueing the same CV twice is a no-op.
-        jobId: resume.id,
-        ...AI_JOB_OPTIONS,
-      },
+    await enqueueAiJob(this.queue, 'parse', { resumeId: resume.id }, resume.id, () =>
+      this.markFailed(resume.id, ErrorCode.RESUME_PARSE_FAILED),
     );
     return toResumeSummary(resume);
   }

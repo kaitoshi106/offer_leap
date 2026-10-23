@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useId, useRef } from 'react';
 import { cn } from '@/lib/cn';
 
 import { Button, Heading, Icon, Text } from '../../atoms';
+import { Alert } from '../../molecules';
 
 export interface DialogProps {
   open: boolean;
@@ -17,6 +18,11 @@ export interface DialogProps {
   children?: ReactNode;
   /** Actions row, e.g. Cancel / Confirm buttons. */
   footer?: ReactNode;
+  /**
+   * Why the action failed (translated), shown above the actions. Errors of an action started in the dialog belong
+   * here: the page behind is inert and below the dialog, so a toast would be hidden and not announced.
+   */
+  error?: ReactNode;
   className?: string;
 }
 
@@ -34,6 +40,7 @@ export function Dialog({
   closeLabel,
   children,
   footer,
+  error,
   className,
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -58,8 +65,9 @@ export function Dialog({
         onClose();
       }}
       onClick={(event) => {
-        // Clicks on the ::backdrop target the <dialog> itself; clicks inside hit its children.
-        if (event.target === event.currentTarget) onClose();
+        // Clicks on the ::backdrop target the <dialog> itself; clicks inside hit its children. The second click of
+        // a double click on the button that opened it lands here too: that isn't a request to close.
+        if (event.target === event.currentTarget && event.detail < 2) onClose();
       }}
       className={cn(
         'm-auto w-[calc(100%-2rem)] max-w-lg rounded-xl border border-border bg-surface p-0 text-fg shadow-popover',
@@ -90,6 +98,7 @@ export function Dialog({
           </Button>
         </div>
         {children}
+        {error && <Alert tone="danger">{error}</Alert>}
         {footer && <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">{footer}</div>}
       </div>
     </dialog>

@@ -36,10 +36,28 @@ export interface DrawerProps {
 const EXIT_MS = 250;
 
 /**
+ * @description Stops the page behind from scrolling. Hiding the scrollbar would widen the page (and move it
+ * sideways) on systems with classic scrollbars, so its width is added back as padding.
+ * @returns A function that restores the page.
+ */
+function lockPageScroll(): () => void {
+  const root = document.documentElement;
+  const previous = { overflow: root.style.overflow, paddingRight: root.style.paddingRight };
+  const scrollbar = root.clientWidth > 0 ? window.innerWidth - root.clientWidth : 0;
+  root.style.overflow = 'hidden';
+  if (scrollbar > 0) root.style.paddingRight = `${scrollbar}px`;
+  return () => {
+    root.style.overflow = previous.overflow;
+    root.style.paddingRight = previous.paddingRight;
+  };
+}
+
+/**
  * @description Side sheet that slides in from an edge — the navigation menu on phones. Built on a modal
  * `<dialog>` like `Dialog`: the page behind is inert, focus stays inside, Escape closes it and focus returns to
- * the button that opened it. The page behind doesn't scroll while it is open. Closing plays the slide-out first
- * (`data-closing`), then closes the dialog; with reduced motion it closes at once.
+ * the button that opened it. The page behind doesn't scroll while it is shown (until the slide-out is over), and
+ * doesn't shift sideways when its scrollbar goes away. Closing plays the slide-out first (`data-closing`), then
+ * closes the dialog; with reduced motion it closes at once.
  * @param props - {@link DrawerProps}
  */
 export function Drawer({
@@ -56,15 +74,25 @@ export function Drawer({
   onAfterClose,
 }: DrawerProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  /** Restores page scrolling; set while the dialog is shown (including its slide-out). */
+  const unlockPage = useRef<(() => void) | null>(null);
 
   // Layout effects: the dialog opens (or is reopened after a language switch) before the browser paints.
   useLayoutEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
+    const closeNow = () => {
+      delete dialog.dataset.closing;
+      dialog.close();
+      unlockPage.current?.();
+      unlockPage.current = null;
+      onAfterClose?.();
+    };
     if (open) {
       delete dialog.dataset.closing;
       if (!dialog.open) {
         dialog.showModal();
+        unlockPage.current ??= lockPageScroll();
         // showModal() focuses the first focusable element; move on to the requested one if any.
         if (initialFocus) dialog.querySelector<HTMLElement>(initialFocus)?.focus();
       }
@@ -72,15 +100,19 @@ export function Drawer({
     }
     if (!dialog.open) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      dialog.close();
-      onAfterClose?.();
+      closeNow();
       return;
     }
     dialog.dataset.closing = '';
+    // The slide-out and the backdrop fade both end on the dialog, and the fallback timer may fire as well: the
+    // first one finishes, the others are ignored.
+    let finished = false;
     const finish = () => {
-      delete dialog.dataset.closing;
-      dialog.close();
-      onAfterClose?.();
+      if (finished) return;
+      finished = true;
+      dialog.removeEventListener('animationend', onEnd);
+      clearTimeout(fallback);
+      closeNow();
     };
     const onEnd = (event: AnimationEvent) => event.target === dialog && finish();
     dialog.addEventListener('animationend', onEnd);
@@ -93,15 +125,14 @@ export function Drawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  useLayoutEffect(() => {
-    if (!open) return;
-    const root = document.documentElement;
-    const previous = root.style.overflow;
-    root.style.overflow = 'hidden';
-    return () => {
-      root.style.overflow = previous;
-    };
-  }, [open]);
+  // Unmounted while open (e.g. navigating away): give the page its scrolling back.
+  useLayoutEffect(
+    () => () => {
+      unlockPage.current?.();
+      unlockPage.current = null;
+    },
+    [],
+  );
 
   return (
     <dialog

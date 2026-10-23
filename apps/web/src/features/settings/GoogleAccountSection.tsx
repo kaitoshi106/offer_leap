@@ -26,9 +26,18 @@ export function GoogleAccountSection({ methods }: { methods: SignInMethods }) {
 
   if (!google) {
     return (
-      <Button variant="outline" className="self-start" loading={link.isPending} onClick={() => link.mutate()}>
-        {t('link')}
-      </Button>
+      <div className="flex flex-col gap-3">
+        {/* Starting the flow first checks the session; if that fails the user must know why nothing happened. */}
+        {link.error && <Alert tone="danger">{errorText(link.error)}</Alert>}
+        <Button
+          variant="outline"
+          className="self-start"
+          loading={link.isPending}
+          onClick={() => link.mutate()}
+        >
+          {t('link')}
+        </Button>
+      </div>
     );
   }
   return (

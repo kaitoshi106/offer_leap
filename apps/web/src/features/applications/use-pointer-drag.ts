@@ -136,23 +136,26 @@ export function usePointerDrag<TColumn extends string>({
       const g = gesture.current;
       if (!g?.active) return;
       placeOverlay();
+      // Only what actually moved counts: at a scroll limit there is nothing to follow, so no frame loop.
       let scrolled = false;
       const container = scrollRef.current;
       if (container && container.scrollWidth > container.clientWidth) {
         const rect = container.getBoundingClientRect();
         const speed = edgeSpeed(g.x - rect.left, rect.right - g.x);
         if (speed !== 0) {
+          const before = container.scrollLeft;
           container.scrollLeft += speed;
-          scrolled = true;
+          scrolled ||= container.scrollLeft !== before;
         }
       }
       const vertical = edgeSpeed(g.y, window.innerHeight - g.y);
       if (vertical !== 0) {
+        const before = window.scrollY;
         window.scrollBy(0, vertical);
-        scrolled = true;
+        scrolled ||= window.scrollY !== before;
       }
       hitTest();
-      // Keep scrolling while the pointer rests near an edge.
+      // Keep scrolling while the pointer rests near an edge (the next pointer move schedules a frame anyway).
       if (scrolled) frame.current = requestAnimationFrame(step);
     },
     [hitTest, placeOverlay, scrollRef],
@@ -162,25 +165,35 @@ export function usePointerDrag<TColumn extends string>({
     frame.current ??= requestAnimationFrame(tick);
   }, [tick]);
 
-  const end = useCallback((drop: boolean) => {
-    const g = gesture.current;
-    if (!g) return;
-    clearTimeout(g.touchTimer);
-    if (frame.current !== null) cancelAnimationFrame(frame.current);
-    frame.current = null;
-    if (g.active) {
-      document.body.style.removeProperty('user-select');
-      document.body.style.removeProperty('cursor');
-      // The click that follows pointerup would open the card's link.
-      suppressClick.current = true;
-      setTimeout(() => (suppressClick.current = false), 0);
-      if (drop && targetRef.current) callbacks.current.onDrop(g.id, targetRef.current);
-    }
-    gesture.current = null;
-    targetRef.current = null;
-    setActive(null);
-    setTarget(null);
+  // Once a touch drag has started, stop the page from scrolling under the finger. Registered only while a card is
+  // touched: a non-passive touch listener makes every scroll wait for the main thread.
+  const blockTouchScroll = useCallback((event: TouchEvent) => {
+    if (gesture.current?.active) event.preventDefault();
   }, []);
+
+  const end = useCallback(
+    (drop: boolean) => {
+      const g = gesture.current;
+      if (!g) return;
+      clearTimeout(g.touchTimer);
+      if (g.pointerType === 'touch') window.removeEventListener('touchmove', blockTouchScroll);
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      frame.current = null;
+      if (g.active) {
+        document.body.style.removeProperty('user-select');
+        document.body.style.removeProperty('cursor');
+        // The click that follows pointerup would open the card's link.
+        suppressClick.current = true;
+        setTimeout(() => (suppressClick.current = false), 0);
+        if (drop && targetRef.current) callbacks.current.onDrop(g.id, targetRef.current);
+      }
+      gesture.current = null;
+      targetRef.current = null;
+      setActive(null);
+      setTarget(null);
+    },
+    [blockTouchScroll],
+  );
 
   const activate = useCallback(() => {
     const g = gesture.current;
@@ -210,10 +223,6 @@ export function usePointerDrag<TColumn extends string>({
       }
       schedule();
     }
-    // Once a touch drag has started, stop the page from scrolling under the finger.
-    function onTouchMove(event: TouchEvent) {
-      if (gesture.current?.active) event.preventDefault();
-    }
     const onUp = (event: PointerEvent) => event.pointerId === gesture.current?.pointerId && end(true);
     const onCancel = (event: PointerEvent) => event.pointerId === gesture.current?.pointerId && end(false);
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && gesture.current?.active && end(false);
@@ -222,13 +231,11 @@ export function usePointerDrag<TColumn extends string>({
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onCancel);
     window.addEventListener('keydown', onKey);
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('touchmove', onTouchMove);
       end(false);
     };
   }, [activate, end, schedule]);
@@ -262,6 +269,8 @@ export function usePointerDrag<TColumn extends string>({
           active: false,
         };
         if (event.pointerType !== 'touch') return;
+        // Before the browser's touchstart, so it knows this touch may be prevented from scrolling.
+        window.addEventListener('touchmove', blockTouchScroll, { passive: false });
         // A touch on the card's handle (`[data-drag-handle]`, touch-action: none) drags at once; anywhere else on
         // the card the finger has to rest first, so a swipe still scrolls the page.
         if ((event.target as HTMLElement).closest('[data-drag-handle]')) activate();

@@ -172,6 +172,7 @@ function StatusAction({ user }: { user: AdminUserDetail }) {
         title={disabling ? t('disableTitle', { email: user.email }) : t('enableTitle', { email: user.email })}
         description={disabling ? t('disableBody') : t('enableBody')}
         closeLabel={tCommon('close')}
+        error={setStatus.error ? errorText(setStatus.error) : undefined}
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)}>
@@ -186,7 +187,6 @@ function StatusAction({ user }: { user: AdminUserDetail }) {
                     setOpen(false);
                     toast.show({ tone: 'success', title: disabling ? t('disabled') : t('enabled') });
                   },
-                  onError: (error) => toast.show({ tone: 'danger', title: errorText(error) }),
                 })
               }
             >

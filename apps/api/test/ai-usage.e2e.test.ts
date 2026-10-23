@@ -130,4 +130,20 @@ describe('admin industries', () => {
     expect(list.body.find((industry: { code: string }) => industry.code === 'software').profileCount).toBe(1);
     expect(list.body.some((industry: { code: string }) => industry.code === 'game-dev')).toBe(false);
   });
+
+  it('answers "code taken" to the second of two simultaneous adds of the same code', async () => {
+    const admin = await signInAdmin(ctx, 'GENERAL');
+    // Industries survive the database reset between tests (they are seeded taxonomy).
+    await ctx.prisma.industry.deleteMany({ where: { code: 'quantum-lab' } });
+    const add = () =>
+      admin
+        .post('/api/v1/admin/industries')
+        .send({ code: 'quantum-lab', nameVi: 'Lượng tử', nameEn: 'Quantum' });
+    const responses = await Promise.all([add(), add()]);
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+    expect(responses.find((response) => response.status === 409)?.body.code).toBe(
+      ErrorCode.TAXONOMY_CODE_TAKEN,
+    );
+    await ctx.prisma.industry.deleteMany({ where: { code: 'quantum-lab' } });
+  });
 });

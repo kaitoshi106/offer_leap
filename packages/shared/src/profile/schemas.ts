@@ -42,7 +42,7 @@ export const careerStepSchema = z.object({
   level: z.enum(CAREER_LEVELS, required),
   yearsOfExperience: z
     .number(required)
-    .int({ error: ValidationRule.INVALID })
+    .int({ error: ValidationRule.WHOLE_NUMBER })
     .min(0, { error: ValidationRule.TOO_SMALL })
     .max(PROFILE_LIMITS.yearsMax, { error: ValidationRule.TOO_LARGE }),
   skills: z
@@ -59,7 +59,7 @@ export const careerStepSchema = z.object({
 
 const salarySchema = z
   .number()
-  .int({ error: ValidationRule.INVALID })
+  .int({ error: ValidationRule.WHOLE_NUMBER })
   .min(0, { error: ValidationRule.TOO_SMALL })
   .max(PROFILE_LIMITS.salaryMax, { error: ValidationRule.TOO_LARGE });
 

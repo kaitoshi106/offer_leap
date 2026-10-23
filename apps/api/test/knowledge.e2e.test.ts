@@ -142,6 +142,30 @@ describe('knowledge (RAG)', () => {
     expect(ai.embed).not.toHaveBeenCalled();
   });
 
+  it('keeps to the document limit when several are added at the same time', async () => {
+    const agent = await signUpOnboarded(ctx);
+    const user = await ctx.prisma.user.findFirstOrThrow({ where: { role: 'USER' } });
+    // One place left.
+    await ctx.prisma.knowledgeDocument.createMany({
+      data: Array.from({ length: KNOWLEDGE_LIMITS.documentsPerUser - 1 }, (_, index) => ({
+        userId: user.id,
+        title: `Doc ${index}`,
+        source: 'TEXT' as const,
+        status: 'COMPLETED' as const,
+      })),
+    });
+
+    const responses = await Promise.all(
+      Array.from({ length: 4 }, (_, index) =>
+        agent.post('/api/v1/knowledge/text').send({ title: `Note ${index}`, content: GRAPHQL_NOTE }),
+      ),
+    );
+    expect(responses.map((response) => response.status).sort()).toEqual([202, 409, 409, 409]);
+    expect(await ctx.prisma.knowledgeDocument.count({ where: { userId: user.id } })).toBe(
+      KNOWLEDGE_LIMITS.documentsPerUser,
+    );
+  });
+
   it('rejects unsupported files, too many documents and other users', async () => {
     const agent = await signUpOnboarded(ctx);
     const binary = await agent

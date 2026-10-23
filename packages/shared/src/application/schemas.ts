@@ -24,7 +24,7 @@ const optionalText = (max: number) =>
 const jobUrlSchema = z
   .union([
     z.literal(''),
-    z.url({ protocol: /^https?$/, error: ValidationRule.INVALID }).max(APPLICATION_LIMITS.jobUrl),
+    z.url({ protocol: /^https?$/, error: ValidationRule.INVALID_URL }).max(APPLICATION_LIMITS.jobUrl),
   ])
   .transform((value) => value || null)
   .nullish();

@@ -247,6 +247,7 @@ function DeleteDialog({ industry, onClose }: { industry: AdminIndustry | null; o
       title={industry ? t('deleteTitle', { name: industry.nameVi }) : ''}
       description={t('deleteBody')}
       closeLabel={tCommon('close')}
+      error={remove.error && remove.variables === industry?.code ? errorText(remove.error) : undefined}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -262,7 +263,6 @@ function DeleteDialog({ industry, onClose }: { industry: AdminIndustry | null; o
                   toast.show({ tone: 'success', title: t('deleted') });
                   onClose();
                 },
-                onError: (error) => toast.show({ tone: 'danger', title: errorText(error) }),
               })
             }
           >

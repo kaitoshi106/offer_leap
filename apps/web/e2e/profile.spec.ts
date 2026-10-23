@@ -23,6 +23,18 @@ test.describe('profile page', () => {
     await page.reload();
     await expect(career.getByLabel(/^Vị trí hiện tại/)).toHaveValue('Tech Lead');
 
+    // Saving one section refreshes the profile, but what is being typed in another section stays.
+    const personal = page.getByRole('region', { name: 'Thông tin cá nhân' });
+    await personal.getByLabel(/^Số điện thoại/).fill('0912345678');
+    await career.getByLabel(/^Vị trí hiện tại/).fill('Engineering Manager');
+    await career.getByRole('button', { name: 'Lưu thay đổi' }).click();
+    await expect(career.getByLabel(/^Vị trí hiện tại/)).toHaveValue('Engineering Manager');
+    await page.waitForLoadState('networkidle');
+    await expect(personal.getByLabel(/^Số điện thoại/)).toHaveValue('0912345678');
+    await personal.getByRole('button', { name: 'Lưu thay đổi' }).click();
+    await page.reload();
+    await expect(personal.getByLabel(/^Số điện thoại/)).toHaveValue('0912345678');
+
     // Upload a CV (read by the mock AI in the background), then delete it.
     const cvs = page.getByRole('region', { name: 'CV đã tải lên' });
     await expect(cvs.getByText('Chưa có CV nào.')).toBeVisible();

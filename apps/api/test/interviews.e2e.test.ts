@@ -122,6 +122,36 @@ describe('mock interviews', () => {
     expect(late.body.code).toBe(ErrorCode.INTERVIEW_ALREADY_COMPLETED);
   });
 
+  it('calls the AI once when the same answer or completion is sent twice at the same time', async () => {
+    const agent = await signUpOnboarded(ctx);
+    const { body } = await agent.post('/api/v1/interviews').send(START).expect(201);
+    const base = `/api/v1/interviews/${body.id}`;
+    // A slow AI, so both requests are in flight together (two tabs, or a double submit).
+    ai.generateJson.mockImplementation(async (request) => {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      return mock.generateJson(request);
+    });
+    const feedbackCalls = () =>
+      ai.generateJson.mock.calls.filter(([request]) => request.task === 'interview-feedback.v1').length;
+
+    const answers = await Promise.all([
+      agent.post(`${base}/questions/0/answer`).send({ answer: 'First' }),
+      agent.post(`${base}/questions/0/answer`).send({ answer: 'Second' }),
+    ]);
+    expect(answers.map((response) => response.status).sort()).toEqual([200, 409]);
+    expect(feedbackCalls()).toBe(1);
+
+    await agent.post(`${base}/questions/1/skip`).expect(200);
+    await agent.post(`${base}/questions/2/skip`).expect(200);
+    const completions = await Promise.all([agent.post(`${base}/complete`), agent.post(`${base}/complete`)]);
+    expect(completions.map((response) => response.status).sort()).toEqual([200, 409]);
+    expect(
+      ai.generateJson.mock.calls.filter(([request]) => request.task === 'interview-summary.v1'),
+    ).toHaveLength(1);
+    // Once it is done, asking again is harmless.
+    await agent.post(`${base}/complete`).expect(200);
+  });
+
   it('uses the job description of a tracked application', async () => {
     const agent = await signUpOnboarded(ctx);
     const jobDescription = 'Acme needs a React engineer who knows GraphQL and accessibility.';

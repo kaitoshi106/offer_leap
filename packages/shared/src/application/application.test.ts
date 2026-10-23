@@ -22,8 +22,8 @@ describe('createApplicationSchema', () => {
 
   it.each([
     ['company', { company: '', jobTitle: 'Dev' }, 'required'],
-    ['jobUrl', { company: 'Acme', jobTitle: 'Dev', jobUrl: 'javascript:alert(1)' }, 'invalid'],
-    ['jobUrl', { company: 'Acme', jobTitle: 'Dev', jobUrl: 'acme.com/jobs' }, 'invalid'],
+    ['jobUrl', { company: 'Acme', jobTitle: 'Dev', jobUrl: 'javascript:alert(1)' }, 'invalidUrl'],
+    ['jobUrl', { company: 'Acme', jobTitle: 'Dev', jobUrl: 'acme.com/jobs' }, 'invalidUrl'],
     ['status', { company: 'Acme', jobTitle: 'Dev', status: 'GHOSTED' }, undefined],
   ])('rejects a bad %s', (field, input, rule) => {
     const issue = createApplicationSchema.safeParse(input).error?.issues[0];

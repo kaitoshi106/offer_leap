@@ -2,6 +2,7 @@ import { type ArgumentsHost, Logger, NotFoundException } from '@nestjs/common';
 import { ErrorCode } from '@offerleap/shared';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Prisma } from '../../generated/prisma/client';
 import { AppException } from '../errors/app.exception';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 
@@ -31,6 +32,14 @@ describe('AllExceptionsFilter', () => {
 
   it('maps framework HTTP errors (e.g. unknown route) to shared codes', () => {
     expect(run(new NotFoundException()).body).toMatchObject({ statusCode: 404, code: 'COMMON_NOT_FOUND' });
+  });
+
+  it('reports a unique-constraint race (two requests creating the same thing) as a conflict, not a crash', () => {
+    const race = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: 'test',
+    });
+    expect(run(race).body).toMatchObject({ statusCode: 409, code: 'COMMON_CONFLICT' });
   });
 
   it('hides details of unexpected errors', () => {

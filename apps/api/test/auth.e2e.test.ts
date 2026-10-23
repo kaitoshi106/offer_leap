@@ -63,6 +63,16 @@ describe('register & verify email', () => {
     expect(ctx.mail.sent[0]?.link).toMatch(/^http:\/\/localhost:3000\/en\/verify-email\?token=/);
   });
 
+  it('answers both of two simultaneous sign-ups for the same new email (a double click)', async () => {
+    const send = () =>
+      http()
+        .post('/api/v1/auth/register')
+        .send({ email: 'twice@example.com', password: PASSWORD, fullName: 'Minh' });
+    const responses = await Promise.all([send(), send()]);
+    expect(responses.map((response) => response.status)).toEqual([201, 201]);
+    expect(await ctx.prisma.user.count({ where: { email: 'twice@example.com' } })).toBe(1);
+  });
+
   it('rejects invalid input with translatable field errors', async () => {
     const response = await http()
       .post('/api/v1/auth/register')
@@ -80,13 +90,86 @@ describe('register & verify email', () => {
     expect(response.body.requestId).toBe(response.headers['x-request-id']);
   });
 
-  it('rejects a duplicate email', async () => {
+  it('answers a sign-up for a verified email like any other, and emails the owner instead of revealing it', async () => {
     await signUp();
-    const response = await http()
+    ctx.mail.sent.length = 0;
+    await http()
       .post('/api/v1/auth/register')
-      .send({ email: 'minh@example.com', password: PASSWORD, fullName: 'Minh' })
-      .expect(409);
-    expect(response.body.code).toBe(ErrorCode.AUTH_EMAIL_TAKEN);
+      .send({ email: 'minh@example.com', password: 'other2026', fullName: 'Someone' })
+      .expect(201, { email: 'minh@example.com' });
+
+    // The owner learns about it (with a way back in); nothing about the account changes.
+    expect(ctx.mail.sent).toEqual([
+      expect.objectContaining({ template: 'account-exists', to: 'minh@example.com', fullName: 'Trần Minh' }),
+    ]);
+    expect(ctx.mail.sent[0]?.link).toBe('http://localhost:3000/vi/forgot-password');
+    await http()
+      .post('/api/v1/auth/login')
+      .send({ email: 'minh@example.com', password: PASSWORD })
+      .expect(200);
+    await http()
+      .post('/api/v1/auth/login')
+      .send({ email: 'minh@example.com', password: 'other2026' })
+      .expect(401);
+  });
+
+  it('cannot be claimed in advance: signing up again for an unverified email replaces the password', async () => {
+    // Someone signs up first with the victim's email and a password of their choosing…
+    await http()
+      .post('/api/v1/auth/register')
+      .send({ email: 'victim@example.com', password: 'attacker2026', fullName: 'Attacker' })
+      .expect(201);
+    // …then the owner signs up: same answer as a fresh sign-up, and only the newest link works.
+    const firstLink = ctx.mail.lastToken('victim@example.com', 'verify-email');
+    await http()
+      .post('/api/v1/auth/register')
+      .send({ email: 'victim@example.com', password: 'owner2026x', fullName: 'Owner' })
+      .expect(201, { email: 'victim@example.com' });
+    await http().post('/api/v1/auth/verify-email').send({ token: firstLink }).expect(400);
+
+    const verified = await http()
+      .post('/api/v1/auth/verify-email')
+      .send({ token: ctx.mail.lastToken('victim@example.com', 'verify-email') })
+      .expect(200);
+    expect(verified.body.user.fullName).toBe('Owner');
+    await http()
+      .post('/api/v1/auth/login')
+      .send({ email: 'victim@example.com', password: 'attacker2026' })
+      .expect(401);
+    await http()
+      .post('/api/v1/auth/login')
+      .send({ email: 'victim@example.com', password: 'owner2026x' })
+      .expect(200);
+  });
+
+  it('lets the inbox owner take over an unverified account with a password reset, which also verifies it', async () => {
+    await http()
+      .post('/api/v1/auth/register')
+      .send({ email: 'victim@example.com', password: 'attacker2026', fullName: 'Attacker' })
+      .expect(201);
+    await http().post('/api/v1/auth/forgot-password').send({ email: 'victim@example.com' }).expect(202);
+    await http()
+      .post('/api/v1/auth/reset-password')
+      .send({ token: ctx.mail.lastToken('victim@example.com', 'reset-password'), password: 'owner2026x' })
+      .expect(204);
+
+    await http()
+      .post('/api/v1/auth/login')
+      .send({ email: 'victim@example.com', password: 'attacker2026' })
+      .expect(401);
+    const login = await http()
+      .post('/api/v1/auth/login')
+      .send({ email: 'victim@example.com', password: 'owner2026x' })
+      .expect(200);
+    expect(login.body.user.emailVerified).toBe(true);
+  });
+
+  it('does not reveal whether an email is verified when asked to resend the link', async () => {
+    await signUp();
+    ctx.mail.sent.length = 0;
+    await http().post('/api/v1/auth/resend-verification').send({ email: 'minh@example.com' }).expect(202);
+    await http().post('/api/v1/auth/resend-verification').send({ email: 'nobody@example.com' }).expect(202);
+    expect(ctx.mail.sent).toEqual([]);
   });
 
   it('blocks login until the email is verified, then verification signs the user in', async () => {
@@ -115,6 +198,21 @@ describe('register & verify email', () => {
       template: 'welcome',
       link: 'http://localhost:3000/vi/onboarding',
     });
+  });
+
+  it('does not sign in a disabled account from its verification link', async () => {
+    await http()
+      .post('/api/v1/auth/register')
+      .send({ email: 'a@b.co', password: PASSWORD, fullName: 'Minh' });
+    // Disabled by an admin before the owner clicked the link.
+    await ctx.prisma.user.update({ where: { email: 'a@b.co' }, data: { status: 'DISABLED' } });
+
+    const response = await http()
+      .post('/api/v1/auth/verify-email')
+      .send({ token: ctx.mail.lastToken('a@b.co', 'verify-email') })
+      .expect(423);
+    expect(response.body.code).toBe(ErrorCode.AUTH_ACCOUNT_LOCKED);
+    expect(cookie(response, 'ol_at')).toBeUndefined();
   });
 
   it('does not accept a verification token twice', async () => {
@@ -191,6 +289,24 @@ describe('refresh token rotation', () => {
 
     expect(cookie(first, 'ol_rt')).not.toBe(cookie(second, 'ol_rt'));
     expect(await ctx.prisma.refreshToken.count({ where: { revokedAt: null } })).toBe(1);
+  });
+
+  it('lets two tabs refresh at once: the one that loses is told to retry, and nobody is signed out', async () => {
+    const agent = await signUp();
+    const { body } = await agent.get('/api/v1/auth/me').expect(200);
+    expect(body.email).toBe('minh@example.com');
+    const [first, second] = await Promise.all([
+      agent.post('/api/v1/auth/refresh'),
+      agent.post('/api/v1/auth/refresh'),
+    ]);
+    const statuses = [first.status, second.status].sort();
+    expect(statuses).toEqual([200, 409]);
+    const loser = first.status === 409 ? first : second;
+    expect(loser.body.code).toBe(ErrorCode.AUTH_REFRESH_RACE);
+    // The loser must not clear the cookies the winner just set.
+    expect(loser.headers['set-cookie']).toBeUndefined();
+    // The session is intact: refreshing again with the winner's cookie works.
+    await agent.post('/api/v1/auth/refresh').expect(200);
   });
 
   it('revokes the whole session when an old refresh token is reused (theft)', async () => {

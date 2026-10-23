@@ -21,6 +21,12 @@ describe('Input', () => {
     expect(input).toHaveValue('a@b.co');
   });
 
+  it('styles a read-only field like a value, not like a box waiting for typing', () => {
+    render(<Input aria-label="Job title" readOnly value="Frontend Engineer" />);
+    // `[readonly]` only: `:read-only` would also match every <select>.
+    expect(screen.getByRole('textbox', { name: 'Job title' })).toHaveClass('[&[readonly]]:bg-surface-muted');
+  });
+
   it('exposes the invalid state to assistive tech', () => {
     render(<Input aria-label="Email" invalid />);
     expect(screen.getByRole('textbox', { name: 'Email' })).toHaveAttribute('aria-invalid', 'true');

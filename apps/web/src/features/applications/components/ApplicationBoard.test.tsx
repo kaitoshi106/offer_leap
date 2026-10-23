@@ -174,5 +174,71 @@ describe('ApplicationBoard', () => {
     await user.selectOptions(await screen.findByLabelText('Chuyển Job a tại Acme sang cột'), 'OFFER');
     const saved = screen.getByRole('region', { name: /Đã lưu/ });
     await vi.waitFor(() => expect(within(saved).getByText('Job a')).toBeInTheDocument());
+    // The move was announced as it happened on screen; its failure is announced and shown too.
+    expect(await screen.findByText('Không chuyển được Job a. Thẻ đã về lại cột Đã lưu.')).toHaveAttribute(
+      'role',
+      'status',
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('Không tìm thấy');
+  });
+
+  it('only blocks touch scrolling while a card is being handled, not for the life of the board', async () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    setup();
+    const dragged = (await screen.findByText('Job b')).closest('li')!;
+    const touchMoveListeners = (spy: typeof add) =>
+      spy.mock.calls.filter(
+        ([type, , options]) =>
+          type === 'touchmove' && (options as AddEventListenerOptions)?.passive === false,
+      );
+    expect(touchMoveListeners(add)).toHaveLength(0);
+
+    fireEvent.pointerDown(dragged, {
+      button: 0,
+      pointerId: 1,
+      pointerType: 'touch',
+      clientX: 10,
+      clientY: 10,
+    });
+    expect(touchMoveListeners(add)).toHaveLength(1);
+    fireEvent.pointerUp(window, { pointerId: 1 });
+    expect(remove.mock.calls.filter(([type]) => type === 'touchmove')).toHaveLength(1);
+  });
+
+  it('stops auto-scrolling when there is nothing left to scroll, instead of looping every frame', async () => {
+    const frames = vi.spyOn(window, 'requestAnimationFrame');
+    setup();
+    const dragged = (await screen.findByText('Job b')).closest('li')!;
+    pointerOver(screen.getByText('Job c'));
+    fireEvent.pointerDown(dragged, {
+      button: 0,
+      pointerId: 1,
+      pointerType: 'mouse',
+      clientX: 10,
+      clientY: 10,
+    });
+    // Held at the very top of the window, where the page is already scrolled to the top.
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 40, clientY: 1 });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    expect(frames.mock.calls.length).toBeLessThan(4);
+    fireEvent.pointerUp(window, { pointerId: 1 });
+  });
+
+  it('hints that more columns are off to the right while the board can still scroll that way', async () => {
+    setup();
+    await screen.findByText('Job a');
+    const board = document.querySelector<HTMLElement>('[data-board-scroll]')!;
+    // jsdom has no layout: a board twice as wide as its viewport.
+    Object.defineProperty(board, 'clientWidth', { configurable: true, value: 600 });
+    Object.defineProperty(board, 'scrollWidth', { configurable: true, value: 1200 });
+    board.scrollLeft = 0;
+    fireEvent.scroll(board);
+    expect(document.querySelector('[data-scroll-hint]')).not.toBeNull();
+
+    board.scrollLeft = 600;
+    fireEvent.scroll(board);
+    expect(document.querySelector('[data-scroll-hint]')).toBeNull();
   });
 });

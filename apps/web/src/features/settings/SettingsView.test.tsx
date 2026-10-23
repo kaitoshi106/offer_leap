@@ -3,6 +3,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError, NETWORK_ERROR } from '@/lib/api/errors';
 import { jsonResponse, renderWithProviders } from '@/test/render';
 
 import { SettingsView } from './SettingsView';
@@ -17,12 +18,13 @@ vi.mock('@/i18n/navigation', () => ({ usePathname: () => '/settings', useRouter:
 
 // Google is mocked at the hook level so the fetch queue below only holds the requests each test is about.
 let providers = { google: false };
-let methods: SignInMethods = { hasPassword: true, identities: [] };
+let methods: SignInMethods | undefined = { hasPassword: true, identities: [] };
+let methodsError: unknown = null;
 const startGoogleAccountFlow = vi.fn(async () => {});
 const unlinkGoogle = vi.fn();
 vi.mock('@/features/auth/api/google', () => ({
   useAuthProviders: () => ({ data: providers }),
-  useSignInMethods: () => ({ data: methods }),
+  useSignInMethods: () => ({ data: methods, error: methodsError }),
   useUnlinkGoogle: () => ({ mutate: unlinkGoogle, isPending: false }),
   startGoogleAccountFlow: (...args: unknown[]) => startGoogleAccountFlow(...(args as [])),
 }));
@@ -49,7 +51,20 @@ describe('SettingsView', () => {
     searchParams = new URLSearchParams();
     providers = { google: false };
     methods = { hasPassword: true, identities: [] };
+    methodsError = null;
     vi.unstubAllGlobals();
+  });
+
+  it("doesn't guess the password sections when the sign-in methods failed to load", async () => {
+    methods = undefined;
+    methodsError = new ApiError(0, NETWORK_ERROR);
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, me()));
+    renderWithProviders(<SettingsView />);
+
+    // A Google-only account would otherwise be shown a "current password" field it can't fill.
+    await screen.findByRole('heading', { name: 'Cài đặt tài khoản' });
+    expect(screen.queryByLabelText(/^Mật khẩu hiện tại/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('Không kết nối được máy chủ. Kiểm tra mạng và thử lại.')).toHaveLength(2);
   });
 
   it('changes the password', async () => {

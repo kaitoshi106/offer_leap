@@ -68,6 +68,8 @@ export function useDeleteAnalysis() {
     onSuccess: (_result, id) => {
       queryClient.removeQueries({ queryKey: analysisKey(id) });
       void queryClient.invalidateQueries({ queryKey: analysesListKey });
+      // Applications saved from it lose their score and link.
+      void queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });
 }

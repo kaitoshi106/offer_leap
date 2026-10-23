@@ -13,6 +13,7 @@ import {
 } from '@offerleap/shared';
 
 import { AppException } from '../../common/errors/app.exception';
+import { isUniqueViolation } from '../../common/errors/prisma-errors';
 import type { ClientInfo } from '../../common/http/request';
 import { hashPassword, verifyPassword } from '../../common/security/hashing';
 import type { Env } from '../../config/env.schema';
@@ -52,22 +53,37 @@ export class AuthService {
   }
 
   /**
-   * @description Creates an unverified USER account and emails a verification link. No session is created
-   * until the email is verified.
+   * @description Signs up with email and password. The answer is the same whether or not the email is known, so
+   * sign-up can't be used to find accounts:
+   * - new email: creates an unverified USER account and emails a verification link (no session until verified);
+   * - unverified account: replaces its name and password and sends a new link (the old one stops working), so
+   *   nobody can claim someone else's email in advance with a password of their own;
+   * - verified account: changes nothing and tells the owner, with a way back in if they forgot their password.
    * @param input - Validated registration data.
    * @param fallbackLocale - Locale from the request when the body has none.
-   * @returns The new account's email.
-   * @throws AppException AUTH_EMAIL_TAKEN.
+   * @returns The email the link (or notice) went to.
    */
   async register(input: RegisterInput, fallbackLocale: Locale): Promise<{ email: string }> {
-    if (await this.users.findByEmail(input.email)) throw new AppException(ErrorCode.AUTH_EMAIL_TAKEN);
+    const locale = input.locale ?? fallbackLocale;
+    const existing = await this.users.findByEmail(input.email);
+    if (existing?.emailVerifiedAt) {
+      if (existing.status === 'ACTIVE') await this.sendAccountExistsEmail(existing);
+      return { email: existing.email };
+    }
 
-    const user = await this.users.createUser({
-      email: input.email,
-      passwordHash: await hashPassword(input.password),
-      fullName: input.fullName,
-      locale: input.locale ?? fallbackLocale,
-    });
+    const details = { passwordHash: await hashPassword(input.password), fullName: input.fullName, locale };
+    let user: User;
+    try {
+      user = existing
+        ? await this.prisma.user.update({ where: { id: existing.id }, data: details })
+        : await this.users.createUser({ email: input.email, ...details });
+    } catch (error) {
+      // The same sign-up sent twice at once (a double click): the other request created the account and sends
+      // the link; answer this one the same way.
+      if (isUniqueViolation(error)) return { email: input.email };
+      throw error;
+    }
+    // Issuing a new link retires the previous one, so only the latest sign-up can be verified.
     await this.sendVerificationEmail(user);
     return { email: user.email };
   }
@@ -77,6 +93,7 @@ export class AuthService {
    * @param token - Token from the email link.
    * @param client - Session metadata.
    * @returns User and session tokens.
+   * @throws AppException AUTH_ACCOUNT_LOCKED when the account was disabled meanwhile.
    */
   async verifyEmail(token: string, client: ClientInfo): Promise<SessionResult> {
     const userId = await this.userTokens.consume(token, 'EMAIL_VERIFICATION');
@@ -84,20 +101,21 @@ export class AuthService {
       where: { id: userId },
       data: { emailVerifiedAt: new Date() },
     });
+    // The inbox is proven, but a disabled account gets no session (same rule as sign-in).
+    if (user.status !== 'ACTIVE') throw new AppException(ErrorCode.AUTH_ACCOUNT_LOCKED);
     // The link is single-use, so this runs once per account.
     await this.sendWelcomeEmail(user);
     return this.startSession(user, client);
   }
 
   /**
-   * @description Sends a new verification link. Silent for unknown emails (no account enumeration).
+   * @description Sends a new verification link. Silent for unknown and already verified emails (no account
+   * enumeration).
    * @param email - Account email.
-   * @throws AppException AUTH_EMAIL_ALREADY_VERIFIED when the account is already verified.
    */
   async resendVerification(email: string): Promise<void> {
     const user = await this.users.findByEmail(email);
-    if (!user) return;
-    if (user.emailVerifiedAt) throw new AppException(ErrorCode.AUTH_EMAIL_ALREADY_VERIFIED);
+    if (!user || user.emailVerifiedAt) return;
     await this.sendVerificationEmail(user);
   }
 
@@ -152,13 +170,14 @@ export class AuthService {
   }
 
   /**
-   * @description Emails a reset link. Silent for unknown, unverified or root accounts (no enumeration, and
-   * root credentials are managed through config only).
+   * @description Emails a reset link. Silent for unknown, disabled or root accounts (no enumeration, and root
+   * credentials are managed through config only). Unverified accounts get one too: the link proves inbox
+   * ownership, so it is how the owner takes back an account someone else signed up for with their email.
    * @param email - Account email.
    */
   async forgotPassword(email: string): Promise<void> {
     const user = await this.users.findByEmail(email);
-    if (!user || !user.emailVerifiedAt || user.status !== 'ACTIVE' || !canManageOwnPassword(user)) return;
+    if (!user || user.status !== 'ACTIVE' || !canManageOwnPassword(user)) return;
 
     const token = await this.userTokens.issue(user.id, 'PASSWORD_RESET');
     await this.mail.send({
@@ -193,6 +212,14 @@ export class AuthService {
     await this.userTokens.claim(token.id);
     await this.updatePassword(user.id, input.password);
     await this.tokens.revokeAllForUser(user.id);
+    // The reset link came through the inbox, which is all verification proves.
+    if (!user.emailVerifiedAt) {
+      const verified = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerifiedAt: new Date() },
+      });
+      await this.sendWelcomeEmail(verified);
+    }
   }
 
   /**
@@ -256,6 +283,21 @@ export class AuthService {
       link: this.webLink(user.locale, 'verify-email', token),
     });
     this.logger.debug(`Verification email queued for user ${user.id}`);
+  }
+
+  /**
+   * @description Tells the owner of a verified account that someone tried to sign up with their email, pointing to
+   * the forgot-password page in case it was them.
+   * @param user - The existing account.
+   */
+  private async sendAccountExistsEmail(user: User): Promise<void> {
+    await this.mail.send({
+      template: 'account-exists',
+      to: user.email,
+      locale: user.locale,
+      fullName: user.fullName,
+      link: new URL(`/${user.locale}/forgot-password`, this.webOrigin).toString(),
+    });
   }
 
   private webLink(locale: Locale, page: string, token: string): string {

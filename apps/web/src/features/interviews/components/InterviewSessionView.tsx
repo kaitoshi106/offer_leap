@@ -12,6 +12,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { cn } from '@/lib/cn';
 import { useSpeechRecognition } from '@/lib/speech';
+import { useMutateOnce } from '@/lib/api/use-mutate-once';
 
 import {
   useAnswerQuestion,
@@ -188,7 +189,10 @@ function Composer({ interviewId, question }: { interviewId: string; question: In
   const locale = useLocale();
   const errorText = useErrorText();
   const answer = useAnswerQuestion(interviewId);
+  // Each answer is scored by AI (and counts against the quota): a double submit must not send it twice.
+  const answerOnce = useMutateOnce(answer);
   const skip = useSkipQuestion(interviewId);
+  const skipOnce = useMutateOnce(skip);
   const speech = useSpeechRecognition(locale);
   const [text, setText] = useState('');
   const busy = answer.isPending || skip.isPending;
@@ -196,8 +200,9 @@ function Composer({ interviewId, question }: { interviewId: string; question: In
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (speech.listening) speech.toggle(() => {});
-    if (text.trim()) answer.mutate({ index: question.index, answer: text.trim() });
+    // The browser hands over the last phrase only when recording stops: sending now would lose it.
+    if (speech.listening) return;
+    if (text.trim()) answerOnce({ index: question.index, answer: text.trim() });
   }
 
   return (
@@ -247,11 +252,15 @@ function Composer({ interviewId, question }: { interviewId: string; question: In
             variant="ghost"
             disabled={busy}
             loading={skip.isPending}
-            onClick={() => skip.mutate(question.index)}
+            onClick={() => skipOnce(question.index)}
           >
             {t('session.skip')}
           </Button>
-          <Button type="submit" loading={answer.isPending} disabled={busy || !text.trim()}>
+          <Button
+            type="submit"
+            loading={answer.isPending}
+            disabled={busy || speech.listening || !text.trim()}
+          >
             {t('session.send')}
           </Button>
         </div>
@@ -269,6 +278,7 @@ function Finish({ interviewId }: { interviewId: string }) {
   const t = useTranslations('interviews.session');
   const errorText = useErrorText();
   const complete = useCompleteInterview(interviewId);
+  const completeOnce = useMutateOnce(complete);
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-ai-soft/40 p-6 text-center">
       {complete.error && <Alert tone="danger">{errorText(complete.error)}</Alert>}
@@ -276,7 +286,7 @@ function Finish({ interviewId }: { interviewId: string }) {
       <Button
         loading={complete.isPending}
         leftIcon={<Icon name="sparkles" size="sm" />}
-        onClick={() => complete.mutate()}
+        onClick={() => completeOnce(undefined)}
       >
         {t('finish')}
       </Button>
@@ -340,6 +350,7 @@ function Summary({ interview }: { interview: InterviewDetail }) {
 function DeleteInterview({ id }: { id: string }) {
   const t = useTranslations('interviews.session');
   const tCommon = useTranslations('common');
+  const errorText = useErrorText();
   const router = useRouter();
   const toast = useToast();
   const remove = useDeleteInterview();
@@ -356,6 +367,7 @@ function DeleteInterview({ id }: { id: string }) {
         title={t('deleteTitle')}
         description={t('deleteBody')}
         closeLabel={tCommon('close')}
+        error={remove.error ? errorText(remove.error) : undefined}
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)}>

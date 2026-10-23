@@ -272,6 +272,7 @@ function JobDescription({ text }: { text: string }) {
 function DeleteAnalysis({ id }: { id: string }) {
   const t = useTranslations('analyses.result');
   const tCommon = useTranslations('common');
+  const errorText = useErrorText();
   const router = useRouter();
   const toast = useToast();
   const remove = useDeleteAnalysis();
@@ -288,6 +289,7 @@ function DeleteAnalysis({ id }: { id: string }) {
         title={t('deleteTitle')}
         description={t('deleteBody')}
         closeLabel={tCommon('close')}
+        error={remove.error ? errorText(remove.error) : undefined}
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)}>

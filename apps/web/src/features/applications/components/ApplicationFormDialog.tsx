@@ -16,6 +16,7 @@ import { Dialog } from '@/components/organisms';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
 import { applyServerFieldErrors, sharedSchemaResolver, useFieldErrorText } from '@/lib/forms/field-errors';
+import { useMutateOnce } from '@/lib/api/use-mutate-once';
 
 import { useCreateApplication } from '../api/use-applications';
 
@@ -46,6 +47,7 @@ function CreateForm({ onClose, onCreated, defaults }: ApplicationFormDialogProps
   const errorText = useErrorText();
   const fieldError = useFieldErrorText();
   const create = useCreateApplication();
+  const createOnce = useMutateOnce(create);
   const form = useForm<CreateApplicationInput, unknown, CreateApplication>({
     resolver: sharedSchemaResolver(createApplicationSchema),
     defaultValues: {
@@ -61,7 +63,7 @@ function CreateForm({ onClose, onCreated, defaults }: ApplicationFormDialogProps
   const fromAnalysis = Boolean(defaults?.analysisId);
 
   function submit(values: CreateApplication) {
-    create.mutate(values, {
+    createOnce(values, {
       onSuccess: onCreated,
       onError: (error) => {
         if (isApiError(error)) applyServerFieldErrors(error.fieldErrors, form.setError);
