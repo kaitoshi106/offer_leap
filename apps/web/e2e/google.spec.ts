@@ -8,7 +8,8 @@ import { completeOnboarding, expect, test, uniqueEmail } from './support';
  */
 async function continueWithGoogle(page: Page, email: string) {
   const button = page.getByRole('link', { name: 'Tiếp tục với Google' });
-  const url = new URL((await button.getAttribute('href'))!);
+  // Relative when the API is served from this site (`/api/v1`).
+  const url = new URL((await button.getAttribute('href'))!, page.url());
   url.searchParams.set('loginHint', email);
   await page.goto(url.toString());
 }

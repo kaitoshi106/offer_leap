@@ -39,10 +39,10 @@ export function useUnlinkGoogle() {
  * @param next - Page to open after signing in (checked by the API).
  */
 export function googleSignInUrl(locale: Locale, next?: string | null): string {
-  const url = new URL(`${API_URL}/auth/google`);
-  url.searchParams.set('locale', locale);
-  if (next) url.searchParams.set('next', next);
-  return url.toString();
+  // Built as a string: API_URL may be relative (`/api/v1`, the API served from this site), which `new URL` refuses.
+  const params = new URLSearchParams({ locale });
+  if (next) params.set('next', next);
+  return `${API_URL}/auth/google?${params.toString()}`;
 }
 
 /**
