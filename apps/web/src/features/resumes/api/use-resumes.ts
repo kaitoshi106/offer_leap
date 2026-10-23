@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { onboardingKey } from '@/features/onboarding/api/use-onboarding';
 
+import { prepareResumeFile } from '../compression/compress-image';
 import { resumesApi } from './resumes-api';
 
 /** How often to ask whether the AI has finished. */
@@ -37,11 +38,14 @@ export function useDeleteResume() {
   });
 }
 
-/** Uploads a CV; the new (pending) CV becomes the onboarding state's `resume` and joins the CV list. */
+/**
+ * @description Uploads a CV; the new (pending) CV becomes the onboarding state's `resume` and joins the CV list.
+ * Photos are shrunk first, in a Web Worker (see `prepareResumeFile`), so a 10 MB phone picture uploads as ~1 MB.
+ */
 export function useUploadResume() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: resumesApi.upload,
+    mutationFn: async (file: File) => resumesApi.upload((await prepareResumeFile(file)).file),
     onSuccess: (resume) => {
       queryClient.setQueryData<OnboardingState>(onboardingKey, (state) => state && { ...state, resume });
       queryClient.setQueryData<ResumeSummary[]>(resumesKey, (resumes) => resumes && [resume, ...resumes]);
