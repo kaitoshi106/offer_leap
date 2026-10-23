@@ -17,11 +17,18 @@
     "MAIL_FROM",
     "ROOT_ADMIN_*",
     "STORAGE_DIR",
+    "STORAGE_DRIVER",
+    "QUEUE_PREFIX",
+    "TRUST_PROXY",
+    "API_PUBLIC_URL",
+    "OAUTH_PROVIDER",
+    "GOOGLE_*",
     "AI_PROVIDER",
     "AI_DAILY_QUOTA",
     "GEMINI_*"
   ],
-  "globalEnv": ["NEXT_PUBLIC_*"],
+  // Read while building the web app (baked into the bundle / its rewrites), so they are part of the cache key.
+  "globalEnv": ["NEXT_PUBLIC_*", "API_PROXY_TARGET"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

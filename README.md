@@ -83,15 +83,15 @@ More: [architecture](docs/ai/architecture.md) · [decisions (ADRs)](docs/adr) ·
 
 ## Tech stack
 
-| Area    | Tech                                                                                          |
-| ------- | --------------------------------------------------------------------------------------------- |
-| Web     | Next.js 16 (App Router), React 19, Tailwind CSS v4, next-intl, React Query, React Hook Form   |
-| API     | NestJS 12, Prisma 7, PostgreSQL 17, BullMQ + Redis, Nodemailer, Swagger                       |
-| AI      | Google Gemini (`@google/genai`): structured JSON output, PDF/image input, streaming           |
-| Shared  | `@offerleap/shared` — Zod 4 schemas, error codes, roles (built with tsdown)                   |
-| Testing | Vitest + Testing Library, API e2e with supertest, Playwright, Storybook, AI eval runner       |
-| Tooling | pnpm workspaces, Turborepo, TypeScript 6, ESLint, Prettier, Husky, commitlint, GitHub Actions |
-| Deploy  | Multi-stage Dockerfile (turbo prune, Next.js standalone), `docker-compose.prod.yml`           |
+| Area    | Tech                                                                                           |
+| ------- | ---------------------------------------------------------------------------------------------- |
+| Web     | Next.js 16 (App Router), React 19, Tailwind CSS v4, next-intl, React Query, React Hook Form    |
+| API     | NestJS 12, Prisma 7, PostgreSQL 17, BullMQ + Redis, Nodemailer, Swagger                        |
+| AI      | Google Gemini (`@google/genai`): structured JSON output, PDF/image input, streaming            |
+| Shared  | `@offerleap/shared` — Zod 4 schemas, error codes, roles (built with tsdown)                    |
+| Testing | Vitest + Testing Library, API e2e with supertest, Playwright, Storybook, AI eval runner        |
+| Tooling | pnpm workspaces, Turborepo, TypeScript 6, ESLint, Prettier, Husky, commitlint, GitHub Actions  |
+| Deploy  | Multi-stage Dockerfile (turbo prune, Next.js standalone), `docker-compose.prod.yml`, free tier |
 
 ## Getting started
 
@@ -122,7 +122,12 @@ pnpm dev                      # web http://localhost:3000 · API http://localhos
 | `pnpm --filter @offerleap/api eval resume-extraction` | AI eval against the real model                                                          |
 | `pnpm storybook`                                      | Component explorer on http://localhost:6006                                             |
 
-## Deploy with Docker
+## Deploy
+
+**Free, no credit card:** web on Vercel, API on Render, Postgres on Neon, Redis Cloud and Brevo for email —
+step by step in [docs/deploy.md](docs/deploy.md) (`render.yaml`, `apps/web/vercel.json`).
+
+### With Docker
 
 ```bash
 cp .env.example .env.production   # set POSTGRES_PASSWORD, JWT_ACCESS_SECRET, ROOT_ADMIN_*, AI and SMTP settings

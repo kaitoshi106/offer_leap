@@ -5,6 +5,8 @@
 #   docker build --target api -t offerleap-api .
 #   docker build --target web --build-arg NEXT_PUBLIC_API_URL=https://api.example.com/api/v1 -t offerleap-web .
 #   docker build --target migrate -t offerleap-migrate .   # prisma migrate deploy + seed, then exits
+#
+# The API is the last stage, so hosts that build a Dockerfile without choosing a target (Render) get the API.
 
 ARG NODE_IMAGE=node:24-alpine
 
@@ -42,12 +44,22 @@ COPY --from=prune-web /repo/out/full/ .
 COPY tsconfig.base.json ./
 RUN turbo run build --filter=@offerleap/web
 
-# ── 3a. Database migrations + seed (needs the Prisma CLI, a dev dependency) ──────────────────────────────────────
+# ── 3a. Web runtime: Next.js standalone output (server + traced node_modules only) ──────────────────────────────
+FROM ${NODE_IMAGE} AS web
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+WORKDIR /app
+COPY --from=build-web --chown=node:node /repo/apps/web/.next/standalone ./
+COPY --from=build-web --chown=node:node /repo/apps/web/.next/static ./apps/web/.next/static
+USER node
+EXPOSE 3000
+CMD ["node", "apps/web/server.js"]
+
+# ── 3b. Database migrations + seed (needs the Prisma CLI, a dev dependency) ──────────────────────────────────────
 FROM build-api AS migrate
 WORKDIR /repo/apps/api
 CMD ["sh", "-c", "pnpm db:deploy && pnpm db:seed"]
 
-# ── 3b. API runtime: production dependencies only, non-root ─────────────────────────────────────────────────────
+# ── 3c. API runtime: production dependencies only, non-root ─────────────────────────────────────────────────────
 FROM build-api AS api-deps
 RUN pnpm install --prod --frozen-lockfile --offline
 
@@ -62,13 +74,3 @@ EXPOSE 4000
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
   CMD wget -qO- "http://127.0.0.1:${API_PORT:-4000}/api/v1/health" > /dev/null || exit 1
 CMD ["node", "dist/main.js"]
-
-# ── 3c. Web runtime: Next.js standalone output (server + traced node_modules only) ──────────────────────────────
-FROM ${NODE_IMAGE} AS web
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
-WORKDIR /app
-COPY --from=build-web --chown=node:node /repo/apps/web/.next/standalone ./
-COPY --from=build-web --chown=node:node /repo/apps/web/.next/static ./apps/web/.next/static
-USER node
-EXPOSE 3000
-CMD ["node", "apps/web/server.js"]
