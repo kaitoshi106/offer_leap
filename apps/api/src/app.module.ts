@@ -5,6 +5,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { redisConnection } from './common/redis/redis-connection';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ProfileCompletedGuard } from './common/guards/profile-completed.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -25,21 +26,6 @@ import { ResumesModule } from './modules/resumes/resumes.module';
 import { TaxonomiesModule } from './modules/taxonomies/taxonomies.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
-
-/**
- * @description Splits a `redis://user:pass@host:port/db` URL into the options BullMQ's ioredis client expects.
- * @param url - REDIS_URL.
- */
-function redisConnection(url: string) {
-  const parsed = new URL(url);
-  return {
-    host: parsed.hostname,
-    port: Number(parsed.port || 6379),
-    username: parsed.username || undefined,
-    password: parsed.password || undefined,
-    db: parsed.pathname.length > 1 ? Number(parsed.pathname.slice(1)) : 0,
-  };
-}
 
 @Module({
   imports: [
