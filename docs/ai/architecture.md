@@ -91,7 +91,9 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
   POST, signed in) link Google or confirm deleting a Google-only account; `DELETE /auth/identities/google` unlinks
   when a password exists; `GET /auth/providers` tells the web app whether to show the button. Tests use
   `OAUTH_PROVIDER=mock`.
-- **Rate limits**: 120 req/min per IP globally, 5/min on login, register, forgot/reset, resend, change password.
+- **Rate limits**: 120 req/min globally, 5/min on login, register, forgot/reset, resend, change password. Counted per
+  user when the request carries a valid access token (`UserThrottlerGuard`), else per IP — so users behind one
+  office address don't share an allowance.
 - **Docs**: Swagger UI at `/api/docs` (spec at `/api/docs/openapi.json`) outside production, generated from the
   shared Zod schemas. Calls from the UI share the API origin, so login cookies apply to later calls.
 - **Errors**: `AppException(ErrorCode)` → `AllExceptionsFilter` → `ApiErrorResponse` with `requestId` (also in the
