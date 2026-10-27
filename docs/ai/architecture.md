@@ -138,6 +138,9 @@ web: polls GET /resumes/:id every 1.5 s → refetches GET /onboarding → fields
      "AI suggested"; fields the model flagged as guesses ask the user to check
 ```
 
+- Orphaned files: `OrphanFilesSweeper` (at start-up, then every 6 h) deletes files under `resumes/` and
+  `knowledge/` that no row references, once they are over an hour old (an upload writes its file just before its
+  row).
 - No separate OCR service: Gemini reads PDFs (text and scanned) and images natively.
 - Failures: a busy provider (429/5xx, timeout) tries the fallback models, then BullMQ retries the job (3 attempts,
   exponential backoff) → `AI_UNAVAILABLE`. An unusable answer or empty DOCX fails at once → `RESUME_PARSE_FAILED`.
