@@ -2,12 +2,13 @@ import { BullModule } from '@nestjs/bullmq';
 import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ProfileCompletedGuard } from './common/guards/profile-completed.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { UserThrottlerGuard } from './common/guards/user-throttler.guard';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { type Env, validateEnv } from './config/env.schema';
 import { HealthModule } from './health/health.module';
@@ -83,8 +84,8 @@ function redisConnection(url: string) {
     KnowledgeModule,
   ],
   providers: [
-    // Order matters: rate limit → authenticate → authorise → profile complete. Errors go through the filter.
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Order matters: rate limit (per user, else per IP) → authenticate → authorise → profile complete. Errors go through the filter.
+    { provide: APP_GUARD, useClass: UserThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: ProfileCompletedGuard },

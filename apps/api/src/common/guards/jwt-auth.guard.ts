@@ -31,12 +31,7 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
 
     try {
-      const payload = await this.jwt.verifyAsync<AccessTokenPayload & { aud?: unknown }>(token);
-      // The same key signs short-lived tokens with an audience (the OAuth flow cookie); only access tokens,
-      // which have none, open the API.
-      if (payload.aud !== undefined || typeof payload.sub !== 'string')
-        throw new Error('Not an access token');
-      request.user = { sub: payload.sub, role: payload.role, adminLevel: payload.adminLevel };
+      request.user = await verifyAccessToken(this.jwt, token);
       return true;
     } catch (error) {
       const expired = error instanceof Error && error.name === 'TokenExpiredError';
@@ -48,11 +43,26 @@ export class JwtAuthGuard implements CanActivate {
 }
 
 /**
+ * @description Checks an access token's signature and expiry.
+ * @param jwt - Service holding the signing key.
+ * @param token - Raw JWT.
+ * @returns Who the token belongs to.
+ * @throws Error when the token is invalid, expired or not an access token.
+ */
+export async function verifyAccessToken(jwt: JwtService, token: string): Promise<AccessTokenPayload> {
+  const payload = await jwt.verifyAsync<AccessTokenPayload & { aud?: unknown }>(token);
+  // The same key signs short-lived tokens with an audience (the OAuth flow cookie); only access tokens, which have
+  // none, open the API.
+  if (payload.aud !== undefined || typeof payload.sub !== 'string') throw new Error('Not an access token');
+  return { sub: payload.sub, role: payload.role, adminLevel: payload.adminLevel };
+}
+
+/**
  * @description Reads the access token from the cookie first, then the Authorization header.
  * @param request - Incoming request (cookies parsed by `cookie-parser`).
  * @returns The raw JWT or `undefined`.
  */
-function extractAccessToken(request: AppRequest): string | undefined {
+export function extractAccessToken(request: AppRequest): string | undefined {
   const fromCookie: unknown = request.cookies?.[ACCESS_TOKEN_COOKIE];
   if (typeof fromCookie === 'string' && fromCookie) return fromCookie;
 
