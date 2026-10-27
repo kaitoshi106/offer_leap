@@ -64,12 +64,37 @@ function askWorker(file: File): Promise<CompressResponse> {
 export async function prepareResumeFile(file: File): Promise<PreparedResume> {
   if (!isCompressible(file.type) || !supported()) return { file };
   const response = await askWorker(file);
+  logOutcome(file, response);
   if (response.status !== 'compressed') return { file };
   const compressed = new File([response.bytes], jpegName(file.name), {
     type: 'image/jpeg',
     lastModified: file.lastModified,
   });
   return { file: compressed, compressed: { from: file.size, to: compressed.size } };
+}
+
+const formatBytes = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+
+/**
+ * @description Dev only: prints what the worker did with a photo, so compression can be checked in the console.
+ * `NODE_ENV` is inlined at build time, so this is removed from production bundles.
+ * @param file - The photo the user picked.
+ * @param response - The worker's answer.
+ */
+function logOutcome(file: File, response: CompressResponse) {
+  if (process.env.NODE_ENV !== 'development') return;
+  const label = `[CV compression] ${file.name}`;
+  if (response.status === 'compressed') {
+    const to = response.bytes.byteLength;
+    const saved = Math.round((1 - to / file.size) * 100);
+    console.info(
+      `${label}: ${formatBytes(file.size)} → ${formatBytes(to)} (−${saved}%), ${response.width}×${response.height} JPEG`,
+    );
+  } else if (response.status === 'kept') {
+    console.info(`${label}: kept as is (${formatBytes(file.size)}, already small or JPEG would be larger)`);
+  } else {
+    console.warn(`${label}: sent uncompressed — ${response.message}`);
+  }
 }
 
 /** For tests: forget the worker so the next call creates a new one. */
