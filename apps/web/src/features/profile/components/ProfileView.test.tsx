@@ -7,6 +7,14 @@ import { jsonResponse, renderWithProviders } from '@/test/render';
 
 import { ProfileView } from './ProfileView';
 
+/** Stands in for the Web Worker compression: renames photos to `.jpg` like the real one, and counts the calls. */
+const { prepareResumeFile } = vi.hoisted(() => ({
+  prepareResumeFile: vi.fn(async (file: File) => ({
+    file: file.type.startsWith('image/') ? new File([file], file.name.replace(/\.\w+$/, '.jpg')) : file,
+  })),
+}));
+vi.mock('@/features/resumes/compression/compress-image', () => ({ prepareResumeFile }));
+
 const fetchMock = vi.fn<typeof fetch>();
 
 const profile: ProfileValues = {
@@ -26,6 +34,7 @@ const profile: ProfileValues = {
 const resume = (overrides: Partial<ResumeSummary> = {}): ResumeSummary => ({
   id: 'r1',
   fileName: 'cv-minh.pdf',
+  mimeType: 'application/pdf',
   status: 'COMPLETED',
   suggestions: null,
   errorCode: null,
@@ -110,5 +119,138 @@ describe('ProfileView', () => {
     expect(await screen.findByText('Đã xoá CV')).toBeInTheDocument();
     expect(remove).toHaveBeenCalledOnce();
     expect(await within(cvs).findByText('Chưa có CV nào.')).toBeInTheDocument();
+  });
+
+  it('opens a CV to view it, and moves a re-uploaded CV to the top instead of listing it twice', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      'URL',
+      Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:cv'), revokeObjectURL: vi.fn() }),
+    );
+    const older = resume({ id: 'r2', fileName: 'cv-cu.pdf', analysisCount: 1 });
+    routes({
+      ...baseRoutes,
+      'GET /resumes': () => jsonResponse(200, [resume({ id: 'r1', fileName: 'cv-moi.pdf' }), older]),
+      'GET /resumes/r1/file': () => new Response(new Blob(['%PDF-'], { type: 'application/pdf' })),
+      'POST /resumes': () => jsonResponse(202, { ...older, analysisCount: undefined, reused: true }),
+    });
+    renderWithProviders(<ProfileView />);
+
+    const cvs = await screen.findByRole('region', { name: 'CV đã tải lên' });
+    expect(await within(cvs).findByText('Đã dùng 2/5 CV')).toBeInTheDocument();
+    await user.click(within(cvs).getByRole('button', { name: 'Xem cv-moi.pdf' }));
+    const dialog = await screen.findByRole('dialog', { name: 'cv-moi.pdf' });
+    expect(await within(dialog).findByTitle('Nội dung CV cv-moi.pdf')).toHaveAttribute('src', 'blob:cv');
+    await user.click(within(dialog).getAllByRole('button', { name: 'Đóng' })[0]!);
+
+    await user.upload(
+      within(cvs).getByLabelText(/Kéo thả CV/),
+      new File(['%PDF-'], 'cv-cu.pdf', { type: 'application/pdf' }),
+    );
+    expect(
+      await screen.findByText('Bạn đã tải CV này rồi, CV được đưa lên đầu danh sách'),
+    ).toBeInTheDocument();
+    const names = within(cvs)
+      .getAllByRole('listitem')
+      .map((item) => within(item).getByText(/\.pdf$/).textContent);
+    expect(names).toEqual(['cv-cu.pdf', 'cv-moi.pdf']);
+    // The list keeps the analysis count the upload answer doesn't carry.
+    expect(within(cvs).getByText(/· 1 phân tích/)).toBeInTheDocument();
+  });
+
+  describe('at the CV limit', () => {
+    const full = [1, 2, 3, 4, 5].map((n) =>
+      resume({ id: `r${n}`, fileName: `cv-${n}.pdf`, analysisCount: n === 5 ? 2 : 0 }),
+    );
+    const photo = () => new File(['png'], 'cv-moi.png', { type: 'image/png' });
+    const limitError = () =>
+      jsonResponse(409, { statusCode: 409, code: 'RESUME_LIMIT_REACHED', message: 'limit' });
+
+    /** Records each upload's `replaceId` and the name of the file sent. */
+    function uploads(answer: (replaceId: string | null) => Response) {
+      const sent: { replaceId: string | null; fileName: string }[] = [];
+      const handler = (init?: RequestInit) => {
+        const body = init?.body as FormData;
+        const replaceId = body.get('replaceId') as string | null;
+        sent.push({ replaceId, fileName: (body.get('file') as File).name });
+        return answer(replaceId);
+      };
+      return { sent, handler };
+    }
+
+    beforeEach(() => {
+      prepareResumeFile.mockClear();
+    });
+
+    it('asks before shrinking the photo, then replaces the oldest CV and its analyses', async () => {
+      const user = userEvent.setup();
+      const post = uploads(() =>
+        jsonResponse(202, resume({ id: 'r6', fileName: 'cv-moi.jpg', status: 'UPLOADED' })),
+      );
+      routes({ ...baseRoutes, 'GET /resumes': () => jsonResponse(200, full), 'POST /resumes': post.handler });
+      renderWithProviders(<ProfileView />);
+
+      const cvs = await screen.findByRole('region', { name: 'CV đã tải lên' });
+      await user.upload(await within(cvs).findByLabelText(/Kéo thả CV/), photo());
+      const dialog = await screen.findByRole('dialog', { name: 'Bạn đã có đủ 5 CV' });
+      expect(dialog).toHaveTextContent(
+        'Để tải lên cv-moi.png, CV cũ nhất là cv-5.pdf (tải lên ngày 20 thg 10, 2026) sẽ bị xoá vĩnh viễn, cùng 2 phân tích dùng CV đó.',
+      );
+      // Nothing was shrunk or sent while the user decides.
+      expect(prepareResumeFile).not.toHaveBeenCalled();
+      expect(post.sent).toEqual([]);
+      await user.click(within(dialog).getByRole('button', { name: 'Xoá CV cũ và tải lên' }));
+
+      expect(await screen.findByText('Đã tải CV lên')).toBeInTheDocument();
+      expect(prepareResumeFile).toHaveBeenCalledOnce();
+      expect(post.sent).toEqual([{ replaceId: 'r5', fileName: 'cv-moi.jpg' }]);
+      await vi.waitFor(() => expect(screen.queryByRole('dialog', { name: 'Bạn đã có đủ 5 CV' })).toBeNull());
+      const names = within(cvs)
+        .getAllByRole('listitem')
+        .map((item) => within(item).getByText(/\.(pdf|jpg)$/).textContent);
+      expect(names).toEqual(['cv-moi.jpg', 'cv-1.pdf', 'cv-2.pdf', 'cv-3.pdf', 'cv-4.pdf']);
+    });
+
+    it('does no work at all when the user cancels', async () => {
+      const user = userEvent.setup();
+      const post = uploads(limitError);
+      routes({ ...baseRoutes, 'GET /resumes': () => jsonResponse(200, full), 'POST /resumes': post.handler });
+      renderWithProviders(<ProfileView />);
+
+      const cvs = await screen.findByRole('region', { name: 'CV đã tải lên' });
+      await user.upload(await within(cvs).findByLabelText(/Kéo thả CV/), photo());
+      const dialog = await screen.findByRole('dialog', { name: 'Bạn đã có đủ 5 CV' });
+      await user.click(within(dialog).getByRole('button', { name: 'Huỷ' }));
+
+      await vi.waitFor(() => expect(screen.queryByRole('dialog', { name: 'Bạn đã có đủ 5 CV' })).toBeNull());
+      expect(prepareResumeFile).not.toHaveBeenCalled();
+      expect(post.sent).toEqual([]);
+      expect(within(cvs).getAllByRole('listitem')).toHaveLength(5);
+    });
+
+    it('shrinks a photo only once when the API reaches the limit first (another tab uploaded meanwhile)', async () => {
+      const user = userEvent.setup();
+      let list = full.slice(0, 4);
+      const post = uploads((replaceId) => {
+        if (replaceId)
+          return jsonResponse(202, resume({ id: 'r6', fileName: 'cv-moi.jpg', status: 'UPLOADED' }));
+        list = full;
+        return limitError();
+      });
+      routes({ ...baseRoutes, 'GET /resumes': () => jsonResponse(200, list), 'POST /resumes': post.handler });
+      renderWithProviders(<ProfileView />);
+
+      const cvs = await screen.findByRole('region', { name: 'CV đã tải lên' });
+      await user.upload(await within(cvs).findByLabelText(/Kéo thả CV/), photo());
+      const dialog = await screen.findByRole('dialog', { name: 'Bạn đã có đủ 5 CV' });
+      await user.click(within(dialog).getByRole('button', { name: 'Xoá CV cũ và tải lên' }));
+
+      expect(await screen.findByText('Đã tải CV lên')).toBeInTheDocument();
+      expect(prepareResumeFile).toHaveBeenCalledOnce();
+      expect(post.sent).toEqual([
+        { replaceId: null, fileName: 'cv-moi.jpg' },
+        { replaceId: 'r5', fileName: 'cv-moi.jpg' },
+      ]);
+    });
   });
 });

@@ -199,14 +199,16 @@ model Profile {
 }
 
 enum ResumeStatus {
+  /// Stored only, no AI parsing (uploaded after onboarding, when the suggestions would not be used).
+  UPLOADED
   PENDING
   PROCESSING
   COMPLETED
   FAILED
 }
 
-/// An uploaded CV. The file stays on disk (`storageKey`); a BullMQ job asks the AI to read it and stores the
-/// suggested profile values in `suggestions`.
+/// An uploaded CV. The file stays on disk (`storageKey`); during onboarding a BullMQ job asks the AI to read it and
+/// stores the suggested profile values in `suggestions`.
 model Resume {
   id           String        @id @default(cuid())
   userId       String
@@ -215,6 +217,8 @@ model Resume {
   sizeBytes    Int
   /// Path inside STORAGE_DIR.
   storageKey   String        @unique
+  /// SHA-256 of the stored bytes (hex): the same file uploaded again returns this CV. Null for older uploads.
+  contentHash  String?
   status       ResumeStatus  @default(PENDING)
   /// `ResumeSuggestions` from @offerleap/shared, validated before saving.
   suggestions  Json?
@@ -229,6 +233,7 @@ model Resume {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   analyses     JobAnalysis[]
 
+  @@unique([userId, contentHash])
   @@index([userId, createdAt])
   @@map("resumes")
 }

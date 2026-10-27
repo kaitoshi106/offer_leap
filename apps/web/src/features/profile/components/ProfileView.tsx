@@ -3,6 +3,7 @@
 import {
   RESUME_FILE_TYPES,
   RESUME_MAX_BYTES,
+  RESUME_MAX_PER_USER,
   type ResumeStatus,
   type ResumeSummary,
 } from '@offerleap/shared';
@@ -15,13 +16,16 @@ import { Dialog, useToast } from '@/components/organisms';
 import { CareerStep } from '@/features/onboarding/components/CareerStep';
 import { PersonalStep } from '@/features/onboarding/components/PersonalStep';
 import { PreferencesStep } from '@/features/onboarding/components/PreferencesStep';
-import { useDeleteResume, useResumes, useUploadResume } from '@/features/resumes/api/use-resumes';
+import { useDeleteResume, useResumes } from '@/features/resumes/api/use-resumes';
+import { ResumePreviewDialog } from '@/features/resumes/components/ResumePreviewDialog';
+import { useResumeUploader } from '@/features/resumes/components/use-resume-uploader';
 import { useErrorText } from '@/lib/api/use-error-text';
 
 import { useProfile } from '../api/use-profile';
 
 const ACCEPT = [...Object.keys(RESUME_FILE_TYPES), ...Object.values(RESUME_FILE_TYPES), '.jpeg'];
 const STATUS_TONE: Record<ResumeStatus, 'neutral' | 'info' | 'success' | 'danger'> = {
+  UPLOADED: 'neutral',
   PENDING: 'neutral',
   PROCESSING: 'info',
   COMPLETED: 'success',
@@ -118,9 +122,10 @@ function ResumeManager() {
   const toast = useToast();
   const errorText = useErrorText();
   const { data, error, isPending } = useResumes();
-  const upload = useUploadResume();
+  const upload = useResumeUploader();
   const [uploadError, setUploadError] = useState<string>();
   const [deleting, setDeleting] = useState<ResumeSummary | null>(null);
+  const [viewing, setViewing] = useState<ResumeSummary | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -130,34 +135,48 @@ function ResumeManager() {
       ) : data?.length === 0 ? (
         <Text tone="muted">{t('empty')}</Text>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {data?.map((resume) => (
-            <li
-              key={resume.id}
-              className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3"
-            >
-              <Icon name="file-text" size="sm" className="text-fg-muted" />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate font-medium text-fg">{resume.fileName}</span>
-                <span className="text-xs text-fg-muted">
-                  {t('meta', {
-                    date: format.dateTime(new Date(resume.createdAt), { dateStyle: 'medium' }),
-                    count: resume.analysisCount ?? 0,
-                  })}
-                </span>
-              </div>
-              <Badge tone={STATUS_TONE[resume.status]}>{t(`statuses.${resume.status}`)}</Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label={`${t('delete')} ${resume.fileName}`}
-                onClick={() => setDeleting(resume)}
+        <>
+          <Text size="sm" tone="muted">
+            {t('limit', { count: data?.length ?? 0, max: RESUME_MAX_PER_USER })}
+          </Text>
+          <ul className="flex flex-col gap-3">
+            {data?.map((resume) => (
+              <li
+                key={resume.id}
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3"
               >
-                {t('delete')}
-              </Button>
-            </li>
-          ))}
-        </ul>
+                <Icon name="file-text" size="sm" className="text-fg-muted" />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate font-medium text-fg">{resume.fileName}</span>
+                  <span className="text-xs text-fg-muted">
+                    {t('meta', {
+                      date: format.dateTime(new Date(resume.createdAt), { dateStyle: 'medium' }),
+                      count: resume.analysisCount ?? 0,
+                    })}
+                  </span>
+                </div>
+                <Badge tone={STATUS_TONE[resume.status]}>{t(`statuses.${resume.status}`)}</Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`${t('view')} ${resume.fileName}`}
+                  leftIcon={<Icon name="eye" size="sm" />}
+                  onClick={() => setViewing(resume)}
+                >
+                  {t('view')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`${t('delete')} ${resume.fileName}`}
+                  onClick={() => setDeleting(resume)}
+                >
+                  {t('delete')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
       {upload.isPending ? (
         <p role="status" className="flex items-center gap-2 text-sm text-fg-muted">
@@ -173,7 +192,8 @@ function ResumeManager() {
           onFile={(file) => {
             setUploadError(undefined);
             upload.mutate(file, {
-              onSuccess: () => toast.show({ tone: 'success', title: t('uploaded') }),
+              onSuccess: ({ reused }) =>
+                toast.show({ tone: 'success', title: t(reused ? 'reused' : 'uploaded') }),
               onError: (uploadFailure) => setUploadError(errorText(uploadFailure)),
             });
           }}
@@ -186,6 +206,8 @@ function ResumeManager() {
         />
       )}
       <DeleteResumeDialog resume={deleting} onClose={() => setDeleting(null)} />
+      <ResumePreviewDialog resume={viewing} onClose={() => setViewing(null)} />
+      {upload.replaceDialog}
     </div>
   );
 }

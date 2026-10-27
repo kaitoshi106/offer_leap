@@ -6,7 +6,8 @@ import { useState } from 'react';
 
 import { Button, Icon, Spinner, Text } from '@/components/atoms';
 import { Alert, FileDropzone, type FileRejection } from '@/components/molecules';
-import { isResumeFinal, useResumePolling, useUploadResume } from '@/features/resumes/api/use-resumes';
+import { isResumeFinal, useResumePolling } from '@/features/resumes/api/use-resumes';
+import { useResumeUploader } from '@/features/resumes/components/use-resume-uploader';
 import { useErrorText } from '@/lib/api/use-error-text';
 
 import { useSaveOnboardingStep } from '../api/use-onboarding';
@@ -33,7 +34,7 @@ export function ResumeStep({
   const t = useTranslations('onboarding');
   const tErrors = useTranslations('errors');
   const errorText = useErrorText();
-  const upload = useUploadResume();
+  const upload = useResumeUploader();
   const save = useSaveOnboardingStep();
   const [error, setError] = useState<string>();
   const [replacing, setReplacing] = useState(false);
@@ -124,6 +125,7 @@ export function ResumeStep({
           {completed ? t('actions.next') : t('resume.skip')}
         </Button>
       </div>
+      {upload.replaceDialog}
     </div>
   );
 }

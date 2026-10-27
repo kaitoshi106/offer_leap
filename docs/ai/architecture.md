@@ -128,8 +128,9 @@ POST /auth/logout · GET /auth/me · forgot / reset / change password
 ## Resume parsing pipeline
 
 ```
-POST /resumes (multipart, ≤ 10 MB) → magic-byte check (PDF/DOCX/PNG/JPEG/WEBP) → StorageService → Resume row
-  (PENDING) → BullMQ `resume` job → 202
+POST /resumes (multipart, ≤ 10 MB) → magic-byte check (PDF/DOCX/PNG/JPEG/WEBP) → SHA-256: same file already
+  stored? → return that CV (`reused: true`, moved to the top) → ≤ 5 CVs per user → StorageService → Resume row
+  onboarding open: (PENDING) → BullMQ `resume` job → 202   |   onboarding done: (UPLOADED, no AI call) → 202
 worker: PDF / image → sent inline to the model | DOCX → mammoth raw text inside <cv> tags
       → AiProvider.generateJson (prompt resume-extraction.v2, JSON Schema from Zod, taxonomy codes as enums)
       → Zod validation → toResumeSuggestions (re-validated with the onboarding rules)
@@ -138,6 +139,16 @@ web: polls GET /resumes/:id every 1.5 s → refetches GET /onboarding → fields
      "AI suggested"; fields the model flagged as guesses ask the user to check
 ```
 
+- The AI's values only ever fill the onboarding draft, so CVs uploaded after onboarding are just stored
+  (`UPLOADED`, a final status): analyses and cover letters read the file itself, not the parse result.
+- Duplicates: `contentHash` is unique per user. Re-uploading a CV whose parse FAILED during onboarding parses it
+  again. The count limit (`RESUME_MAX_PER_USER`, `RESUME_LIMIT_REACHED`) and the duplicate check run again under a
+  per-user advisory lock, so simultaneous uploads can't slip past them. At the limit the web app asks whether to
+  delete the oldest CV (and its analyses); on yes it uploads again with `replaceId`, and the API deletes that CV
+  and creates the new one in the same transaction.
+- Viewing: `GET /resumes/:id/file` serves the stored bytes (PDF / image shown by the browser);
+  `GET /resumes/:id/preview` converts a DOCX to HTML (mammoth), which the web app renders in a sandboxed iframe
+  with a CSP that loads nothing.
 - Orphaned files: `OrphanFilesSweeper` (at start-up, then every 6 h) deletes files under `resumes/` and
   `knowledge/` that no row references, once they are over an hour old (an upload writes its file just before its
   row).

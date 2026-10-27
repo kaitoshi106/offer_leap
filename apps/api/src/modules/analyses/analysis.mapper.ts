@@ -1,4 +1,5 @@
 import type {
+  AiJobStatus,
   AnalysisDetail,
   AnalysisResult,
   AnalysisSummary,
@@ -17,7 +18,8 @@ export const ANALYSIS_INCLUDE = { resume: { select: { fileName: true } } } as co
 export function toAnalysisSummary(analysis: AnalysisRow): AnalysisSummary {
   return {
     id: analysis.id,
-    status: analysis.status,
+    // The database enum is shared with CVs; only CVs are ever UPLOADED.
+    status: analysis.status as AiJobStatus,
     jobTitle: analysis.jobTitle,
     company: analysis.company,
     score: analysis.score,

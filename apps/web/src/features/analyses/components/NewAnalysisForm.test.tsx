@@ -17,6 +17,7 @@ const JD =
 const resume = (id: string, fileName: string): ResumeSummary => ({
   id,
   fileName,
+  mimeType: 'application/pdf',
   status: 'COMPLETED',
   suggestions: null,
   errorCode: null,

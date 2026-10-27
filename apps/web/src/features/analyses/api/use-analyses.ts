@@ -1,6 +1,6 @@
 'use client';
 
-import { type AnalysisDetail, type PageQuery, RESUME_FINAL_STATUSES } from '@offerleap/shared';
+import { type AnalysisDetail, type PageQuery, AI_JOB_FINAL_STATUSES } from '@offerleap/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { analysesApi } from './analyses-api';
@@ -14,7 +14,7 @@ const analysesListKey = [...analysesKey, 'list'] as const;
 const analysisKey = (id: string) => [...analysesKey, id] as const;
 
 const isFinal = (analysis: { status: AnalysisDetail['status'] }) =>
-  RESUME_FINAL_STATUSES.includes(analysis.status);
+  AI_JOB_FINAL_STATUSES.includes(analysis.status);
 
 /**
  * @description One page of the history, newest first. Refreshes itself while an analysis on it is still running;

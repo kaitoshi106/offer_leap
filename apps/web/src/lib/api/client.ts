@@ -125,6 +125,18 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 }
 
 /**
+ * @description Downloads a file (e.g. an uploaded CV) with the session cookies, for showing it in the page.
+ * @param path - Path after `/api/v1`.
+ * @param options - As for {@link apiRequest}.
+ * @returns The file's contents with the type the API sent.
+ * @throws ApiError
+ */
+export async function apiBlob(path: string, options: ApiRequestOptions = {}): Promise<Blob> {
+  const response = await send(path, options);
+  return response.blob();
+}
+
+/**
  * @description Calls an endpoint that streams plain text (e.g. an AI writing a letter) and reports the text so
  * far after every piece. Errors before streaming starts are normal `ApiError`s (validation, AI unavailable).
  * @param path - Path after `/api/v1`.

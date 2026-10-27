@@ -1,5 +1,5 @@
 import type { ErrorCode } from '../errors/error-codes';
-import type { ResumeStatus } from '../resume/constants';
+import type { AiJobStatus } from '../resume/constants';
 import type { KnowledgeSource } from './constants';
 
 /** A personal document the AI can draw on. Processed in the background like CVs (same statuses). */
@@ -8,7 +8,7 @@ export interface KnowledgeDocument {
   title: string;
   source: KnowledgeSource;
   fileName: string | null;
-  status: ResumeStatus;
+  status: AiJobStatus;
   errorCode: ErrorCode | null;
   chunkCount: number;
   charCount: number;

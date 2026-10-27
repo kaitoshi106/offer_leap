@@ -69,6 +69,7 @@
     "COMMON_FILE_TOO_LARGE": "The file is too large (max 10 MB).",
     "COMMON_UNSUPPORTED_FILE_TYPE": "Only PDF, DOCX, PNG, JPG or WEBP files are supported.",
     "RESUME_PARSE_FAILED": "AI couldn’t read this CV. Try another file or fill in your details yourself.",
+    "RESUME_LIMIT_REACHED": "You have the maximum number of CVs. Delete an old one in your Profile to upload a new CV.",
     "AI_UNAVAILABLE": "The AI service is busy. Please try again in a few minutes or fill in your details yourself.",
     "ANALYSIS_FAILED": "AI could not analyse this CV against the job description. Try again or use another CV.",
     "STREAM_INTERRUPTED": "The connection dropped while AI was writing. Please try again.",
@@ -241,7 +242,8 @@
       "jobDescription": "Job description",
       "jobDescriptionPlaceholder": "Paste the whole job posting: role, requirements, benefits…",
       "jobDescriptionHint": "{count}/{max} characters · at least {min}",
-      "submit": "Analyse"
+      "submit": "Analyse",
+      "viewResume": "View CV"
     },
     "history": {
       "title": "Past analyses",
@@ -479,6 +481,7 @@
       "upload": "Upload a new CV",
       "uploaded": "CV uploaded",
       "statuses": {
+        "UPLOADED": "Saved",
         "PENDING": "Waiting",
         "PROCESSING": "AI is reading",
         "COMPLETED": "Read",
@@ -489,7 +492,10 @@
       "deleteTitle": "Delete {fileName}?",
       "deleteBody": "{count, plural, =0 {The CV file will be deleted permanently. What it filled into your profile stays.} one {The CV file and # analysis made with it will be deleted permanently. What it filled into your profile stays.} other {The CV file and # analyses made with it will be deleted permanently. What it filled into your profile stays.}}",
       "cancel": "Cancel",
-      "deleted": "CV deleted"
+      "deleted": "CV deleted",
+      "view": "View",
+      "reused": "You had already uploaded this CV, so it moved to the top",
+      "limit": "{count} of {max} CVs used"
     }
   },
   "admin": {
@@ -801,5 +807,18 @@
       "badge": "AI suggested",
       "check": "AI isn’t sure about this one — please double-check."
     }
+  },
+  "resumePreview": {
+    "loading": "Opening the CV…",
+    "download": "Download",
+    "docxNote": "A preview of the Word file; the layout may differ slightly from the original.",
+    "frameTitle": "Contents of CV {fileName}",
+    "imageAlt": "Photo of CV {fileName}"
+  },
+  "resumeLimit": {
+    "title": "You already have {max} CVs",
+    "body": "To upload {fileName}, your oldest CV, {oldFileName} (uploaded {date}), will be deleted for good{count, plural, =0 {.} one {, along with the analysis made with it.} other {, along with the # analyses made with it.}}",
+    "confirm": "Delete old CV and upload",
+    "cancel": "Cancel"
   }
 }

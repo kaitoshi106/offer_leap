@@ -55,14 +55,18 @@ describe('AI usage and quotas', () => {
     const refused = await agent.post('/api/v1/interviews').send(START).expect(429);
     expect(refused.body.code).toBe(ErrorCode.AI_QUOTA_EXCEEDED);
 
-    // A queued CV parse fails with the same code instead of retrying.
-    const { body } = await agent.post('/api/v1/resumes').attach('file', PDF, 'cv.pdf').expect(202);
-    let resume = body;
-    for (let attempt = 0; attempt < 100 && !['COMPLETED', 'FAILED'].includes(resume.status); attempt += 1) {
+    // A queued analysis fails with the same code instead of retrying. (Storing a CV after onboarding needs no AI.)
+    const resume = await agent.post('/api/v1/resumes').attach('file', PDF, 'cv.pdf').expect(202);
+    const { body } = await agent
+      .post('/api/v1/analyses')
+      .send({ resumeId: resume.body.id, jobDescription: 'Frontend Developer. '.repeat(10), locale: 'vi' })
+      .expect(202);
+    let analysis = body;
+    for (let attempt = 0; attempt < 100 && !['COMPLETED', 'FAILED'].includes(analysis.status); attempt += 1) {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      resume = (await agent.get(`/api/v1/resumes/${body.id}`).expect(200)).body;
+      analysis = (await agent.get(`/api/v1/analyses/${body.id}`).expect(200)).body;
     }
-    expect(resume).toMatchObject({ status: 'FAILED', errorCode: ErrorCode.AI_QUOTA_EXCEEDED });
+    expect(analysis).toMatchObject({ status: 'FAILED', errorCode: ErrorCode.AI_QUOTA_EXCEEDED });
   });
 
   it('lets admins see usage and change a user quota', async () => {

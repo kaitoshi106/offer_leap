@@ -1,6 +1,6 @@
 'use client';
 
-import { RESUME_FINAL_STATUSES } from '@offerleap/shared';
+import { AI_JOB_FINAL_STATUSES } from '@offerleap/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { knowledgeApi } from './knowledge-api';
@@ -13,7 +13,7 @@ export function useDocuments() {
     queryKey: documentsKey,
     queryFn: ({ signal }) => knowledgeApi.list(signal),
     refetchInterval: (query) =>
-      query.state.data?.some((document) => !RESUME_FINAL_STATUSES.includes(document.status)) ? 1_500 : false,
+      query.state.data?.some((document) => !AI_JOB_FINAL_STATUSES.includes(document.status)) ? 1_500 : false,
   });
 }
 
