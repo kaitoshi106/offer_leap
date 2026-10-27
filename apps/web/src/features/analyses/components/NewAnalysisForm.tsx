@@ -14,7 +14,9 @@ import { useForm, useWatch } from 'react-hook-form';
 
 import { Button, Icon, Select, Skeleton, Textarea } from '@/components/atoms';
 import { Alert, FileDropzone, FormField } from '@/components/molecules';
-import { useResumes, useUploadResume } from '@/features/resumes/api/use-resumes';
+import { useResumes } from '@/features/resumes/api/use-resumes';
+import { ResumePreviewDialog } from '@/features/resumes/components/ResumePreviewDialog';
+import { useResumeUploader } from '@/features/resumes/components/use-resume-uploader';
 import { useRouter } from '@/i18n/navigation';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorText } from '@/lib/api/use-error-text';
@@ -38,11 +40,12 @@ export function NewAnalysisForm() {
   const errorText = useErrorText();
   const fieldError = useFieldErrorText();
   const resumes = useResumes();
-  const upload = useUploadResume();
+  const upload = useResumeUploader();
   const create = useCreateAnalysis();
   const createOnce = useMutateOnce(create);
   const [uploadMode, setUploadMode] = useState(false);
   const [uploadError, setUploadError] = useState<string>();
+  const [viewing, setViewing] = useState(false);
 
   const form = useForm<CreateAnalysisInput, unknown, CreateAnalysis>({
     resolver: sharedSchemaResolver(createAnalysisSchema),
@@ -52,6 +55,8 @@ export function NewAnalysisForm() {
   // useWatch (not form.watch) so the React Compiler can still optimise this component.
   const jobDescriptionLength = useWatch({ control: form.control, name: 'jobDescription' }).trim().length;
   const hasResumes = (resumes.data?.length ?? 0) > 0;
+  const resumeId = useWatch({ control: form.control, name: 'resumeId' });
+  const selectedResume = resumes.data?.find(({ id }) => id === resumeId) ?? null;
 
   // Preselect the newest CV once the list arrives.
   const newestId = resumes.data?.[0]?.id;
@@ -149,6 +154,14 @@ export function NewAnalysisForm() {
               </Select>
               <Button
                 variant="outline"
+                leftIcon={<Icon name="eye" size="sm" />}
+                disabled={!selectedResume}
+                onClick={() => setViewing(true)}
+              >
+                {t('viewResume')}
+              </Button>
+              <Button
+                variant="outline"
                 leftIcon={<Icon name="upload" size="sm" />}
                 onClick={() => setUploadMode(true)}
               >
@@ -188,6 +201,8 @@ export function NewAnalysisForm() {
       >
         {t('submit')}
       </Button>
+      <ResumePreviewDialog resume={viewing ? selectedResume : null} onClose={() => setViewing(false)} />
+      {upload.replaceDialog}
     </form>
   );
 }

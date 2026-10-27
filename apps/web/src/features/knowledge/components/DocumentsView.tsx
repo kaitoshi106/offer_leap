@@ -6,7 +6,7 @@ import {
   KNOWLEDGE_FILE_TYPES,
   KNOWLEDGE_LIMITS,
   type KnowledgeDocument,
-  type ResumeStatus,
+  type AiJobStatus,
 } from '@offerleap/shared';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type FormEvent, type ReactNode, useState } from 'react';
@@ -29,7 +29,7 @@ import {
 } from '../api/use-knowledge';
 
 const ACCEPT = [...Object.keys(KNOWLEDGE_FILE_TYPES), ...Object.values(KNOWLEDGE_FILE_TYPES), '.markdown'];
-const STATUS_TONE: Record<ResumeStatus, 'neutral' | 'info' | 'success' | 'danger'> = {
+const STATUS_TONE: Record<AiJobStatus, 'neutral' | 'info' | 'success' | 'danger'> = {
   PENDING: 'neutral',
   PROCESSING: 'info',
   COMPLETED: 'success',

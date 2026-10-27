@@ -1,26 +1,44 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiCookieAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { ErrorCode, RESUME_MAX_BYTES, type ResumeSummary, ValidationRule } from '@offerleap/shared';
+import {
+  ErrorCode,
+  RESUME_MAX_BYTES,
+  type ResumePreview,
+  type ResumeSummary,
+  type UploadResumeFields,
+  uploadResumeFieldsSchema,
+  ValidationRule,
+} from '@offerleap/shared';
 
 import { AllowIncompleteProfile, CurrentUser } from '../../common/decorators/auth.decorators';
 import { AppException } from '../../common/errors/app.exception';
 import type { AccessTokenPayload } from '../../common/http/request';
 import { ApiErrors } from '../../common/openapi/openapi.decorators';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { ResumesService, type UploadedResumeFile } from './resumes.service';
 
 const TEN_MINUTES = 10 * 60_000;
+
+/** `encodeURIComponent` leaves `'()*` as they are, but RFC 8187 (`filename*=`) needs them escaped too. */
+const encodeRfc8187 = (value: string) =>
+  encodeURIComponent(value).replace(/['()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+/** Opening a CV is cheap, but converting a DOCX isn't free: a generous cap (per client IP, like every limit). */
+const VIEW_LIMIT = { default: { limit: 60, ttl: TEN_MINUTES } };
 
 @ApiTags('resumes')
 @ApiCookieAuth('cookie')
@@ -33,14 +51,20 @@ export class ResumesController {
 
   @ApiOperation({
     summary: 'Upload a CV (PDF, DOCX, PNG, JPEG, WEBP; max 10 MB)',
-    description: 'Returns 202 with status PENDING. Poll `GET /resumes/{id}` until COMPLETED or FAILED.',
+    description:
+      'Returns 202. During onboarding the status is PENDING: poll `GET /resumes/{id}` until COMPLETED or FAILED. ' +
+      'After onboarding the CV is only stored (UPLOADED). The same file again returns the existing CV with ' +
+      '`reused: true`. At the CV limit, pass `replaceId` to delete that CV (and its analyses) in the same step.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       required: ['file'],
-      properties: { file: { type: 'string', format: 'binary' } },
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        replaceId: { type: 'string', description: 'Optional: one of your CVs to delete to make room.' },
+      },
     },
   })
   @ApiErrors(
@@ -48,8 +72,10 @@ export class ResumesController {
     ErrorCode.COMMON_FILE_TOO_LARGE,
     ErrorCode.COMMON_UNSUPPORTED_FILE_TYPE,
     ErrorCode.COMMON_RATE_LIMITED,
+    ErrorCode.RESUME_LIMIT_REACHED,
+    ErrorCode.COMMON_NOT_FOUND,
   )
-  // Each upload costs an AI call: a few per user are plenty.
+  // During onboarding each upload costs an AI call: a few per client are plenty.
   @Throttle({ default: { limit: 5, ttl: TEN_MINUTES } })
   @UseInterceptors(
     FileInterceptor('file', {
@@ -63,6 +89,7 @@ export class ResumesController {
   upload(
     @CurrentUser() user: AccessTokenPayload,
     @UploadedFile() file: UploadedResumeFile | undefined,
+    @Body(new ZodValidationPipe(uploadResumeFieldsSchema)) fields: UploadResumeFields,
   ): Promise<ResumeSummary> {
     if (!file) {
       throw new AppException(ErrorCode.COMMON_VALIDATION_FAILED, {
@@ -70,7 +97,7 @@ export class ResumesController {
         fieldErrors: [{ field: 'file', rule: ValidationRule.REQUIRED }],
       });
     }
-    return this.resumes.upload(user.sub, file);
+    return this.resumes.upload(user.sub, file, fields);
   }
 
   @ApiOperation({ summary: 'Your CVs, newest first' })
@@ -84,6 +111,39 @@ export class ResumesController {
   @Get(':id')
   findOne(@CurrentUser() user: AccessTokenPayload, @Param('id') id: string): Promise<ResumeSummary> {
     return this.resumes.findOwned(user.sub, id);
+  }
+
+  @ApiOperation({
+    summary: 'The uploaded file itself, to view it',
+    description:
+      'Served inline with its detected type. Browsers can show PDFs and images; DOCX needs `/preview`.',
+  })
+  @ApiOkResponse({ description: 'The file bytes.' })
+  @ApiErrors(ErrorCode.COMMON_NOT_FOUND, ErrorCode.COMMON_RATE_LIMITED)
+  @Throttle(VIEW_LIMIT)
+  // Someone's CV: never kept by a shared cache.
+  @Header('Cache-Control', 'private, no-store')
+  @Get(':id/file')
+  async file(@CurrentUser() user: AccessTokenPayload, @Param('id') id: string): Promise<StreamableFile> {
+    const { data, mimeType, fileName } = await this.resumes.file(user.sub, id);
+    return new StreamableFile(data, {
+      type: mimeType,
+      disposition: `inline; filename*=UTF-8''${encodeRfc8187(fileName)}`,
+      length: data.length,
+    });
+  }
+
+  @ApiOperation({ summary: 'A DOCX CV converted to HTML, for browsers that cannot show Word files' })
+  @ApiOkResponse({ description: '`{ html }` — render it sandboxed, without scripts.' })
+  @ApiErrors(
+    ErrorCode.COMMON_NOT_FOUND,
+    ErrorCode.COMMON_UNSUPPORTED_FILE_TYPE,
+    ErrorCode.COMMON_RATE_LIMITED,
+  )
+  @Throttle(VIEW_LIMIT)
+  @Get(':id/preview')
+  preview(@CurrentUser() user: AccessTokenPayload, @Param('id') id: string): Promise<ResumePreview> {
+    return this.resumes.preview(user.sub, id);
   }
 
   @ApiOperation({ summary: 'Delete a CV, its file and the analyses made with it' })

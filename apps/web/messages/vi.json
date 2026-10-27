@@ -69,6 +69,7 @@
     "COMMON_FILE_TOO_LARGE": "File quá lớn (tối đa 10 MB).",
     "COMMON_UNSUPPORTED_FILE_TYPE": "Chỉ hỗ trợ file PDF, DOCX, PNG, JPG hoặc WEBP.",
     "RESUME_PARSE_FAILED": "AI không đọc được CV này. Hãy thử file khác hoặc tự nhập thông tin.",
+    "RESUME_LIMIT_REACHED": "Bạn đã có số CV tối đa. Hãy xoá bớt CV cũ trong Hồ sơ để tải CV mới.",
     "AI_UNAVAILABLE": "Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút hoặc tự nhập thông tin.",
     "ANALYSIS_FAILED": "AI không phân tích được CV này với mô tả công việc. Hãy thử lại hoặc dùng CV khác.",
     "STREAM_INTERRUPTED": "Kết nối bị gián đoạn khi AI đang viết. Vui lòng thử lại.",
@@ -241,7 +242,8 @@
       "jobDescription": "Mô tả công việc (JD)",
       "jobDescriptionPlaceholder": "Dán toàn bộ tin tuyển dụng: vị trí, yêu cầu, quyền lợi…",
       "jobDescriptionHint": "{count}/{max} ký tự · tối thiểu {min}",
-      "submit": "Phân tích"
+      "submit": "Phân tích",
+      "viewResume": "Xem CV"
     },
     "history": {
       "title": "Lịch sử phân tích",
@@ -479,6 +481,7 @@
       "upload": "Tải CV mới",
       "uploaded": "Đã tải CV lên",
       "statuses": {
+        "UPLOADED": "Đã lưu",
         "PENDING": "Đang chờ",
         "PROCESSING": "AI đang đọc",
         "COMPLETED": "Đã đọc",
@@ -489,7 +492,10 @@
       "deleteTitle": "Xoá {fileName}?",
       "deleteBody": "{count, plural, =0 {File CV sẽ bị xoá vĩnh viễn. Thông tin đã điền vào hồ sơ vẫn giữ nguyên.} other {File CV và # phân tích dùng CV này sẽ bị xoá vĩnh viễn. Thông tin đã điền vào hồ sơ vẫn giữ nguyên.}}",
       "cancel": "Huỷ",
-      "deleted": "Đã xoá CV"
+      "deleted": "Đã xoá CV",
+      "view": "Xem",
+      "reused": "Bạn đã tải CV này rồi, CV được đưa lên đầu danh sách",
+      "limit": "Đã dùng {count}/{max} CV"
     }
   },
   "admin": {
@@ -801,5 +807,18 @@
       "badge": "AI gợi ý",
       "check": "AI chưa chắc chắn ở mục này — hãy kiểm tra lại."
     }
+  },
+  "resumePreview": {
+    "loading": "Đang mở CV…",
+    "download": "Tải xuống",
+    "docxNote": "Bản xem trước của file Word, định dạng có thể hơi khác bản gốc.",
+    "frameTitle": "Nội dung CV {fileName}",
+    "imageAlt": "Ảnh CV {fileName}"
+  },
+  "resumeLimit": {
+    "title": "Bạn đã có đủ {max} CV",
+    "body": "Để tải lên {fileName}, CV cũ nhất là {oldFileName} (tải lên ngày {date}) sẽ bị xoá vĩnh viễn{count, plural, =0 {.} other {, cùng # phân tích dùng CV đó.}}",
+    "confirm": "Xoá CV cũ và tải lên",
+    "cancel": "Huỷ"
   }
 }

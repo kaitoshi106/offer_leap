@@ -1,7 +1,7 @@
 import type { Locale } from '../constants/app';
 import type { ErrorCode } from '../errors/error-codes';
 import type { KnowledgeCitation } from '../knowledge/types';
-import type { ResumeStatus } from '../resume/constants';
+import type { AiJobStatus } from '../resume/constants';
 import type { SkillImportance } from './constants';
 
 export interface MissingSkill {
@@ -27,7 +27,7 @@ export interface AnalysisResult {
 /** Row in the analysis history. Analyses run in the background like CV parsing, so they share its statuses. */
 export interface AnalysisSummary {
   id: string;
-  status: ResumeStatus;
+  status: AiJobStatus;
   /** Read from the job description by the AI; null until the analysis completes. */
   jobTitle: string | null;
   company: string | null;

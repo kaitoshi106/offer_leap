@@ -1,4 +1,4 @@
-import type { ErrorCode, KnowledgeDocument } from '@offerleap/shared';
+import type { AiJobStatus, ErrorCode, KnowledgeDocument } from '@offerleap/shared';
 
 import type { KnowledgeDocument as DocumentRow } from '../../generated/prisma/client';
 
@@ -9,7 +9,8 @@ export function toKnowledgeDocument(row: DocumentRow): KnowledgeDocument {
     title: row.title,
     source: row.source,
     fileName: row.fileName,
-    status: row.status,
+    // The database enum is shared with CVs; only CVs are ever UPLOADED.
+    status: row.status as AiJobStatus,
     errorCode: (row.errorCode as ErrorCode | null) ?? null,
     chunkCount: row.chunkCount,
     charCount: row.charCount,

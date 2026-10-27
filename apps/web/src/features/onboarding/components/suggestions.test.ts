@@ -6,6 +6,7 @@ import { suggestedFields } from './suggestions';
 const resume = (overrides: Partial<ResumeSummary> = {}): ResumeSummary => ({
   id: 'r1',
   fileName: 'cv.pdf',
+  mimeType: 'application/pdf',
   status: 'COMPLETED',
   errorCode: null,
   createdAt: '2026-10-19T00:00:00.000Z',

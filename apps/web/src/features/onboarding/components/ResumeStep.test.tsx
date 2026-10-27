@@ -14,6 +14,7 @@ const onSaved = vi.fn();
 const resume = (overrides: Partial<ResumeSummary> = {}): ResumeSummary => ({
   id: 'r1',
   fileName: 'cv.pdf',
+  mimeType: 'application/pdf',
   status: 'PENDING',
   suggestions: null,
   errorCode: null,

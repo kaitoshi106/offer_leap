@@ -1,14 +1,22 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { InjectQueue } from '@nestjs/bullmq';
 import { Inject, Injectable } from '@nestjs/common';
-import { ErrorCode, RESUME_FILE_TYPES, type ResumeSuggestions, type ResumeSummary } from '@offerleap/shared';
+import {
+  ErrorCode,
+  RESUME_FILE_TYPES,
+  RESUME_MAX_PER_USER,
+  type ResumePreview,
+  type ResumeSuggestions,
+  type ResumeSummary,
+  type UploadResumeFields,
+} from '@offerleap/shared';
 import type { Queue } from 'bullmq';
-import { extractRawText } from 'mammoth';
+import { convertToHtml, extractRawText } from 'mammoth';
 
 import { AppException } from '../../common/errors/app.exception';
 import { isMissingReference } from '../../common/errors/prisma-errors';
-import type { Prisma } from '../../generated/prisma/client';
+import type { Prisma, Resume } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
 import { enqueueAiJob } from '../ai/ai-job';
@@ -34,7 +42,7 @@ export interface UploadedResumeFile {
   buffer: Buffer;
 }
 
-/** Stores uploaded CVs, queues them for AI parsing and serves their status. */
+/** Stores uploaded CVs, queues them for AI parsing during onboarding and serves their status and files. */
 @Injectable()
 export class ResumesService {
   constructor(
@@ -46,41 +54,172 @@ export class ResumesService {
   ) {}
 
   /**
-   * @description Saves the file and queues parsing. Returns at once with status PENDING; the client polls
-   * `findOwned` until the job finishes (an AI call takes several seconds — too long to hold the request).
+   * @description Saves the file and, while onboarding is open, queues parsing: the AI's values only ever fill the
+   * onboarding draft, so a CV uploaded afterwards is stored as UPLOADED without an AI call. Returns at once; the
+   * client polls `findOwned` until the job finishes (an AI call takes several seconds — too long to hold the
+   * request). The same file uploaded again returns the existing CV (`reused`) instead of a copy.
    * @param userId - Owner.
    * @param file - Upload from multer (already size-limited).
+   * @param fields.replaceId - One of the user's CVs to delete (with its analyses) to make room, in the same
+   * transaction as the new CV: it is kept if the upload fails, and not touched when the file is a duplicate.
    * @throws AppException COMMON_UNSUPPORTED_FILE_TYPE when the bytes aren't a PDF, DOCX, PNG, JPEG or WEBP.
+   * @throws AppException RESUME_LIMIT_REACHED when the user already has RESUME_MAX_PER_USER CVs.
+   * @throws AppException COMMON_NOT_FOUND when `replaceId` isn't one of the user's CVs (e.g. already deleted).
    */
-  async upload(userId: string, file: UploadedResumeFile): Promise<ResumeSummary> {
+  async upload(
+    userId: string,
+    file: UploadedResumeFile,
+    { replaceId }: UploadResumeFields = {},
+  ): Promise<ResumeSummary> {
     const mimeType = detectResumeType(file.buffer);
     if (!mimeType) {
       throw new AppException(ErrorCode.COMMON_UNSUPPORTED_FILE_TYPE, { message: 'Not a supported CV file' });
     }
+    const contentHash = createHash('sha256').update(file.buffer).digest('hex');
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { onboardingCompletedAt: true },
+    });
+    // A deleted account (its access token outlives it) isn't signed in.
+    if (!user) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
+    const parse = user.onboardingCompletedAt === null;
+
+    // Early checks, before the file is stored; both are repeated under a lock below.
+    const duplicate = await this.prisma.resume.findFirst({ where: { userId, contentHash } });
+    if (duplicate) return this.reuse(duplicate, parse);
+    if (!replaceId) await this.assertBelowLimit(userId);
 
     const storageKey = `resumes/${userId}/${randomUUID()}${RESUME_FILE_TYPES[mimeType]}`;
     await this.storage.put(storageKey, file.buffer);
-    const resume = await this.prisma.resume
-      .create({
-        data: {
-          userId,
-          fileName: file.originalname.slice(0, 255),
-          mimeType,
-          sizeBytes: file.buffer.length,
-          storageKey,
-        },
+    const saved = await this.prisma
+      .$transaction(async (tx) => {
+        // One upload at a time per user, so simultaneous uploads can't all pass the checks.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`resumes:${userId}`}))`;
+        const existing = await tx.resume.findFirst({ where: { userId, contentHash } });
+        if (existing) return { reused: true, resume: existing } as const;
+        const replaced = replaceId ? await tx.resume.findFirst({ where: { id: replaceId, userId } }) : null;
+        if (replaceId && !replaced) {
+          throw new AppException(ErrorCode.COMMON_NOT_FOUND, { message: 'Resume to replace not found' });
+        }
+        // Its analyses go with it (cascade), as with `remove`.
+        if (replaced) {
+          await tx.resume.delete({ where: { id: replaced.id } });
+        } else {
+          // A swap never adds a CV, so it needs no room — also for users who had more CVs before the limit.
+          const count = await tx.resume.count({ where: { userId } });
+          if (count >= RESUME_MAX_PER_USER) throw new AppException(ErrorCode.RESUME_LIMIT_REACHED);
+        }
+        const created = await tx.resume.create({
+          data: {
+            userId,
+            fileName: file.originalname.slice(0, 255),
+            mimeType,
+            sizeBytes: file.buffer.length,
+            storageKey,
+            contentHash,
+            status: parse ? 'PENDING' : 'UPLOADED',
+          },
+        });
+        return { reused: false, resume: created, replaced } as const;
       })
       .catch(async (error: unknown) => {
-        // No row for the file: don't keep it. A deleted account (its access token outlives it) isn't signed in.
+        // No row for the file: don't keep it.
         await this.storage.remove(storageKey);
         if (isMissingReference(error)) throw new AppException(ErrorCode.AUTH_UNAUTHENTICATED);
         throw error;
       });
 
-    await enqueueAiJob(this.queue, 'parse', { resumeId: resume.id }, resume.id, () =>
-      this.markFailed(resume.id, ErrorCode.RESUME_PARSE_FAILED),
+    if (saved.reused) {
+      // The same file arrived twice at once: the other request stored it first.
+      await this.storage.remove(storageKey);
+      return this.reuse(saved.resume, parse);
+    }
+    if (saved.replaced) await this.storage.remove(saved.replaced.storageKey);
+    if (parse) await this.queueParse(saved.resume.id);
+    return toResumeSummary(saved.resume);
+  }
+
+  /**
+   * @description Answers an upload of a file the user already has: that CV moves to the top (it is the one they
+   * just picked; its date becomes this upload's). While onboarding is open it acts like a fresh upload: values
+   * already read from it go back into the draft (another CV may have replaced them since, and no AI call is
+   * needed), and a CV the AI failed to read is read again.
+   * @param resume - The stored CV with the same content.
+   * @param parse - Whether onboarding is open (the AI's values are still used).
+   * @returns The CV, marked `reused`.
+   */
+  private async reuse(resume: Resume, parse: boolean): Promise<ResumeSummary> {
+    const retry = parse && resume.status === 'FAILED';
+    // Written only by the worker after validation, so the cast is safe.
+    const suggestions = resume.suggestions as ResumeSuggestions | null;
+    const refill = parse && resume.status === 'COMPLETED' && suggestions !== null;
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.resume.update({
+        where: { id: resume.id },
+        data: { createdAt: new Date(), ...(retry && { status: 'PENDING', errorCode: null }) },
+      }),
+      ...(refill ? this.draftUpdates(resume.userId, suggestions) : []),
+    ]);
+    // A new job id: the earlier job keeps its id in Redis for a while (it may even still be finishing), and
+    // queueing an existing id is a no-op.
+    if (retry) await this.queueParse(resume.id, `${resume.id}-retry-${Date.now()}`);
+    return { ...toResumeSummary(updated as Resume), reused: true };
+  }
+
+  /**
+   * @description Early limit check, before the file is stored; `upload` checks again under a lock.
+   * @param userId - Owner.
+   * @throws AppException RESUME_LIMIT_REACHED
+   */
+  private async assertBelowLimit(userId: string): Promise<void> {
+    const count = await this.prisma.resume.count({ where: { userId } });
+    if (count >= RESUME_MAX_PER_USER) throw new AppException(ErrorCode.RESUME_LIMIT_REACHED);
+  }
+
+  /**
+   * @description Queues the AI parse of a CV; if the queue can't be reached the CV is marked failed.
+   * @param resumeId - CV to parse.
+   * @param jobId - BullMQ job id; the CV id unless a parse is retried.
+   */
+  private queueParse(resumeId: string, jobId = resumeId): Promise<void> {
+    return enqueueAiJob(this.queue, 'parse', { resumeId }, jobId, () =>
+      this.markFailed(resumeId, ErrorCode.RESUME_PARSE_FAILED),
     );
-    return toResumeSummary(resume);
+  }
+
+  /**
+   * @description The stored file of one of the user's CVs, to show it back to them.
+   * @param userId - Owner.
+   * @param id - CV id.
+   * @returns The bytes, with the type detected at upload and the name it was uploaded under.
+   * @throws AppException COMMON_NOT_FOUND (also for someone else's CV).
+   */
+  async file(userId: string, id: string): Promise<{ data: Buffer; mimeType: string; fileName: string }> {
+    const resume = await this.prisma.resume.findFirst({ where: { id, userId } });
+    if (!resume) throw new AppException(ErrorCode.COMMON_NOT_FOUND, { message: 'Resume not found' });
+    return {
+      data: await this.storage.get(resume.storageKey),
+      mimeType: resume.mimeType,
+      fileName: resume.fileName,
+    };
+  }
+
+  /**
+   * @description A DOCX as HTML, since browsers can't show Word files. The HTML comes from the user's own file;
+   * the web app renders it in a sandboxed frame without scripts.
+   * @param userId - Owner.
+   * @param id - CV id.
+   * @throws AppException COMMON_NOT_FOUND, or COMMON_UNSUPPORTED_FILE_TYPE for PDFs and images (shown as they are).
+   */
+  async preview(userId: string, id: string): Promise<ResumePreview> {
+    const { data, mimeType } = await this.file(userId, id);
+    if (mimeType !== DOCX) {
+      throw new AppException(ErrorCode.COMMON_UNSUPPORTED_FILE_TYPE, {
+        message: 'Only DOCX needs a preview',
+      });
+    }
+    const { value } = await convertToHtml({ buffer: data });
+    return { html: value };
   }
 
   /**

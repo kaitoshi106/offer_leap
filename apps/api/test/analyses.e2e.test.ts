@@ -45,8 +45,13 @@ beforeEach(async () => {
 });
 
 /** Uploads a CV and waits until it is parsed, returning its id. */
+let uploads = 0;
+
+/** Uploads a different PDF each time (the API returns the existing CV for a file it already has). */
 async function uploadResume(agent: TestAgent): Promise<string> {
-  const { body } = await agent.post('/api/v1/resumes').attach('file', PDF, 'cv.pdf').expect(202);
+  uploads += 1;
+  const pdf = Buffer.concat([PDF, Buffer.from(`% copy ${uploads}\n`)]);
+  const { body } = await agent.post('/api/v1/resumes').attach('file', pdf, 'cv.pdf').expect(202);
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const { body: resume } = await agent.get(`/api/v1/resumes/${body.id}`).expect(200);
     if (RESUME_FINAL_STATUSES.includes(resume.status)) return body.id;
