@@ -28,24 +28,115 @@
     "en": "English"
   },
   "home": {
-    "badge": "Trợ lý ứng tuyển AI",
-    "title": "Từ CV đến offer, nhanh hơn và tự tin hơn",
-    "description": "Tải CV lên, AI tự điền hồ sơ, chấm độ phù hợp với từng JD, luyện phỏng vấn thử và viết cover letter cho bạn.",
-    "ctaPrimary": "Bắt đầu miễn phí",
-    "ctaSecondary": "Tôi đã có tài khoản",
-    "features": {
-      "parse": {
-        "title": "Đọc CV mọi định dạng",
-        "description": "PDF, DOCX hay ảnh chụp — AI đọc và điền sẵn hồ sơ trong vài giây."
-      },
-      "match": {
-        "title": "Chấm CV theo JD",
-        "description": "Biết ngay kỹ năng còn thiếu và cách sửa từng đoạn trong CV."
-      },
-      "interview": {
-        "title": "Phỏng vấn thử",
-        "description": "Luyện với AI đóng vai nhà tuyển dụng và nhận nhận xét cho từng câu trả lời."
+    "demoLabel": "Dữ liệu minh họa",
+    "nav": {
+      "home": "OfferLeap, về đầu trang",
+      "signIn": "Đăng nhập"
+    },
+    "sides": {
+      "night": "Tự xoay xở",
+      "day": "Với OfferLeap"
+    },
+    "divider": {
+      "label": "Vạch chia giữa tự xoay xở và với OfferLeap",
+      "half": "Mỗi bên một nửa",
+      "value": "Tự xoay xở {night}%, với OfferLeap {day}%"
+    },
+    "hero": {
+      "nightTitle": "Mỗi tin tuyển dụng, làm lại từ đầu.",
+      "nightBody": "Gần nửa đêm, vẫn đang sửa CV cho nơi thứ bảy trong tuần.",
+      "title": "Tải CV một lần. Phần còn lại nhẹ hơn.",
+      "description": "AI điền hồ sơ, chấm CV theo từng JD, viết thư xin việc và luyện phỏng vấn cùng bạn.",
+      "ctaPrimary": "Bắt đầu miễn phí",
+      "ctaSecondary": "Tôi đã có tài khoản",
+      "nightAlt": "Gần nửa đêm, một cô gái tựa trán vào tay trước laptop, xung quanh là chồng CV in.",
+      "dayAlt": "Buổi sáng, cũng cô gái ấy đứng bên cửa sổ với tách cà phê, bình thản đọc điện thoại.",
+      "fileName": "CV_final_v7.docx",
+      "fileEdited": "Sửa lần cuối 23:41"
+    },
+    "demo": {
+      "name": "Trần Minh Anh",
+      "role": "Frontend Developer",
+      "experience": "3 năm",
+      "jobTitle": "Frontend Engineer",
+      "company": "Công ty mẫu",
+      "skills": {
+        "react": "React",
+        "typescript": "TypeScript",
+        "nextjs": "Next.js",
+        "graphql": "GraphQL",
+        "playwright": "Playwright",
+        "tailwind": "Tailwind CSS",
+        "jest": "Jest",
+        "teamwork": "Làm việc nhóm",
+        "figma": "Figma"
       }
+    },
+    "profile": {
+      "nightTitle": "Mỗi trang một biểu mẫu.",
+      "nightBody": "Họ tên, kinh nghiệm, kỹ năng. Gõ lại từ đầu cho từng nơi bạn ứng tuyển.",
+      "formLabel": "Biểu mẫu ứng tuyển",
+      "dayTitle": "Một lần tải CV, hồ sơ tự điền.",
+      "dayBody": "PDF, DOCX hay ảnh chụp đều được. AI đọc CV và điền sẵn từng mục, bạn chỉ cần xem lại.",
+      "profileLabel": "Hồ sơ",
+      "fields": {
+        "name": "Họ tên",
+        "role": "Vị trí",
+        "experience": "Kinh nghiệm",
+        "skills": "Kỹ năng"
+      },
+      "more": "+{count}",
+      "fileName": "CV_TranMinhAnh.pdf"
+    },
+    "match": {
+      "nightTitle": "CV này có hợp không?",
+      "nightBody": "Đọc JD, đọc lại CV, rồi đoán. Không ai nói cho bạn biết còn thiếu gì.",
+      "dayTitle": "Điểm phù hợp, kèm lý do.",
+      "dayBody": "Kỹ năng nào đã đáp ứng, kỹ năng nào còn thiếu, và nên sửa đoạn nào trong CV.",
+      "basis": "{jobTitle} · {matched}/{total} kỹ năng yêu cầu",
+      "missing": "Thiếu: {skill}"
+    },
+    "letter": {
+      "nightTitle": "Bản nháp lúc nửa đêm.",
+      "draftLabel": "Bản nháp thư xin việc",
+      "draftGreeting": "Kính gửi quý công ty,",
+      "draft1": "Tôi là người chăm chỉ, nhiệt tình",
+      "draft2": "và luôn sẵn sàng học hỏi.",
+      "draft3": "Tôi tin mình phù hợp với vị trí này",
+      "draft4": "vì tôi rất đam mê công nghệ.",
+      "draftNote": "(bản nháp 3, chưa gửi)",
+      "dayTitle": "Thư từ kinh nghiệm thật.",
+      "letterLabel": "Thư xin việc do AI viết, dữ liệu minh họa",
+      "greeting": "Kính gửi đội tuyển dụng {company},",
+      "p1": "Tôi là <cv>Frontend Developer với 3 năm làm React và TypeScript</cv>.",
+      "p2": "Ở <doc>dự án thanh toán</doc> gần nhất, tôi <doc>chuyển giao diện sang Next.js</doc>",
+      "p3": "và viết kiểm thử Jest cho các luồng quan trọng.",
+      "fromCv": "Từ CV",
+      "fromDocs": "Từ tài liệu của bạn"
+    },
+    "interview": {
+      "nightTitle": "Tập một mình.",
+      "nightBody": "Nói trước gương. Không ai cho bạn biết câu trả lời đã ổn chưa.",
+      "mirror": "“Kể về một lần bạn phải sửa lỗi gấp…”",
+      "dayTitle": "Luyện với AI, nhận nhận xét.",
+      "dayBody": "AI hỏi theo vị trí bạn ứng tuyển, chấm từng câu và gợi ý cách nói tốt hơn.",
+      "session": "Phỏng vấn thử · {question}",
+      "question": "Kể về một lần bạn phải sửa lỗi gấp trên môi trường thật.",
+      "answer": "Trang thanh toán lỗi sau một lần phát hành. Tôi quay lại bản cũ trong 20 phút rồi viết kiểm thử cho trường hợp đó.",
+      "feedback": "Rõ tình huống và hành động. Nên nói thêm kết quả: lỗi có lặp lại không."
+    },
+    "close": {
+      "nightLine": "Tự xoay xở vẫn làm được.",
+      "dayLine": "Nhưng không cần khó đến vậy.",
+      "title": "Đến lượt buổi sáng của bạn.",
+      "body": "Tải CV lên, OfferLeap lo phần lặp lại. Bắt đầu miễn phí.",
+      "imageCredit": "Ảnh minh họa được tạo bằng AI."
+    },
+    "acts": {
+      "profile": "Hồ sơ",
+      "match": "Chấm CV theo JD",
+      "letter": "Thư xin việc",
+      "interview": "Phỏng vấn"
     }
   },
   "errors": {
@@ -113,11 +204,6 @@
     "invalidUrl": "Hãy nhập địa chỉ web bắt đầu bằng https:// (hoặc http://)."
   },
   "auth": {
-    "highlights": {
-      "parse": "AI đọc CV và điền hồ sơ trong vài giây",
-      "match": "Chấm độ phù hợp CV với từng JD",
-      "interview": "Luyện phỏng vấn với AI"
-    },
     "fields": {
       "fullName": "Họ và tên",
       "email": "Email",
@@ -173,10 +259,6 @@
       "missingToken": "Liên kết đặt lại mật khẩu không hợp lệ.",
       "requestNew": "Yêu cầu liên kết mới"
     },
-    "showcase": {
-      "match": "Độ phù hợp với JD",
-      "ai": "AI đã điền hồ sơ"
-    },
     "invite": {
       "title": "Tạo tài khoản quản trị",
       "description": "Bạn được mời trở thành quản trị viên. Đặt tên và mật khẩu để bắt đầu.",
@@ -189,6 +271,13 @@
     "google": {
       "continue": "Tiếp tục với Google",
       "or": "hoặc"
+    },
+    "scene": {
+      "loginLine": "Chào buổi sáng. Tiếp tục từ chỗ bạn dừng.",
+      "registerNight": "Tối nay: tải CV lên.",
+      "registerDay": "Sáng mai: hồ sơ đã sẵn sàng.",
+      "profileReady": "Hồ sơ đã điền 6/6 mục",
+      "credit": "Ảnh minh họa được tạo bằng AI."
     }
   },
   "nav": {

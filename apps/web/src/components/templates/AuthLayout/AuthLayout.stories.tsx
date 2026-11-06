@@ -7,6 +7,8 @@ import { Button, Input } from '../../atoms';
 import { FormField } from '../../molecules';
 import { AuthLayout } from './AuthLayout';
 
+const PHOTOS = { morning: '/landing/morning.jpg', night: '/landing/night.jpg' };
+
 const meta = {
   title: 'Templates/AuthLayout',
   component: AuthLayout,
@@ -15,9 +17,9 @@ const meta = {
   decorators: [(Story) => <ThemeProvider>{Story()}</ThemeProvider>],
   args: {
     title: '',
-    highlights: [],
     homeLabel: '',
-    showcase: { matchLabel: '', aiLabel: '', skills: [] },
+    scene: { line: '', chips: [], credit: '' },
+    photos: PHOTOS,
     children: null,
   },
 } satisfies Meta<typeof AuthLayout>;
@@ -25,31 +27,38 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function renderLayout(variant: 'morning' | 'split', globals: Record<string, unknown>) {
+  const copy = storyCopy(globals);
+  return (
+    <AuthLayout
+      title={copy.authLayout.title}
+      description={copy.authLayout.description}
+      homeLabel={copy.authLayout.home}
+      photos={PHOTOS}
+      sceneVariant={variant}
+      scene={{
+        line: copy.authLayout.line,
+        nightLine: copy.authLayout.line,
+        chips: copy.authLayout.chips,
+        credit: copy.authLayout.credit,
+      }}
+    >
+      <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
+        <FormField label={copy.formField.email} required>
+          {(field) => <Input {...field} type="email" />}
+        </FormField>
+        <Button type="submit" fullWidth size="lg">
+          {copy.authLayout.title}
+        </Button>
+      </form>
+    </AuthLayout>
+  );
+}
+
 export const SignIn: Story = {
-  render: (_args, { globals }) => {
-    const copy = storyCopy(globals);
-    const icons = ['file-text', 'target', 'message-square'] as const;
-    return (
-      <AuthLayout
-        title={copy.authLayout.title}
-        description={copy.authLayout.description}
-        homeLabel={copy.authLayout.home}
-        showcase={{
-          matchLabel: copy.authLayout.match,
-          aiLabel: copy.authLayout.ai,
-          skills: ['React', 'NestJS', 'PostgreSQL'],
-        }}
-        highlights={copy.authLayout.highlights.map((text, index) => ({ icon: icons[index]!, text }))}
-      >
-        <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
-          <FormField label={copy.formField.email} required>
-            {(field) => <Input {...field} type="email" />}
-          </FormField>
-          <Button type="submit" fullWidth size="lg">
-            {copy.authLayout.title}
-          </Button>
-        </form>
-      </AuthLayout>
-    );
-  },
+  render: (_args, { globals }) => renderLayout('morning', globals),
+};
+
+export const SignUp: Story = {
+  render: (_args, { globals }) => renderLayout('split', globals),
 };

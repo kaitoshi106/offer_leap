@@ -1,87 +1,55 @@
-import { useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 import { use } from 'react';
 
-import { APP_NAME, type Locale } from '@offerleap/shared';
+import { type Locale } from '@offerleap/shared';
 
-import { Badge, buttonClasses, Heading, Icon, type IconName, Text } from '@/components/atoms';
-import { LocaleSwitcher, ThemeToggle } from '@/components/molecules';
-import { Link } from '@/i18n/navigation';
-
-const FEATURES: { key: 'parse' | 'match' | 'interview'; icon: IconName }[] = [
-  { key: 'parse', icon: 'file-text' },
-  { key: 'match', icon: 'target' },
-  { key: 'interview', icon: 'message-square' },
-];
+import { SplitSpine } from '@/features/home/components/Duo';
+import { HeroSplit } from '@/features/home/components/HeroSplit';
+import { LandingMotion } from '@/features/home/components/LandingMotion';
+import { InterviewAct, LetterAct, MatchAct, ProfileAct } from '@/features/home/components/MiddleActs';
+import { MorningClose } from '@/features/home/components/MorningClose';
+import '@/features/home/landing.css';
+import { getPathname } from '@/i18n/navigation';
 
 /**
- * @description Public landing page.
+ * @description Public landing page, a split stage built with the scrollcraft method: the same job seeker on her own
+ * and with OfferLeap, side by side, until the divider sweeps away and the morning takes the frame.
+ *
+ * Links that leave the page are plain locale-aware `<a>` elements, so leaving is a full page load: the landing
+ * stylesheet and the scroll engine never carry over into the app.
  * @param props.params - Route params containing the locale.
  */
 export default function HomePage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = use(params);
   setRequestLocale(locale);
-  const t = useTranslations();
+  const t = useTranslations('common');
+
+  const registerHref = getPathname({ href: '/register', locale });
+  const signInHref = getPathname({ href: '/login', locale });
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    // Keyed by locale: a language switch mounts a fresh tree, so the engine never drives nodes React replaced.
+    <div key={locale} id="landing" className="min-h-dvh bg-bg">
       <a
         href="#main"
-        className="sr-only z-50 rounded-md bg-surface px-4 py-2 shadow-popover focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
+        className="sr-only z-60 rounded-md bg-surface px-4 py-2 shadow-popover focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
       >
-        {t('common.skipToContent')}
+        {t('skipToContent')}
       </a>
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <span className="flex items-center gap-2 text-lg font-bold">
-          <Icon name="sparkles" className="text-primary-text" />
-          {APP_NAME}
-        </span>
-        <div className="flex items-center gap-1">
-          <LocaleSwitcher />
-          <ThemeToggle />
-        </div>
-      </header>
+      <SplitSpine />
 
-      <main
-        id="main"
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-4 py-10 sm:px-6"
-      >
-        <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
-          <Badge tone="ai" icon={<Icon name="sparkles" size="xs" />}>
-            {t('home.badge')}
-          </Badge>
-          <Heading level={1}>{t('home.title')}</Heading>
-          <Text size="lg" tone="muted" className="text-pretty">
-            {t('home.description')}
-          </Text>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href="/register" className={buttonClasses({ size: 'lg' })}>
-              {t('home.ctaPrimary')}
-              <Icon name="arrow-right" size="sm" />
-            </Link>
-            <Link href="/login" className={buttonClasses({ variant: 'outline', size: 'lg' })}>
-              {t('home.ctaSecondary')}
-            </Link>
-          </div>
-        </section>
-
-        <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-3">
-          {FEATURES.map(({ key, icon }) => (
-            <li key={key} className="rounded-lg border border-border bg-surface p-6 shadow-card">
-              <span className="mb-4 inline-flex size-10 items-center justify-center rounded-md bg-primary-soft text-primary-soft-fg">
-                <Icon name={icon} />
-              </span>
-              <Heading level={2} size="sm" className="mb-2">
-                {t(`home.features.${key}.title`)}
-              </Heading>
-              <Text size="sm" tone="muted">
-                {t(`home.features.${key}.description`)}
-              </Text>
-            </li>
-          ))}
-        </ul>
+      <main id="main">
+        <HeroSplit registerHref={registerHref} signInHref={signInHref} />
+        <ProfileAct />
+        <MatchAct />
+        <LetterAct />
+        <InterviewAct />
+        <MorningClose registerHref={registerHref} signInHref={signInHref} />
       </main>
+
+      <LandingMotion />
     </div>
   );
 }

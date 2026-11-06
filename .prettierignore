@@ -9,3 +9,6 @@ apps/api/src/generated
 apps/api/prisma/migrations/**/migration.sql
 .e2e-dist
 storage
+# Vendored scrollcraft engine, kept byte-for-byte
+apps/web/public/vendor
+apps/web/src/features/home/vendor

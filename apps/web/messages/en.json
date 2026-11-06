@@ -28,24 +28,115 @@
     "en": "English"
   },
   "home": {
-    "badge": "AI job application assistant",
-    "title": "From CV to offer — faster and with confidence",
-    "description": "Upload your CV and let AI fill in your profile, score it against each job description, run mock interviews and draft your cover letters.",
-    "ctaPrimary": "Get started for free",
-    "ctaSecondary": "I already have an account",
-    "features": {
-      "parse": {
-        "title": "Reads any CV",
-        "description": "PDF, DOCX or a photo — AI reads it and pre-fills your profile in seconds."
-      },
-      "match": {
-        "title": "CV vs job description",
-        "description": "See missing skills at a glance and how to improve each section of your CV."
-      },
-      "interview": {
-        "title": "Mock interviews",
-        "description": "Practise with an AI recruiter and get feedback on every answer."
+    "demoLabel": "Sample data",
+    "nav": {
+      "home": "OfferLeap, back to top",
+      "signIn": "Sign in"
+    },
+    "sides": {
+      "night": "On your own",
+      "day": "With OfferLeap"
+    },
+    "divider": {
+      "label": "Divider between doing it on your own and with OfferLeap",
+      "half": "Half and half",
+      "value": "On your own {night}%, with OfferLeap {day}%"
+    },
+    "hero": {
+      "nightTitle": "Every job post, starting from scratch.",
+      "nightBody": "Almost midnight, still editing the CV for the seventh company this week.",
+      "title": "Upload your CV once. The rest gets lighter.",
+      "description": "AI fills your profile, scores your CV against each job, drafts cover letters and rehearses interviews with you.",
+      "ctaPrimary": "Get started free",
+      "ctaSecondary": "I already have an account",
+      "nightAlt": "Almost midnight, a young woman rests her forehead on her hand in front of a laptop, surrounded by printed CVs.",
+      "dayAlt": "Morning, the same woman stands by the window with a coffee, calmly reading her phone.",
+      "fileName": "CV_final_v7.docx",
+      "fileEdited": "Last edited 23:41"
+    },
+    "demo": {
+      "name": "Trần Minh Anh",
+      "role": "Frontend Developer",
+      "experience": "3 years",
+      "jobTitle": "Frontend Engineer",
+      "company": "Sample Company",
+      "skills": {
+        "react": "React",
+        "typescript": "TypeScript",
+        "nextjs": "Next.js",
+        "graphql": "GraphQL",
+        "playwright": "Playwright",
+        "tailwind": "Tailwind CSS",
+        "jest": "Jest",
+        "teamwork": "Teamwork",
+        "figma": "Figma"
       }
+    },
+    "profile": {
+      "nightTitle": "A new form on every site.",
+      "nightBody": "Name, experience, skills. Typed again from scratch for every place you apply to.",
+      "formLabel": "Application form",
+      "dayTitle": "Upload your CV once, your profile fills itself.",
+      "dayBody": "PDF, DOCX or a photo all work. AI reads your CV and fills in every part, so you only review it.",
+      "profileLabel": "Profile",
+      "fields": {
+        "name": "Full name",
+        "role": "Role",
+        "experience": "Experience",
+        "skills": "Skills"
+      },
+      "more": "+{count}",
+      "fileName": "CV_TranMinhAnh.pdf"
+    },
+    "match": {
+      "nightTitle": "Is this CV a fit?",
+      "nightBody": "Read the job, reread your CV, then guess. Nobody tells you what is missing.",
+      "dayTitle": "A match score, with its reasons.",
+      "dayBody": "Which skills you meet, which are missing, and which part of your CV to fix.",
+      "basis": "{jobTitle} · {matched}/{total} required skills",
+      "missing": "Missing: {skill}"
+    },
+    "letter": {
+      "nightTitle": "The midnight draft.",
+      "draftLabel": "Draft cover letter",
+      "draftGreeting": "Dear Sir or Madam,",
+      "draft1": "I am hard-working and enthusiastic",
+      "draft2": "and always eager to learn.",
+      "draft3": "I believe I am a good fit for this role",
+      "draft4": "because I am passionate about technology.",
+      "draftNote": "(draft 3, not sent)",
+      "dayTitle": "A letter from real experience.",
+      "letterLabel": "Cover letter written by AI, sample data",
+      "greeting": "Dear {company} hiring team,",
+      "p1": "I am a <cv>Frontend Developer with 3 years of React and TypeScript</cv>.",
+      "p2": "On my most recent <doc>payments project</doc>, I <doc>moved the UI to Next.js</doc>",
+      "p3": "and wrote Jest tests for the critical flows.",
+      "fromCv": "From your CV",
+      "fromDocs": "From your documents"
+    },
+    "interview": {
+      "nightTitle": "Practising alone.",
+      "nightBody": "Talking to the mirror. Nobody tells you whether the answer works.",
+      "mirror": "“Tell me about a time you had to fix an urgent bug…”",
+      "dayTitle": "Rehearse with AI, get feedback.",
+      "dayBody": "AI asks questions for the role you are applying to, scores each answer and suggests how to say it better.",
+      "session": "Mock interview · {question}",
+      "question": "Tell me about a time you had to fix an urgent bug in production.",
+      "answer": "Checkout broke after a release. I rolled back within 20 minutes and then wrote a test for that case.",
+      "feedback": "Clear situation and action. Add the result: did the bug come back?"
+    },
+    "close": {
+      "nightLine": "You can do it on your own.",
+      "dayLine": "It just does not have to be this hard.",
+      "title": "Your morning starts here.",
+      "body": "Upload your CV and let OfferLeap handle the repetitive part. Free to start.",
+      "imageCredit": "Illustrative photos generated with AI."
+    },
+    "acts": {
+      "profile": "Profile",
+      "match": "Scoring a CV against a job",
+      "letter": "Cover letter",
+      "interview": "Interview"
     }
   },
   "errors": {
@@ -113,11 +204,6 @@
     "invalidUrl": "Enter a web address starting with https:// (or http://)."
   },
   "auth": {
-    "highlights": {
-      "parse": "AI reads your CV and fills your profile in seconds",
-      "match": "Score your CV against each job description",
-      "interview": "Practise interviews with AI"
-    },
     "fields": {
       "fullName": "Full name",
       "email": "Email",
@@ -173,10 +259,6 @@
       "missingToken": "This reset link is invalid.",
       "requestNew": "Request a new link"
     },
-    "showcase": {
-      "match": "Match with the JD",
-      "ai": "AI filled in your profile"
-    },
     "invite": {
       "title": "Set up your admin account",
       "description": "You've been invited to be an admin. Choose your name and password to start.",
@@ -189,6 +271,13 @@
     "google": {
       "continue": "Continue with Google",
       "or": "or"
+    },
+    "scene": {
+      "loginLine": "Good morning. Pick up where you left off.",
+      "registerNight": "Tonight: upload your CV.",
+      "registerDay": "Tomorrow morning: your profile is ready.",
+      "profileReady": "Profile filled, 6 of 6 fields",
+      "credit": "Illustrative photos generated with AI."
     }
   },
   "nav": {

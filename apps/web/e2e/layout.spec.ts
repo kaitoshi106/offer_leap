@@ -3,7 +3,8 @@ import path from 'node:path';
 
 import { completeOnboarding, expect, registerAndVerify, test } from './support';
 
-const PAGES = ['/vi', '/vi/login', '/vi/register', '/vi/forgot-password'];
+/** Auth pages are one screen. The landing page is a scroll story, checked separately below. */
+const PAGES = ['/vi/login', '/vi/register', '/vi/forgot-password'];
 const SIGNED_IN_PAGES = [
   '/vi/dashboard',
   '/vi/analyses',
@@ -28,6 +29,15 @@ test.describe('layout', () => {
         const scrollHeight = await page.evaluate(() => document.documentElement.scrollHeight);
         expect(scrollHeight, path).toBeLessThanOrEqual(viewport.height);
       }
+    });
+
+    test(`the landing page opens on its headline and call to action at ${viewport.width}×${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto('/vi');
+      await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
+      await expect(page.getByRole('link', { name: 'Bắt đầu miễn phí' }).first()).toBeInViewport({ ratio: 1 });
     });
   }
 

@@ -14,6 +14,7 @@ export default async function Page({ params }: { params: Promise<{ locale: Local
   const t = await getTranslations('auth');
   return (
     <AuthPage
+      scene="split"
       title={t('register.title')}
       description={t('register.description')}
       footer={

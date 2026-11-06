@@ -101,6 +101,19 @@
   color-scheme: dark;
 }
 
+/*
+ * Night scene (landing page and auth panels): the "on your own" side is always a warm night, whatever the theme.
+ * Its text and accent are tuned for that ground, so they are the same in light and dark mode.
+ */
+:root {
+  --night: oklch(0.18 0.008 60);
+  --night-surface: oklch(0.235 0.012 60);
+  --night-border: oklch(0.33 0.015 60);
+  --night-fg: oklch(0.94 0.012 75);
+  --night-fg-muted: oklch(0.76 0.025 75);
+  --night-accent: oklch(0.79 0.1 280);
+}
+
 @theme inline {
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
 
@@ -141,6 +154,13 @@
   --color-ai: var(--ai);
   --color-ai-soft: var(--ai-soft);
   --color-ai-soft-fg: var(--ai-soft-fg);
+
+  --color-night: var(--night);
+  --color-night-surface: var(--night-surface);
+  --color-night-border: var(--night-border);
+  --color-night-fg: var(--night-fg);
+  --color-night-fg-muted: var(--night-fg-muted);
+  --color-night-accent: var(--night-accent);
 
   --color-ring: var(--ring);
   --color-overlay: var(--overlay);

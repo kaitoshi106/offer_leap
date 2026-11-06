@@ -16,6 +16,8 @@ export default tseslint.config(
       '**/generated/**',
       '**/node_modules/**',
       '**/next-env.d.ts',
+      // Vendored third-party code, kept byte-for-byte (scrollcraft engine on the landing page).
+      '**/public/vendor/**',
     ],
   },
   js.configs.recommended,
