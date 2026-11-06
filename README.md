@@ -4,26 +4,31 @@
 
 OfferLeap is an AI job-application assistant. Upload your CV (PDF, DOCX or a photo) and the AI fills in your profile,
 scores your CV against any job description, writes cover letters live, and runs mock interviews with feedback on
-every answer — in Vietnamese or English, light or dark.
+every answer — in Vietnamese or English, light or dark, on a desktop or a phone.
 
 ![Landing page](docs/screenshots/01-landing.png)
 
+The landing page is a scroll story told side by side: the same job seeker on her own at midnight and with OfferLeap
+the next morning. Drag the divider (or use the arrow keys) to compare; scrolling plays each step of the product on
+both sides until the morning takes the whole frame.
+
 ## Features
 
-|                                                                                                                                                                                                                                                                                    |                                                                        |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **CV → profile in seconds.** Onboarding starts with an optional CV upload; Gemini reads PDFs and images natively (no OCR service), DOCX is parsed locally. Every field it fills is marked _AI suggested_, and guesses ask you to double-check.                                     | ![Pre-filled onboarding](docs/screenshots/02-onboarding-prefilled.png) |
-| **CV ↔ job analysis.** A 0–100 match score, skills you have and the ones missing (required vs nice-to-have), strengths, gaps and concrete CV edits.                                                                                                                                | ![Analysis result](docs/screenshots/03-analysis.png)                   |
-| **Application board.** A kanban with drag and drop for mouse and touch — built without a library, the whole card follows the pointer — plus a keyboard alternative, optimistic updates, notes and links to the analysis.                                                           | ![Kanban board](docs/screenshots/04-board.png)                         |
-| **Cover letters, streamed.** The letter appears word by word as the model writes it; edit, copy and save.                                                                                                                                                                          | ![Cover letter](docs/screenshots/05-cover-letter.png)                  |
-| **Mock interviews.** Behavioural or technical questions written for the job, a score and a stronger sample answer for each reply, voice input, and a final readiness summary.                                                                                                      | ![Mock interview](docs/screenshots/06-interview.png)                   |
-| **Personal documents (RAG).** Upload project notes or certificates; they are chunked, embedded (Gemini) and stored in pgvector. Analyses and cover letters retrieve the most relevant passages and cite them as sources; a search box shows exactly what the AI would get.         | ![Documents](docs/screenshots/09-documents.png)                        |
-| **Sign in with Google.** One click to sign up or sign in (OpenID Connect with PKCE). An account with the same verified email is linked and its owner notified; admins keep to passwords. New accounts get a welcome email.                                                         | ![Sign in with Google](docs/screenshots/10-sign-in-google.png)         |
-| **Profile and CVs.** Edit each part of the profile with the same forms as onboarding, upload new CVs and delete old ones (with the analyses made from them).                                                                                                                       | ![Profile page](docs/screenshots/11-profile.png)                       |
-| **Your account, your data.** Link or unlink Google, set or change a password, download everything as JSON, or delete the account (confirmed by password or a fresh Google sign-in).                                                                                                | ![Account settings](docs/screenshots/12-settings.png)                  |
-| **Admin console.** Root invites general admins by email; admins manage users (searchable, 10/50/100 per page, sign-in method shown — [screenshot](docs/screenshots/13-admin-users.png)), industries and per-user AI quotas, and watch AI usage (calls, failures, tokens, latency). | ![AI usage dashboard](docs/screenshots/07-admin-usage.png)             |
+|                                                                                                                                                                                                                                                                                                               |                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **CV → profile in seconds.** Onboarding starts with an optional CV upload; Gemini reads PDFs and images natively (no OCR service), DOCX is parsed locally. Photos are shrunk in a Web Worker before upload. Every field it fills is marked _AI suggested_ and guesses ask you to double-check.                | ![Pre-filled onboarding](docs/screenshots/02-onboarding-prefilled.png) |
+| **CV ↔ job analysis.** A 0–100 match score, skills you have and the ones missing (required vs nice-to-have), strengths, gaps and concrete CV edits.                                                                                                                                                           | ![Analysis result](docs/screenshots/03-analysis.png)                   |
+| **Application board.** A kanban with drag and drop for mouse and touch — built without a library, the whole card follows the pointer — plus a keyboard alternative, optimistic updates, notes and links to the analysis.                                                                                      | ![Kanban board](docs/screenshots/04-board.png)                         |
+| **Cover letters, streamed.** The letter appears word by word as the model writes it; edit, copy and save.                                                                                                                                                                                                     | ![Cover letter](docs/screenshots/05-cover-letter.png)                  |
+| **Mock interviews.** Behavioural or technical questions written for the job, a score and a stronger sample answer for each reply, voice input, and a final readiness summary.                                                                                                                                 | ![Mock interview](docs/screenshots/06-interview.png)                   |
+| **Personal documents (RAG).** Upload project notes or certificates; they are chunked, embedded (Gemini) and stored in pgvector. Analyses and cover letters retrieve the most relevant passages and cite them as sources; a search box shows exactly what the AI would get.                                    | ![Documents](docs/screenshots/09-documents.png)                        |
+| **Sign in with Google.** One click to sign up or sign in (OpenID Connect with PKCE). An account with the same verified email is linked and its owner notified; admins keep to passwords. New accounts get a welcome email.                                                                                    | ![Sign in with Google](docs/screenshots/10-sign-in-google.png)         |
+| **Profile and CVs.** Edit each part of the profile with the same forms as onboarding. Keep up to 5 CVs: view them in the app (PDF, image or DOCX), upload the same file twice and it is stored once, and at the limit choose to replace the oldest. CVs added after onboarding are stored without an AI call. | ![Profile page](docs/screenshots/11-profile.png)                       |
+| **Your account, your data.** Link or unlink Google, set or change a password, download everything as JSON, or delete the account (confirmed by password or a fresh Google sign-in).                                                                                                                           | ![Account settings](docs/screenshots/12-settings.png)                  |
+| **Admin console.** Root invites general admins by email; admins manage users (searchable, 10/50/100 per page, sign-in method shown — [screenshot](docs/screenshots/13-admin-users.png)), industries and per-user AI quotas, and watch AI usage (calls, failures, tokens, latency).                            | ![AI usage dashboard](docs/screenshots/07-admin-usage.png)             |
 
-Dark mode, Vietnamese (default) and English everywhere:
+Dark mode, Vietnamese (default) and English everywhere. Every page also works on phones, with a menu drawer and no
+layout shift on load:
 
 ![Dark mode](docs/screenshots/08-dark-mode.png)
 
@@ -36,7 +41,7 @@ flowchart LR
     RQ[React Query]
   end
   subgraph API["apps/api · NestJS 12"]
-    Guards[Guards: throttle → JWT → roles → profile complete]
+    Guards[Guards: throttle per user → JWT → roles → profile complete]
     Features[Resumes · Analyses · Applications · Interviews · Admin]
     Tracked[TrackedAiProvider<br/>quota + usage log]
     Vendor[GeminiProvider · MockAiProvider]
@@ -61,8 +66,9 @@ flowchart LR
   error codes. The API never sends user-facing text.
 - **AI behind an interface.** Features call an `AiProvider` (Strategy); a decorator adds per-user quotas and a usage
   log; the vendor (Gemini, or a mock for tests) is one class. Model fallback handles 429/503/timeouts.
-- **Slow work in the background, fast work in the request.** CV parsing and analyses run in BullMQ jobs with retry
-  and backoff (the UI polls); interview steps call the AI inside the request; cover letters stream over HTTP.
+- **Slow work in the background, fast work in the request.** CV parsing (onboarding only) and analyses run in BullMQ
+  jobs with retry and backoff (the UI polls); interview steps call the AI inside the request; cover letters stream
+  over HTTP. Sweepers on a timer fail jobs that got stuck and delete stored files that no CV or document points at.
 
 More: [architecture](docs/ai/architecture.md) · [decisions (ADRs)](docs/adr) · [AI prompts, evals and cost](docs/ai/ai-prompts.md)
 
@@ -70,16 +76,20 @@ More: [architecture](docs/ai/architecture.md) · [decisions (ADRs)](docs/adr) ·
 
 - **Security** — sign in with Google (OpenID Connect + PKCE, accounts matched by Google id, admins excluded),
   argon2id passwords, short-lived JWT access cookie + rotating opaque refresh tokens with reuse
-  detection, rate limits, magic-byte file checks, owner-scoped queries (404 for other users' data), prompts that
+  detection, rate limits per signed-in user (per IP otherwise), magic-byte file checks, a zip-bomb check before any
+  DOCX is unpacked, owner-scoped queries (404 for other users' data), prompts that
   treat CVs and job descriptions as untrusted data, hashed single-use admin invitation tokens, a JSON
   export of your data and password-confirmed account deletion.
 - **Accessibility** — native elements first (`<dialog>`, `<select>`, file input in a label), WAI-ARIA combobox,
-  focus management between steps, live regions for async results, keyboard alternative to drag and drop; every page is scanned with axe (WCAG 2.2 AA) in light and dark mode, in CI.
+  focus management between steps, live regions for async results, keyboard alternative to drag and drop, a
+  keyboard-operable slider for the landing page divider, motion only when `prefers-reduced-motion` allows it; every
+  page is scanned with axe (WCAG 2.2 AA) in light and dark mode, in CI.
 - **AI quality is measured** — `pnpm --filter @offerleap/api eval <task>` runs a dataset of hard cases (abbreviations,
   overlapping jobs, missing data, prompt injection) against the real model and reports field accuracy and p95
   latency. Baseline: 100% field accuracy, p95 2.8 s for CV extraction. The eval found two real bugs.
 - **No UI library** — every component (atoms → templates) is built with Tailwind and design tokens, documented in
-  Storybook with light/dark and language toolbars.
+  Storybook with light/dark and language toolbars. The kanban drag and drop is built on Pointer Events; the landing
+  page's scroll effects use a small vendored engine (`public/vendor/scrollcraft`), not an npm dependency.
 
 ## Tech stack
 
